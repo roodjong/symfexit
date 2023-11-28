@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% load static l10n payments %} {% block body %}
+<div
+  id="loginscreen"
+  class="flex justify-center place-items-center flex-col pt-8"
+>
+  <div class="max-w-lg m-4 flex flex-col flex-grow space-y-4">
+    <div class="p-6 space-y-4">
+      <div class="flex justify-center">
+        <div class="w-28 h-28">
+          <img
+            src="{% if config.LOGO_IMAGE %}{% get_media_prefix %}{{ config.LOGO_IMAGE }}{% else %}/static/img/header-logo.svg{% endif %}"
+          />
+        </div>
+      </div>
+      <h2
+        class="text-3xl uppercase font-header [font-stretch:semi-expanded] font-bold"
+      >
+        Inschrijven bij {{ config.SITE_TITLE }}
+      </h2>
+      <p>
+        Je hebt je betaling geanulleerd. Om je inschrijving af te ronden moet je
+        voldoen aan de contributie.
+      </p>
+      <form action="{% url "signup:retry" application.eid %}" method="POST">
+        {% csrf_token %}
+        <p class="block">
+          Klik <input type="submit" class="text-primary inline cursor-pointer" value="hier" /> om terug te gaan naar de betaalpagina zodat je alsnog kan
+          betalen
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

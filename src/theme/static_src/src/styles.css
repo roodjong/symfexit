@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+form {
+  p {
+    @apply flex flex-row flex-wrap items-center mb-5;
+    label {
+      @apply sm:basis-48 basis-full;
+    }
+    label.required::after {
+      content: " *";
+      @apply text-red-500;
+    }
+    input {
+      @apply basis-auto grow;
+    }
+    input[disabled] {
+      @apply bg-gray-100;
+    }
+  }
+  .message-error, .errorlist {
+    @apply text-red-500;
+  }
+}
+
+form {
+  div {
+    @apply flex flex-row flex-wrap items-center mb-3;
+    label {
+      @apply basis-full mb-2;
+    }
+    label.required::after {
+      content: " *";
+      @apply text-red-500;
+    }
+    legend.required::after {
+      content: " *";
+      @apply text-red-500;
+    }
+    input {
+      @apply basis-auto grow;
+    }
+    input[disabled] {
+      @apply bg-gray-100;
+    }
+    fieldset {
+      @apply basis-full flex flex-row;
+    }
+    fieldset > * {
+      @apply flex-grow;
+    }
+    select {
+      @apply basis-full;
+    }
+    input[type="radio"], input[type="checkbox"] {
+      @apply focus:ring-primary focus:ring-2 text-primary;
+    }
+  }
+  .payment-tier {
+    @apply mb-0;
+    div {
+      @apply mb-0;
+    }
+  }
+  .checkmark {
+    @apply col-span-2 flex-row-reverse;
+    label {
+      @apply basis-auto;
+    }
+    input[type="checkbox"] {
+      @apply grow-0 mr-2 mb-2;
+    }
+  }
+  .message-error, .errorlist {
+    @apply text-red-500;
+  }
+  .pay-more {
+    @apply -mt-4;
+    label {
+      @apply hidden;
+    }
+  }
+}
+
+#loginscreen {
+  input[type="text"], input[type="password"] {
+    @apply w-full;
+  }
+  button[type="submit"] {
+    @apply w-full bg-primary text-white p-4 font-bold;
+  }
+}
+
+.homepage {
+  @apply flex flex-col p-8;
+  h1 {
+    @apply font-header text-5xl mb-6;
+  }
+  h2 {
+    @apply font-header text-3xl mb-6;
+  }
+  h3 {
+    @apply font-header text-2xl mb-6;
+  }
+  p {
+    @apply mb-6;
+  }
+  li {
+    @apply mb-2;
+  }
+  ul {
+    @apply list-disc list-inside;
+  }
+  ol {
+    @apply list-decimal list-inside;
+  }
+  a {
+    @apply text-primary;
+  }
+  img {
+
+  }
+}

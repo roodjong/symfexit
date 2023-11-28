@@ -1,0 +1,39 @@
+{% extends "menupage.html" %}
+{% load l10n %}
+
+{% block main %}
+<div class="container mx-auto pt-8 p-2">
+  <h1 class="font-header text-5xl mb-6">Documenten</h1>
+  {% include "documents/breadcrumbs.html" %}
+  <hr class="my-4">
+  <ul>
+    {% if parent.parent %}
+      <li class="p-2 even:bg-gray-100 odd:bg-white">
+        <div class="flex flex-row justify-between"><a href="{% url "documents:documents" parent.parent.id %}"><i class="fa-solid fa-folder-minus text-primary pr-2"></i>.. (map hier boven)</a>
+          <div></div>
+        </div>
+      </li>
+    {% elif parent %}
+      <li class="p-2 even:bg-gray-100 odd:bg-white">
+        <div class="flex flex-row justify-between"><a href="{% url "documents:documents" %}"><i class="fa-solid fa-folder-minus text-primary pr-2"></i>.. (map hier boven)</a>
+          <div></div>
+        </div>
+      </li>
+    {% endif %}
+  {% for document in directories %}
+    <li class="p-2 even:bg-gray-100 odd:bg-white">
+      <div class="flex flex-row justify-between"><a href="{% url "documents:documents" document.id %}"><i class="fa-regular fa-folder-open text-primary pr-2"></i>{{ document.name }}</a>
+        <div></div>
+      </div>
+    </li>
+  {% endfor %}
+  {% for file in files %}
+    <li class="p-2 even:bg-gray-100 odd:bg-white">
+      <div class="flex flex-row justify-between"><a href="{% url "documents:file" file.id %}"><i class="fa-regular fa-file text-primary pr-2"></i>{{ file.name }}</a>
+        <div class="flex flex-row gap-8"><span>{{ file.created_at|date:"SHORT_DATETIME_FORMAT"}}</span><span>{{ file.human_size }}</span></div>
+      </div>
+    </li>
+  {% endfor %}
+  </ul>
+</div>
+{% endblock main %}

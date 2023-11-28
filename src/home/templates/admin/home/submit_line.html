@@ -1,0 +1,7 @@
+{% extends "admin/submit_line.html" %}
+{% load i18n admin_urls static %}
+
+{% block submit-row %}
+    {% if show_save_and_set %}<input type="submit" value="{% trans "Save and set as current" %}" name="_setcurrent"/>{% endif %}
+    {{ block.super }}
+{% endblock %}

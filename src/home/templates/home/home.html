@@ -1,0 +1,12 @@
+{% extends "menupage.html" %}
+
+{% block main %}
+<div class="homepage">
+{% if homepage %}
+{{ homepage.content | safe }}
+{% else %}
+<h1>Home</h1>
+<p>There is no homepage content.</p>
+{% endif %}
+</div
+{% endblock main %}

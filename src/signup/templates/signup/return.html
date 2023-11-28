@@ -1,0 +1,30 @@
+{% extends "base.html" %} {% load static l10n payments %} {% block body %}
+<div
+  id="loginscreen"
+  class="flex justify-center place-items-center flex-col pt-8"
+>
+  <div class="max-w-lg m-4 flex flex-col flex-grow space-y-4">
+    <div class="p-6 space-y-4">
+      <div class="flex justify-center">
+        <div class="w-28 h-28">
+          <img
+            src="{% if config.LOGO_IMAGE %}{% get_media_prefix %}{{ config.LOGO_IMAGE }}{% else %}/static/img/header-logo.svg{% endif %}"
+          />
+        </div>
+      </div>
+      <h2
+        class="text-3xl uppercase font-header [font-stretch:semi-expanded] font-bold"
+      >
+        Inschrijven bij {{ config.SITE_TITLE }}
+      </h2>
+      <p>
+        Bedankt voor je betaling!
+      </p>
+      <p>
+        Je inschrijving is nu voltooid. Je ontvangt een bevestigingsmail op het
+        opgegeven e-mailadres wanneer je inschrijving is goedgekeurd.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

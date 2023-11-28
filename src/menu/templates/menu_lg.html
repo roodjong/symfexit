@@ -1,0 +1,13 @@
+<div>
+  <ul class="flex flex-row space-x-8">
+    {% for item in menu %}
+    <li>
+      <a
+        href="{% url item.viewname %}"
+        class="block py-2 {% if current_view == item.viewname %}text-primary{% else %}text-black{% endif %} hover:text-primary text-3xl uppercase font-header [font-stretch:semi-expanded] font-bold"
+        >{{item.name}}</a
+      >
+    </li>
+    {% endfor %}
+  </ul>
+</div>

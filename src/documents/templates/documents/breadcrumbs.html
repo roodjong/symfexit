@@ -1,0 +1,9 @@
+<a href="{% url "documents:documents" %}"><span>Hoofdmap</span></a>
+{% for crumb in breadcrumbs %}
+  <span>/</span>
+  {% if forloop.last %}
+    <a href="{% url "documents:documents" crumb.id %}"><span class="text-primary">{{ crumb.name }}</span></a>
+  {% else %}
+    <a href="{% url "documents:documents" crumb.id %}">{{ crumb.name }}</a>
+  {% endif %}
+{% endfor %}

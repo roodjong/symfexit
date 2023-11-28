@@ -1,0 +1,11 @@
+{% extends "menupage.html" %}
+
+{% block main %}
+<form id="logoutform" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="border-2 rounded-xl p-2 m-2">Uitloggen</button>
+</form>
+<script>
+  document.getElementById("logoutform").submit();
+</script>
+{% endblock main %}

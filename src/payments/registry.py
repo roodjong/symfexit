@@ -1,0 +1,46 @@
+import abc
+import bisect
+
+__all__ = ["payments_registry", "PaymentsRegistry"]
+
+
+class PaymentsRegistry:
+    def __init__(self):
+        self._registry = []
+        self._names = {}
+
+    def register(self, *, name, priority=0):
+        def _register(cls):
+            if not issubclass(cls, PaymentProcessor):
+                raise ValueError("Registered class must be a subclass of PaymentProcessor")
+            instance = cls()
+            bisect.insort_right(self._registry, (priority, instance), key=lambda x: x[0])
+            self._names[name] = instance
+            return cls
+        return _register
+
+    def get(self, name):
+        return self._names.get(name)
+
+    def initialize(self):
+        for _, processor in self._registry:
+            processor.initialize()
+
+    def __iter__(self):
+        return (processor for _, processor in reversed(self._registry))
+
+payments_registry = PaymentsRegistry()
+
+
+class PaymentProcessor(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def initialize(self):
+        pass
+
+    @abc.abstractmethod
+    def is_available(self):
+        pass
+
+    @abc.abstractmethod
+    def render_payment_start(self, context, payable):
+        pass

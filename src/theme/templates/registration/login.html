@@ -1,0 +1,30 @@
+{% extends "base.html" %} {% load static %} {% block body %}
+<div id="loginscreen" class="flex justify-center h-screen place-items-center">
+  <div class="max-w-md m-4 flex flex-col flex-grow space-y-4">
+    <div class="border-primary border-solid border-2 rounded-xl p-6 space-y-4">
+      <div class="flex justify-center">
+        <div class="w-28 h-28">
+          <img
+            src="{% if config.LOGO_IMAGE %}{% get_media_prefix %}{{ config.LOGO_IMAGE }}{% else %}/static/img/header-logo.svg{% endif %}"
+          />
+        </div>
+      </div>
+      <h2
+        class="text-3xl uppercase font-header [font-stretch:semi-expanded] font-bold"
+      >
+        Log In
+      </h2>
+      <form method="post">
+        {% csrf_token %} {{ form.as_p }}
+        <button type="submit">Log In</button>
+      </form>
+    </div>
+    <p class="text-center text-gray-600">
+      <a href="{% url 'password_reset' %}">Forgot Password?</a>
+    </p>
+    <p class="text-center text-gray-600">
+      <a href="{{ config.MAIN_SITE }}">Back to the website</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

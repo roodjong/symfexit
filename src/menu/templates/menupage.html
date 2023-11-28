@@ -1,0 +1,31 @@
+{% extends "page.html" %} {% load menu static %} {% block navbar %}
+<div class="flex flex-row items-center space-x-4">
+  <div class="w-28 h-28"><img src="{% if config.LOGO_IMAGE %}{% get_media_prefix %}{{ config.LOGO_IMAGE }}{% else %}/static/img/header-logo.svg{% endif %}" /></div>
+  <span
+    class="justify-self-start text-primary lg:text-7xl text-4xl font-header [font-stretch:semi-expanded] font-bold"
+    >{{ config.SITE_TITLE }}</span
+  >
+</div>
+<details class="block md:hidden">
+  <summary class="list-none">
+    <div class="cursor-pointer">
+      <div class="flex flex-row-reverse">
+        <div
+          class="flex items-center px-3 py-2 border rounded text-primary border-primary hover:text-black hover:border-black"
+        >
+          <svg
+            class="fill-current h-3 w-3"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <title>Menu</title>
+            <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </summary>
+  {% render_main_menu %}
+</details>
+<div class="hidden md:block">{% render_main_menu_lg %}</div>
+{% endblock navbar %}
