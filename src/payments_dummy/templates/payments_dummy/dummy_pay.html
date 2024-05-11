@@ -1,6 +1,6 @@
-<p>Fake this payment for {{ payable.price }} cents.</p>
+<p>Fake this payment for {{ order.price }} cents.</p>
 
-<form method="post" class="grid grid-cols-1 gap-y-4" action={% url "payments_dummy:dummy" payable.eid %}>
+<form method="post" class="grid grid-cols-1 gap-y-4" action={% url "payments_dummy:subscription" order.eid %}>
   {% csrf_token %} {{ form.as_div }}
   <button type="submit">Fake pay</button>
 </form>

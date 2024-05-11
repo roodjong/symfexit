@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path, include, reverse
+from django.urls import include, path, reverse
 from django.views.generic import RedirectView
+
 from adminsite.admin import admin_site
 from symfexit.settings import DOCS_ENABLED, HOME_ENABLED, SIGNUP_ENABLED
 from symfexit.utils import enable_if

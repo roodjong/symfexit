@@ -1,24 +1,23 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Task(models.Model):
-    STATUS_QUEUED = "queued"
-    STATUS_COMPLETED = "completed"
-    STATUS_ERROR_UNKNOWN_TASK = "not_registered"
-    STATUS_EXCEPTION = "exception"
-    STATUS_CHOICES = [
-        (STATUS_QUEUED, "Queued"),
-        (STATUS_COMPLETED, "Completed"),
-        (STATUS_ERROR_UNKNOWN_TASK, "Unknown task (not registered)"),
-        (STATUS_EXCEPTION, "Exception"),
-    ]
+    class Status(models.TextChoices):
+        QUEUED = "queued", _("Queued")
+        COMPLETED = "completed", _("Completed")
+        ERROR_UNKNOWN_TASK = "not_registered", _("Unknown task (not registered)")
+        EXCEPTION = "exception", _("Exception")
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
+    args = models.TextField(blank=True, null=True)
+    kwargs = models.TextField(blank=True, null=True)
     output = models.TextField(blank=True, null=True)
     status = models.CharField(
         max_length=20,
-        choices=STATUS_CHOICES,
-        default=STATUS_QUEUED,
+        choices=Status,
+        default=Status.QUEUED,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     picked_up_at = models.DateTimeField(null=True, blank=True)

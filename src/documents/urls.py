@@ -2,7 +2,6 @@ from django.urls import path
 
 from documents.views import Documents, file, file_download, file_pdf
 
-
 app_name = "documents"
 
 urlpatterns = [

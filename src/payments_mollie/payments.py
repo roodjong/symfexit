@@ -2,8 +2,9 @@ import logging
 
 from django.shortcuts import render
 from django.template.loader import get_template
+
 from payments import PaymentProcessor
-from payments.models import Payable
+from payments.models import Order, Subscription
 from payments.registry import payments_registry
 from symfexit import settings
 
@@ -14,8 +15,10 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+MOLLIE_NAME = "mollie"
 
-@payments_registry.register(name="mollie", priority=10)
+
+@payments_registry.register(name=MOLLIE_NAME, priority=100)
 class MollieProcessor(PaymentProcessor):
     def __init__(self):
         self.client = None
@@ -23,7 +26,7 @@ class MollieProcessor(PaymentProcessor):
 
     @classmethod
     def get_instance(cls):
-        return payments_registry.get("mollie")
+        return payments_registry.get(MOLLIE_NAME)
 
     def initialize(self):
         if Client is None:
@@ -38,19 +41,24 @@ class MollieProcessor(PaymentProcessor):
     def is_available(self):
         return self.client is not None and self.client.methods.list().count > 0
 
-    def render_payment_start(self, payable: Payable):
+    def start_subscription_flow(self, request, subscription: Subscription, return_url):
+        order = subscription.new_order(initial=True, return_url=return_url)
+        order.payment_method = MOLLIE_NAME
+        order.save()
         payment_methods = self.client.methods.list(
             sequenceType="first",
             locale="nl_NL",
-            amount={"value": "{:.02f}".format(payable.price / 100), "currency": "EUR"},
+            amount={"value": "{:.02f}".format(order.price / 100), "currency": "EUR"},
             billingCountry="NL",
             include="issuers",
         )
-        print("payment_methods", payment_methods)
-        t = get_template("payments_mollie/select_method.html")
-        return t.render(
+
+        return render(
+            request,
+            "payments_mollie/select_method.html",
             {
                 "payment_methods": payment_methods["_embedded"]["methods"],
-                "payable": payable,
-            }
+                "order": order,
+                "euro_price": format(order.price / 100, ".2f"),
+            },
         )

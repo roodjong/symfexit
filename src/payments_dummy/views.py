@@ -1,17 +1,20 @@
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
+from django.utils import timezone
 
-from payments.models import Payable
+from payments.models import Order
 from payments_dummy.forms import FakePayForm
 
-# Create your views here.
-def initiate_dummy(request, payable_id):
+
+def initiate_dummy(request, order_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     form = FakePayForm(request.POST)
-    payable = Payable.get_or_404(payable_id)
+    order = Order.get_or_404(order_id)
     if form.is_valid():
-        payable.payment_status = form.cleaned_data["payment_status"]
-        payable.save()
-        return HttpResponseRedirect(payable.return_url)
+        order.payment_status = form.cleaned_data["payment_status"]
+        if order.payment_status == Order.Status.PAID:
+            order.done_at = timezone.now()
+        order.save()
+        return HttpResponseRedirect(order.return_url)
     raise form.errors

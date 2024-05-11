@@ -1,4 +1,5 @@
 from audioop import reverse
+
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.options import IS_POPUP_VAR, csrf_protect_m
@@ -6,11 +7,8 @@ from django.contrib.admin.utils import unquote
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.admin import sensitive_post_parameters_m
-from django.contrib.auth.forms import (
-    AdminPasswordChangeForm,
-    UserChangeForm,
-    UserCreationForm,
-)
+from django.contrib.auth.forms import (AdminPasswordChangeForm, UserChangeForm,
+                                       UserCreationForm)
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
@@ -20,6 +18,16 @@ from django.urls import path
 from django.utils.html import escape
 
 from members.models import ContactPerson, LocalGroup, User
+from membership.models import Membership
+
+
+class MembershipInline(admin.StackedInline):
+    model = Membership
+    extra = 0
+
+    autocomplete_fields = ("address",)
+    exclude = ()
+
 
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
 @admin.register(User)
@@ -56,6 +64,7 @@ class UserAdmin(admin.ModelAdmin):
             },
         ),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
+        # ("Membership", {"fields": ("subscription_set",)}),
     )
     add_fieldsets = (
         (
@@ -77,6 +86,8 @@ class UserAdmin(admin.ModelAdmin):
         "groups",
         "user_permissions",
     )
+
+    inlines = (MembershipInline,)
 
     def get_fieldsets(self, request, obj=None):
         if not obj:

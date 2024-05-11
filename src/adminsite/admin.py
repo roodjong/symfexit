@@ -1,7 +1,8 @@
 from functools import update_wrapper
 from typing import List
-from django.contrib import admin
+
 from constance import config
+from django.contrib import admin
 from django.template.response import TemplateResponse
 from django.urls.resolvers import URLResolver
 
@@ -24,8 +25,8 @@ class MyAdminSite(admin.AdminSite):
         return f"{config.SITE_TITLE} administration"
 
     def get_urls(self) -> List[URLResolver]:
-        from django.urls import path, re_path, include
         from django.apps import apps
+        from django.urls import include, path, re_path
 
         def wrap(view, cacheable=False):
             def wrapper(*args, **kwargs):

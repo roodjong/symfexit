@@ -6,6 +6,7 @@ class ThemeConfig(AppConfig):
 
     def get_app_admin_urls(self, admin_site):
         from django.urls import path
+
         from theme.admin import RebuildTheme
 
         rebuild_theme = RebuildTheme.as_view(admin_site=admin_site)

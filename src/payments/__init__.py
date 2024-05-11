@@ -1,6 +1,6 @@
 from django.utils.module_loading import autodiscover_modules
 
-from payments.registry import payments_registry, PaymentProcessor
+from payments.registry import PaymentProcessor, payments_registry
 
 __all__ = ["PaymentProcessor"]
 

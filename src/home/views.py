@@ -1,13 +1,11 @@
+from constance import config
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-
-from constance import config
 
 from home.models import HomePage
-
 
 # Create your views here.
 

@@ -1,4 +1,5 @@
 from functools import cache
+
 from django import template
 from django.apps import apps
 

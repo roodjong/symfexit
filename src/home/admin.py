@@ -1,6 +1,7 @@
-from django.contrib import admin
-from home.models import HomePage
 from constance import config
+from django.contrib import admin
+
+from home.models import HomePage
 
 
 @admin.register(HomePage)

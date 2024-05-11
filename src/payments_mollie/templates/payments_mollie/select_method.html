@@ -1,38 +1,51 @@
-<div class="flex flex-col gap-4 width-200">
-  {% for method in payment_methods %}
-  <div class="payment-method">
-    {% if method.issuers %}
-    <details class="[&_svg]:open:rotate-90 [&_summary]:open:pb-4 [&_hr]:open:visible">
-      <hr class="pb-4" />
-      <summary class="flex cursor-pointer list-none items-center gap-2">
-        <svg class="rotate-0 transform text-primary transition-all duration-300" fill="none" height="20" width="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
-          <polyline points="6 5 14 12 6 19"></polyline>
-        </svg>
-    {% else %}
-    <div class=""><a class="flex flex-row gap-2 pl-[28px]" href="{% url "payments_mollie:ideal" method.id payable.eid %}">
-    {% endif %}
-    <img src="{{ method.image.svg }}" /><span>{{ method.description }}</span>
-    {% if method.issuers %}
-      </summary>
-    {% else %}
-    </a></div>
-    {% endif %}
-    {% if method.issuers %}
-    <div class="flex flex-col pl-[28px]">
-      {% if method.id == 'ideal' %}<p>Selecteer je bank:</p>
-      {% else %}<p>Maak een keuze:</p>
-      {% endif %}
-      {% for issuer in method.issuers %}
-      <a href="{% url "payments_mollie:ideal" issuer.id payable.eid %}"><div class="flex flex-row gap-2 py-2">
-        <img src="{{ issuer.image.svg }}" /><span>{{ issuer.name }}</span>
-      </div></a>
-      {% endfor %}
-      <hr class="pb-4 -ml-[28px]" />
-    </details>
-    {% endif %}
+{% extends "base.html" %}{% load static %}{% block body %}
+
+<div class="flex justify-center h-screen place-items-center">
+  <div class="max-w-md m-4 flex flex-col flex-grow space-y-4">
+    <div class="border-primary border-solid border-2 rounded-xl p-6 space-y-4">
+      <p>Dit is een betaling voor:</p>
+      <div><p class="bg-gray-200 p-2">{{ order.description }}</p></div>
+      <p>Doe een betaling van €{{ euro_price }} via:</p>
+
+      <div class="flex flex-col gap-4 w-80">
+        {% for method in payment_methods %}
+        <div class="payment-method">
+          {% if method.issuers %}
+          <details class="[&_svg]:open:rotate-90 [&_summary]:open:pb-4 [&_hr]:open:visible">
+            <hr class="pb-4" />
+            <summary class="flex cursor-pointer list-none items-center gap-2">
+              <svg class="rotate-0 transform text-primary transition-all duration-300" fill="none" height="20" width="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="6 5 14 12 6 19"></polyline>
+              </svg>
+          {% else %}
+          <div class=""><a class="flex flex-row gap-2 pl-[28px]" href="{% url "payments_mollie:ideal" method.id order.eid %}">
+          {% endif %}
+          <img src="{{ method.image.svg }}" /><span>{{ method.description }}</span>
+          {% if method.issuers %}
+            </summary>
+          {% else %}
+          </a></div>
+          {% endif %}
+          {% if method.issuers %}
+          <div class="flex flex-col pl-[28px]">
+            {% if method.id == 'ideal' %}<p>Selecteer je bank:</p>
+            {% else %}<p>Maak een keuze:</p>
+            {% endif %}
+            {% for issuer in method.issuers %}
+            <a href="{% url "payments_mollie:ideal" issuer.id order.eid %}"><div class="flex flex-row gap-2 py-2">
+              <img src="{{ issuer.image.svg }}" /><span>{{ issuer.name }}</span>
+            </div></a>
+            {% endfor %}
+            <hr class="pb-4 -ml-[28px]" />
+          </details>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
-  {% endfor %}
 </div>
+
 <script>
   const methods = document.querySelectorAll('.payment-method');
   if (methods.length == 1) {
@@ -42,3 +55,4 @@
     }
   }
 </script>
+{% endblock %}

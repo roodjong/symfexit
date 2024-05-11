@@ -1,11 +1,12 @@
-from time import sleep
 import traceback
+from time import sleep
+
 from django.core.management import BaseCommand
 from django.core.management.base import CommandParser
 from django.db import transaction
 from django.utils import timezone
-from worker import logger
 
+from worker import logger
 from worker.models import Task
 from worker.registry import task_registry
 
@@ -38,7 +39,7 @@ class Command(BaseCommand):
                         self.stdout.write(f"Unknown task {task.name}, marking as error")
                         continue
                     try:
-                        task_registry.execute(task)
+                        task_registry.execute(task, task.args, task.kwargs)
                     except Exception as e:
                         task.status = Task.STATUS_EXCEPTION
                         logoutput = logger.get_output()

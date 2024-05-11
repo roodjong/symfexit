@@ -1,7 +1,7 @@
 from django import forms
 
-from payments.models import Payable
+from payments.models import Order
 
 
 class FakePayForm(forms.Form):
-    payment_status = forms.ChoiceField(choices=Payable.Status.choices)
+    payment_status = forms.ChoiceField(choices=Order.Status.choices)

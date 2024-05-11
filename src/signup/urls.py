@@ -1,6 +1,7 @@
 from django.urls import path
 
-from signup.views import MemberSignup, member_signup_pay, member_signup_pay_retry, return_view
+from signup.views import (MemberSignup, member_signup_pay,
+                          member_signup_pay_retry, return_view)
 
 app_name = "signup"
 

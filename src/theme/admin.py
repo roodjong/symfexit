@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from django.contrib import admin
 
-from constance.admin import ConstanceAdmin, Config
+from constance.admin import Config, ConstanceAdmin
+from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.template.response import TemplateResponse
 from django.urls import path
@@ -10,6 +10,7 @@ from django.views.generic import TemplateView
 
 from theme.models import TailwindKey
 from worker.registry import add_task
+
 
 class ConfigAdmin(ConstanceAdmin):
     change_list_template = 'admin/constance_theme/change_list.html'

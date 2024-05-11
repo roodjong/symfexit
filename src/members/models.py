@@ -56,7 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     member_identifier = models.TextField("Lidnummer", unique=True)
     first_name = models.TextField("Voornaam")
     last_name = models.TextField("Achternaam")
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     phone_number = models.TextField("Telefoonnummer")
     address = models.TextField("Adres")
     city = models.TextField("Plaats")
@@ -81,8 +81,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     class Meta:
-        verbose_name = "user"
-        verbose_name_plural = "users"
+        verbose_name = "Member"
+        constraints = [
+            models.UniqueConstraint(fields=["email"], name="members_user_unique_email_key"),
+        ]
 
     def clean(self):
         super().clean()

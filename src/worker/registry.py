@@ -1,3 +1,6 @@
+import pickle
+
+
 class TaskRegistry:
     def __init__(self):
         self._registry = {}
@@ -8,7 +11,7 @@ class TaskRegistry:
             return func
         return _register
 
-    def execute(self, task, *args, **kwargs):
+    def execute(self, task, args, kwargs):
         return self._registry[task.name](*args, **kwargs)
 
     def __contains__(self, key):
@@ -18,5 +21,5 @@ task_registry = TaskRegistry()
 
 def add_task(name, *args, **kwargs):
     from worker.models import Task
-    task = Task.objects.create(name=name)
+    task = Task.objects.create(name=name, args=pickle.dumps(args), kwargs=pickle.dumps(kwargs))
     return task
