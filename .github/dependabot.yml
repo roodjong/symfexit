@@ -1,0 +1,10 @@
+version: 2
+updates:
+- package-ecosystem: "npm"
+  directory: "src/theme/static_src"
+  schedule:
+    interval: "weekly"
+- package-ecosystem: "pip-compile"
+  directory: "/"
+  schedule:
+    interval: "weekly"
