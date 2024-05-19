@@ -89,6 +89,7 @@ python src/manage.py runserver
 ```
 
 The default port is 8000, so you will be able to visit the site at: http://localhost:8000
+The admin site is at: http://localhost:8000/admin
 
 ## Run worker
 
