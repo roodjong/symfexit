@@ -1,2 +1,4 @@
-# Laten we stoppen met dingen in php schrijven
+# symfexit
+
+Departure from our old symfony internal site
 
