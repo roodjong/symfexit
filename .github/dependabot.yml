@@ -4,7 +4,7 @@ updates:
   directory: "src/theme/static_src"
   schedule:
     interval: "weekly"
-- package-ecosystem: "pip-compile"
+- package-ecosystem: "pip"
   directory: "/"
   schedule:
     interval: "weekly"
