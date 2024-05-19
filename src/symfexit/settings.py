@@ -34,6 +34,7 @@ DJANGO_ENV = os.environ.get("DJANGO_ENV", "development")
 
 _environments = {"development", "production", "staging", "testing"}
 
+
 def setting(*, development, production, staging=_NOT_SET, testing=_NOT_SET):
     """Generate a setting depending on the DJANGO_ENV and the arguments.
 
@@ -99,14 +100,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DJANGO_ENV = os.getenv("DJANGO_ENV", "development")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = setting_from_env("SYMFEXIT_SECRET_KEY", development="django-insecure-7b_@jve6sxl8qz4yc+hc@$(+rr_xiq4y46f^-8y%)&v!%sao6+")
+SECRET_KEY = setting_from_env(
+    "SYMFEXIT_SECRET_KEY",
+    development="django-insecure-7b_@jve6sxl8qz4yc+hc@$(+rr_xiq4y46f^-8y%)&v!%sao6+",
+)
 
 MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = setting(development=True, production=False, testing=False)
 
-ALLOWED_HOSTS = setting(development=["*"], production=os.getenv("ALLOWED_HOSTS", "").split(","))
+ALLOWED_HOSTS = setting(
+    development=["*"], production=os.getenv("ALLOWED_HOSTS", "").split(",")
+)
 
 if DEBUG:
     CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
@@ -192,8 +198,8 @@ WSGI_APPLICATION = "symfexit.wsgi.application"
 
 # Configure using env variable DATABASE_URL
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://localhost/symfexit',
+    "default": dj_database_url.config(
+        default="postgres://localhost/symfexit",
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -288,6 +294,9 @@ CONSTANCE_CONFIG = {
     "LOGO_IMAGE": ("", "Org logo", "image_field"),
     "MAIN_SITE": ("https://roodjongeren.nl/", "Hoofdsite van de organisatie"),
     "HOMEPAGE_CURRENT": (0, "Huidige homepage (stel in op de home pages admin)"),
-    "PAYMENT_TIERS_JSON": ("{}", "JSON met betalingstiers (stel in op membership admin)"),
+    "PAYMENT_TIERS_JSON": (
+        "{}",
+        "JSON met betalingstiers (stel in op membership admin)",
+    ),
 }
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"

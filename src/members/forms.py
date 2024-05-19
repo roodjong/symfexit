@@ -55,6 +55,7 @@ class UserForm(forms.ModelForm):
         self.instance.first_name, self.instance.last_name = self.cleaned_data["name"]
         return super().save(commit)
 
+
 class PasswordChangeForm(forms.Form):
     required_css_class = "required"
     old_password = forms.CharField(

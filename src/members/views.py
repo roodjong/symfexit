@@ -73,6 +73,7 @@ class Logout(TemplateView):
         logout(request)
         return redirect("home:home")
 
+
 def payment_start(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

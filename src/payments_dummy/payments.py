@@ -8,6 +8,7 @@ from symfexit import settings
 
 DUMMY_NAME = "dummy"
 
+
 @payments_registry.register(name=DUMMY_NAME, priority=0)
 class DummyProcessor(PaymentProcessor):
     def initialize(self):

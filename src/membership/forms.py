@@ -33,6 +33,8 @@ class PaymentTier(forms.Form):
         if "cents_per_period" not in initial:
             initial["cents_per_period"] = 0
         else:
-            initial["cents_per_period"] = (Decimal(initial["cents_per_period"]) / 100).quantize(Decimal(10) ** -2)
+            initial["cents_per_period"] = (
+                Decimal(initial["cents_per_period"]) / 100
+            ).quantize(Decimal(10) ** -2)
         super().__init__(*args, **kwargs)
         self.fields["cents_per_period"].widget.attrs.update({"step": "0.01"})

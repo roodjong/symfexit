@@ -1,4 +1,3 @@
-
 from django.urls import path
 
 from payments_dummy.views import initiate_dummy

@@ -7,8 +7,11 @@ from django.contrib.admin.utils import unquote
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.admin import sensitive_post_parameters_m
-from django.contrib.auth.forms import (AdminPasswordChangeForm, UserChangeForm,
-                                       UserCreationForm)
+from django.contrib.auth.forms import (
+    AdminPasswordChangeForm,
+    UserChangeForm,
+    UserCreationForm,
+)
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
@@ -249,7 +252,9 @@ class LocalGroupForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["contactpeople"].initial = User.objects.filter(contactperson__for_group=self.instance)
+        self.fields["contactpeople"].initial = User.objects.filter(
+            contactperson__for_group=self.instance
+        )
 
     def save(self, commit):
         self.instance.save()
@@ -266,5 +271,6 @@ class LocalGroupForm(forms.ModelForm):
 @admin.register(LocalGroup)
 class LocalGroupAdmin(admin.ModelAdmin):
     form = LocalGroupForm
+
 
 admin.site.unregister(Group)

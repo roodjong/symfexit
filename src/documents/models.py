@@ -19,7 +19,7 @@ class FileNode(models.Model):
 
     def save(self, *args, **kwargs):
         if isinstance(self.parent, File):
-            return # Files cannot be parents
+            return  # Files cannot be parents
         if self.parent == self:
             return
         super().save(*args, **kwargs)

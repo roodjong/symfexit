@@ -4,6 +4,7 @@ from django.db.models import Q
 
 User = get_user_model()
 
+
 class IdOrEmailAuth(BaseBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
@@ -11,8 +12,8 @@ class IdOrEmailAuth(BaseBackend):
         if username is None or password is None:
             return
         try:
-           # Try to fetch the user by searching the username or email field
-            user = User.objects.get(Q(member_number=username)|Q(email=username))
+            # Try to fetch the user by searching the username or email field
+            user = User.objects.get(Q(member_number=username) | Q(email=username))
             if user.check_password(password):
                 return user
         except User.DoesNotExist:

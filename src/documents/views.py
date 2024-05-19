@@ -20,6 +20,7 @@ class Documents(LoginRequiredMixin, TemplateView):
         context["breadcrumbs"] = build_breadcrumbs(context["parent"])
         return context
 
+
 def file(request, slug):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
@@ -40,6 +41,7 @@ def file(request, slug):
     response["Content-Disposition"] = f"attachment; filename={file.name}"
     return response
 
+
 @xframe_options_exempt
 def file_pdf(request, slug):
     if request.method != "GET":
@@ -48,8 +50,9 @@ def file_pdf(request, slug):
     if file.content_type != "application/pdf":
         return HttpResponseNotAllowed(["GET"])
     response = HttpResponse(file.content, content_type=file.content_type)
-    response['X-Frame-Options'] = "SAMEORIGIN"
+    response["X-Frame-Options"] = "SAMEORIGIN"
     return response
+
 
 def file_download(request, slug):
     if request.method != "GET":
@@ -59,12 +62,14 @@ def file_download(request, slug):
     response["Content-Disposition"] = f"attachment; filename={file.name}"
     return response
 
+
 def build_breadcrumbs(node):
     breadcrumbs = []
     while node:
         breadcrumbs.append(node)
         node = node.parent
     return reversed(breadcrumbs)
+
 
 def is_image(content_type):
     return content_type.startswith("image/")

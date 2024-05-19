@@ -6,18 +6,18 @@ from django.http.request import HttpRequest
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from signup.models import (ApplicationPayment, DuplicateEmailError,
-                           MembershipApplication)
+from signup.models import ApplicationPayment, DuplicateEmailError, MembershipApplication
 
 
 class ApplicationPaymentForm(forms.ModelForm):
     class Meta:
         help_texts = {
-            'payment_url': 'Auto-generated payment URL. You can send this to the user so they can complete their payment.',
+            "payment_url": "Auto-generated payment URL. You can send this to the user so they can complete their payment.",
         }
 
         model = ApplicationPayment
         exclude = ()
+
 
 @admin.register(ApplicationPayment)
 class ApplicationPaymentAdmin(admin.ModelAdmin):
@@ -41,12 +41,15 @@ class ApplicationPaymentAdmin(admin.ModelAdmin):
     # don't show the add button
     def has_add_permission(self, request):
         return False
+
     # don't show the delete button
     def has_delete_permission(self, request, obj=None):
         return False
+
     # don't show the change button
     def has_change_permission(self, request, obj=None):
         return False
+
 
 @admin.register(MembershipApplication)
 class MembershipApplicationAdmin(admin.ModelAdmin):
@@ -68,7 +71,13 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
         "status",
         "user",
     )
-    readonly_fields = ("created_at", "payment_amount", "_order", "_subscription", "user")
+    readonly_fields = (
+        "created_at",
+        "payment_amount",
+        "_order",
+        "_subscription",
+        "user",
+    )
 
     def has_add_permission(self, request):
         return False
@@ -86,6 +95,9 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
                 obj.user = obj.create_user()
             except DuplicateEmailError:
                 messages.set_level(request, messages.ERROR)
-                messages.error(request, "User with this email already exists. You can manually change the email address if you know this is really a new member.")
+                messages.error(
+                    request,
+                    "User with this email already exists. You can manually change the email address if you know this is really a new member.",
+                )
                 return
         return super().save_model(request, obj, form, change)

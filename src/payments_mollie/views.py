@@ -1,8 +1,12 @@
 import json
 
 from django.db import transaction
-from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
-                         HttpResponseRedirect)
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+)
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -41,9 +45,7 @@ def initiate_ideal(request, issuer_id, order_id):
             ),
         }
     )
-    MolliePayment.objects.create(
-        order=order, payment_id=payment["id"], body=payment
-    )
+    MolliePayment.objects.create(order=order, payment_id=payment["id"], body=payment)
     checkout_url = payment["_links"]["checkout"]["href"]
     return HttpResponseRedirect(checkout_url)
 

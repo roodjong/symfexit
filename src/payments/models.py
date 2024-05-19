@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import DateTimeRangeField
@@ -11,6 +10,7 @@ from hashids import Hashids
 hashids = Hashids(min_length=8, salt=settings.SECRET_KEY)
 
 User = get_user_model()
+
 
 class BillingAddress(models.Model):
     class Meta:
@@ -26,7 +26,10 @@ class BillingAddress(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "[{}] {}: {}\n{}\n{}".format(self.id, self.name, self.address, self.postal_code, self.city)
+        return "[{}] {}: {}\n{}\n{}".format(
+            self.id, self.name, self.address, self.postal_code, self.city
+        )
+
 
 class Order(models.Model):
     class Status(models.TextChoices):
@@ -36,21 +39,28 @@ class Order(models.Model):
         FAILED = "failed", _("Failed")
         CANCELLED = "cancelled", _("Cancelled")
         EXPIRED = "expired", _("Expired")
+
     id = models.AutoField(primary_key=True)
-    price = models.IntegerField() # in cents
+    price = models.IntegerField()  # in cents
     description = models.TextField()
     address = models.ForeignKey("BillingAddress", on_delete=models.PROTECT)
-    payment_status = models.CharField(max_length=10, choices=Status.choices, default=Status.INITIAL)
+    payment_status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.INITIAL
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     done_at = models.DateTimeField(null=True)
     payment_method = models.CharField(max_length=100, null=True)
 
     return_url = models.URLField(null=True)
 
-    subscription = models.ForeignKey("Subscription", on_delete=models.RESTRICT, null=True)
+    subscription = models.ForeignKey(
+        "Subscription", on_delete=models.RESTRICT, null=True
+    )
 
     def __str__(self):
-        return "{} voor {:.02f} ({})".format(self.description, self.price / 100, Order.Status(self.payment_status).label)
+        return "{} voor {:.02f} ({})".format(
+            self.description, self.price / 100, Order.Status(self.payment_status).label
+        )
 
     @property
     def eid(self):
@@ -66,9 +76,11 @@ class Order(models.Model):
             self.done_at = timezone.now()
         return super().save(*args, **kwargs)
 
+
 class SubscriptionManager(models.Manager):
     def current(self):
         return self.get_queryset().filter(active_from_to__contains=timezone.now())
+
 
 class Subscription(models.Model):
     class PeriodUnit(models.TextChoices):
@@ -76,12 +88,13 @@ class Subscription(models.Model):
         WEEK = "week", _("Week")
         MONTH = "month", _("Month")
         YEAR = "year", _("Year")
+
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     address = models.ForeignKey("BillingAddress", on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
     active_from_to = DateTimeRangeField(null=False)
-    price_per_period = models.IntegerField() # in cents
+    price_per_period = models.IntegerField()  # in cents
     period_quantity = models.IntegerField()
     period_unit = models.CharField(max_length=5, choices=PeriodUnit.choices)
 

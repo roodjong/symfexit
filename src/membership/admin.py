@@ -20,7 +20,10 @@ def save_new_tiers(tiers):
     tiers = list(filter(lambda x: x != {}, tiers))
     tiers = list(filter(lambda x: not x.get("DELETE", False), tiers))
     tiers = [
-        {"help_text": x["help_text"], "cents_per_period": int(x["cents_per_period"] * 100)}
+        {
+            "help_text": x["help_text"],
+            "cents_per_period": int(x["cents_per_period"] * 100),
+        }
         for x in tiers
     ]
     config.PAYMENT_TIERS_JSON = json.dumps(list(tiers))
@@ -60,8 +63,8 @@ class PaymentTiersAdmin(admin.ModelAdmin):
         if request.method == "POST" and request.user.has_perm(
             "membership.change_config"
         ):
-            payment_tier_info = PaymentTierInfo(request.POST, prefix='info')
-            form = PaymentTierFormSet(request.POST,  initial=initial, prefix='tiers')
+            payment_tier_info = PaymentTierInfo(request.POST, prefix="info")
+            form = PaymentTierFormSet(request.POST, initial=initial, prefix="tiers")
             if form.is_valid():
                 print(form.cleaned_data)
                 save_new_tiers(form.cleaned_data)
@@ -78,8 +81,8 @@ class PaymentTiersAdmin(admin.ModelAdmin):
                     _("Failed to update live settings."),
                 )
         else:
-            payment_tier_info = PaymentTierInfo(initial={}, prefix='info')
-            form = PaymentTierFormSet(initial=initial, prefix='tiers')
+            payment_tier_info = PaymentTierInfo(initial={}, prefix="info")
+            form = PaymentTierFormSet(initial=initial, prefix="tiers")
 
         context = dict(
             self.admin_site.each_context(request),

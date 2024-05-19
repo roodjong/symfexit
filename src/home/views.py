@@ -9,6 +9,7 @@ from home.models import HomePage
 
 # Create your views here.
 
+
 class Home(LoginRequiredMixin, TemplateView):
     template_name = "home/home.html"
 

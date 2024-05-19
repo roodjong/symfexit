@@ -14,6 +14,10 @@ class Command(BaseCommand):
         except TailwindKey.DoesNotExist:
             primary_value = "#C2000B"
 
-        self.stdout.write(json.dumps({
-            "primary": primary_value,
-        }))
+        self.stdout.write(
+            json.dumps(
+                {
+                    "primary": primary_value,
+                }
+            )
+        )

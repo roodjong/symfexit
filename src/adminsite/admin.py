@@ -44,6 +44,7 @@ class MyAdminSite(admin.AdminSite):
         ]
         return urls
 
+
 admin_site = MyAdminSite(name="symfexit_admin")
 
 

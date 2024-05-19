@@ -16,7 +16,7 @@ class PayableAdmin(admin.ModelAdmin):
         return False
 
     # don't show the delete button
-    def has_delete_permission(self, request, obj: Order=None):
+    def has_delete_permission(self, request, obj: Order = None):
         if obj is None:
             return False
         return obj.payment_status == Order.Status.EXPIRED

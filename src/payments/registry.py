@@ -16,12 +16,19 @@ class PaymentsRegistry:
     def register(self, *, name, priority=0):
         def _register(cls):
             if not issubclass(cls, PaymentProcessor):
-                raise ValueError("Registered class must be a subclass of PaymentProcessor")
+                raise ValueError(
+                    "Registered class must be a subclass of PaymentProcessor"
+                )
             instance = cls()
-            bisect.insort_right(self._registry, (priority, instance), key=lambda x: x[0])
+            bisect.insort_right(
+                self._registry, (priority, instance), key=lambda x: x[0]
+            )
             self._names[name] = instance
-            logging.info(f"Registered payment processor {name} with priority {priority}")
+            logging.info(
+                f"Registered payment processor {name} with priority {priority}"
+            )
             return cls
+
         return _register
 
     def get(self, name):
@@ -34,7 +41,9 @@ class PaymentsRegistry:
                     logging.info(f"Using payment processor {processor}")
                     return processor
             except Exception as e:
-                logging.error(f"Error checking availability of processor {processor}: {e}")
+                logging.error(
+                    f"Error checking availability of processor {processor}: {e}"
+                )
                 pass
         raise RuntimeError("No available payment processor found")
 
@@ -44,6 +53,7 @@ class PaymentsRegistry:
 
     def __iter__(self):
         return (processor for _, processor in reversed(self._registry))
+
 
 payments_registry = PaymentsRegistry()
 

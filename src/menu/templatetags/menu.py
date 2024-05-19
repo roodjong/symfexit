@@ -17,10 +17,11 @@ def generate_menu():
 
 @register.inclusion_tag("menu.html", takes_context=True)
 def render_main_menu(context):
-    request = context['request']
+    request = context["request"]
     return {"menu": generate_menu(), "current_view": request.resolver_match.view_name}
+
 
 @register.inclusion_tag("menu_lg.html", takes_context=True)
 def render_main_menu_lg(context):
-    request = context['request']
+    request = context["request"]
     return {"menu": generate_menu(), "current_view": request.resolver_match.view_name}
