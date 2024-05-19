@@ -18,7 +18,7 @@ dependencies = [
     "pillow ~= 10.0",
     "django-tinymce ~= 4.0",
     "mollie-api-python ~= 3.6",
-    "psycopg2 ~= 2.9",
+    "psycopg ~= 3.1.8",
     "dj-database-url ~= 2.1",
     "hashids ~= 1.3",
 ]
