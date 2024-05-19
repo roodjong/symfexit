@@ -9,8 +9,17 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 const child_process = require('child_process')
 const python_exe = process.env.PYTHON_EXE ?? 'python3'
 const manage_py = process.env.MANAGE_PY ?? '../../manage.py'
-const django_out = child_process.execSync(`${python_exe} ${manage_py} exporttheme`, {encoding: 'utf8'})
-const django_theme_config = JSON.parse(django_out)
+let django_theme_config = {}
+try {
+  const django_out = child_process.execSync(`${python_exe} ${manage_py} exporttheme`, {encoding: 'utf8'})
+  django_theme_config = JSON.parse(django_out)
+} catch (error) {
+  console.error('Error while reading Django theme config:', error)
+  if (process.env.CI) {
+    console.error('CI environment detected, exiting...')
+    process.exit(1)
+  }
+}
 
 module.exports = {
   content: [

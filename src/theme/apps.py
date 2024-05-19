@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.conf import settings
 
 
 class ThemeConfig(AppConfig):
@@ -8,6 +9,9 @@ class ThemeConfig(AppConfig):
         from django.urls import path
 
         from theme.admin import RebuildTheme
+
+        if not settings.THEMING_ENABLED:
+            return []
 
         rebuild_theme = RebuildTheme.as_view(admin_site=admin_site)
         return [

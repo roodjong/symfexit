@@ -1,8 +1,6 @@
-from dataclasses import dataclass
-
 from constance.admin import Config, ConstanceAdmin
+from django.conf import settings
 from django.contrib import admin
-from django.contrib.admin.sites import AdminSite
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.urls.resolvers import URLPattern
@@ -25,7 +23,6 @@ admin.site.unregister([Config])
 admin.site.register([Config], ConfigAdmin)
 
 
-@admin.register(TailwindKey)
 class TailwindAdmin(admin.ModelAdmin):
     change_list_template = "admin/tailwind_keys/change_list.html"
     exclude = ("id",)
@@ -38,6 +35,8 @@ class TailwindAdmin(admin.ModelAdmin):
     def rebuild(self, request):
         return TemplateResponse(request, "admin/rebuild_theme.html", {})
 
+if settings.THEMING_ENABLED:
+    admin.site.register([TailwindKey], TailwindAdmin)
 
 class RebuildTheme(TemplateView):
     template_name = "admin/rebuild_theme/index.html"
