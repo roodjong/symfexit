@@ -1,4 +1,6 @@
 import json
+
+from constance import config
 from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
@@ -7,13 +9,11 @@ from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from membership.forms import PaymentTier, PaymentTierInfo
 from membership.models import Membership
 from payments.models import Order
-from django.utils.translation import gettext_lazy as _
-
-from constance import config
 
 
 def save_new_tiers(tiers):

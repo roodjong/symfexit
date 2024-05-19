@@ -1,6 +1,7 @@
 from django.urls import path
 
-from payments_mollie.views import initiate_ideal, mollie_cancel, mollie_return, mollie_webhook
+from payments_mollie.views import (initiate_ideal, mollie_cancel,
+                                   mollie_return, mollie_webhook)
 
 app_name = "payments_mollie"
 

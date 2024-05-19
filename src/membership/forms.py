@@ -1,5 +1,7 @@
 from decimal import Decimal
+
 from django import forms
+
 
 class PaymentTierInfo(forms.Form):
     pay_anything_enabled = forms.BooleanField()

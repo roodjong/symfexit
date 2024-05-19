@@ -11,7 +11,6 @@ from hashids import Hashids
 from membership.models import Membership
 from payments.models import BillingAddress, Order
 
-
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)
 
 User = get_user_model()

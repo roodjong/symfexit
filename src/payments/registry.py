@@ -1,8 +1,7 @@
 import abc
 import bisect
-from typing import List, Tuple
-
 import logging
+from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
 

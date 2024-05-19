@@ -3,12 +3,8 @@ from base64 import urlsafe_b64decode, urlsafe_b64encode
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import (
-    Http404,
-    HttpResponseNotAllowed,
-    HttpResponseNotFound,
-    HttpResponseRedirect,
-)
+from django.http import (Http404, HttpResponseNotAllowed, HttpResponseNotFound,
+                         HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import FormView
