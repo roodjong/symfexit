@@ -107,7 +107,11 @@ MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 DEBUG = setting(development=True, production=False, testing=False)
 
 ALLOWED_HOSTS = setting(development=["*"], production=os.getenv("ALLOWED_HOSTS", "").split(","))
-CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
+
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
+else:
+    CSRF_TRUSTED_ORIGINS = []
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -186,6 +190,7 @@ WSGI_APPLICATION = "symfexit.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# Configure using env variable DATABASE_URL
 DATABASES = {
     'default': dj_database_url.config(
         default='postgres://localhost/symfexit',
@@ -283,5 +288,6 @@ CONSTANCE_CONFIG = {
     "LOGO_IMAGE": ("", "Org logo", "image_field"),
     "MAIN_SITE": ("https://roodjongeren.nl/", "Hoofdsite van de organisatie"),
     "HOMEPAGE_CURRENT": (0, "Huidige homepage (stel in op de home pages admin)"),
+    "PAYMENT_TIERS_JSON": ("{}", "JSON met betalingstiers (stel in op membership admin)"),
 }
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"

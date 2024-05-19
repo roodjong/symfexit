@@ -240,7 +240,7 @@ class UserAdmin(admin.ModelAdmin):
 class LocalGroupForm(forms.ModelForm):
     contactpeople = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
-        widget=FilteredSelectMultiple(verbose_name="Contact people", is_stacked=False),
+        widget=FilteredSelectMultiple(verbose_name="contact people", is_stacked=False),
     )
 
     class Meta:

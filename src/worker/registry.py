@@ -12,6 +12,8 @@ class TaskRegistry:
         return _register
 
     def execute(self, task, args, kwargs):
+        args = pickle.loads(task.args)
+        kwargs = pickle.loads(task.kwargs)
         return self._registry[task.name](*args, **kwargs)
 
     def __contains__(self, key):

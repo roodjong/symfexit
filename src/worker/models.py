@@ -11,8 +11,8 @@ class Task(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
-    args = models.TextField(blank=True, null=True)
-    kwargs = models.TextField(blank=True, null=True)
+    args = models.BinaryField(blank=True, null=True)
+    kwargs = models.BinaryField(blank=True, null=True)
     output = models.TextField(blank=True, null=True)
     status = models.CharField(
         max_length=20,

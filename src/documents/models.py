@@ -56,7 +56,7 @@ class File(FileNode):
 
 class Directory(FileNode):
     class Meta:
-        verbose_name_plural = "Directories"
+        verbose_name_plural = "directories"
 
     def __str__(self) -> str:
         return "Directory: " + self.name

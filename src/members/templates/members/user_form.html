@@ -5,7 +5,7 @@
     <form method="post">
       {% csrf_token %} {{ user_form.as_p }}
       <input
-        class="bg-primary text-white p-3"
+        class="bg-primary text-white p-3 cursor-pointer"
         name="{{ user_form.prefix }}"
         type="submit"
         value="Opslaan"
@@ -15,7 +15,7 @@
     <form method="post">
       {% csrf_token %} {{ password_form.as_p }}
       <input
-        class="bg-primary text-white p-3"
+        class="bg-primary text-white p-3 cursor-pointer"
         name="{{ password_form.prefix }}"
         type="submit"
         value="Wachtwoord wijzigen"
@@ -32,6 +32,18 @@
       <p class="text-lg">€{{ subscription.amount }}</p>
     </div>
     {% endfor %}
+    {% if current_membership is None %}
+      <p class="pb-2">Setup your membership payments now</p>
+      <form method="post" action="{% url 'members:payment-start' %}">
+        {% csrf_token %}
+        <input
+          class="bg-primary text-white p-3 cursor-pointer"
+          type="submit"
+          value="Start subscription"
+        />
+      </form>
+    {% endif %}
+
   </div>
 </div>
 {% endblock main %}

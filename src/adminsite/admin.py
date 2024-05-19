@@ -44,10 +44,6 @@ class MyAdminSite(admin.AdminSite):
         ]
         return urls
 
-    def rebuild_theme(self, request):
-        return TemplateResponse(request, "admin/rebuild_theme/change_list.html", {})
-
-
 admin_site = MyAdminSite(name="symfexit_admin")
 
 

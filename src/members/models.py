@@ -81,7 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     class Meta:
-        verbose_name = "Member"
+        verbose_name = "member"
         constraints = [
             models.UniqueConstraint(fields=["email"], name="members_user_unique_email_key"),
         ]

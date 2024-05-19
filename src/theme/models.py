@@ -6,7 +6,7 @@ class TailwindKey(models.Model):
         ('primary', 'Primary Color'),
         ('secondary', 'Secondary Color'),
     ]
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=20, choices=COLOR_KEY_CHOICES)
     value = models.TextField()
 

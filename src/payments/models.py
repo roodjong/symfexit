@@ -14,8 +14,8 @@ User = get_user_model()
 
 class BillingAddress(models.Model):
     class Meta:
-        verbose_name = _("Billing address")
-        verbose_name_plural = _("Billing addresses")
+        verbose_name = _("billing address")
+        verbose_name_plural = _("billing addresses")
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -26,7 +26,7 @@ class BillingAddress(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "{}: {}\n{}\n{}".format(self.name, self.address, self.postal_code, self.city)
+        return "[{}] {}: {}\n{}\n{}".format(self.id, self.name, self.address, self.postal_code, self.city)
 
 class Order(models.Model):
     class Status(models.TextChoices):
@@ -91,6 +91,7 @@ class Subscription(models.Model):
     def eid(self):
         return hashids.encode(self.id)
 
+    @property
     def is_current(self):
         return self.active_from_to.lower <= timezone.now() < self.active_from_to.upper
 

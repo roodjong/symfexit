@@ -19,7 +19,7 @@ User = get_user_model()
 
 class ApplicationPayment(Order):
     class Meta:
-        verbose_name = __("Application payment")
+        verbose_name = __("application payment")
 
     @property
     def payment_url(self):
@@ -35,7 +35,7 @@ class DuplicateEmailError(Exception):
 
 class MembershipApplication(models.Model):
     class Meta:
-        verbose_name = __("Membership application")
+        verbose_name = __("membership application")
 
     class Status(models.TextChoices):
         CREATED = "created", "Created"
@@ -64,13 +64,13 @@ class MembershipApplication(models.Model):
         ApplicationPayment,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name="Payment order",
+        verbose_name="payment order",
     )
     _subscription = models.ForeignKey(
         Membership,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name="Associated subscription",
+        verbose_name="associated subscription",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

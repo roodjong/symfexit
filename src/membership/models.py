@@ -1,12 +1,16 @@
 from django.conf import settings
-from django.utils import formats
+from django.utils import formats, timezone
 
 from payments.models import Subscription
 
 
 class Membership(Subscription):
     class Meta:
-        verbose_name = "Membership"
+        verbose_name = "membership"
+
+    @classmethod
+    def current_for_user(cls, user):
+        return cls.objects.filter(user=user, active_from_to__contains=timezone.now()).first()
 
     def new_order(self, *, initial, return_url, description=None):
         from signup.models import ApplicationPayment

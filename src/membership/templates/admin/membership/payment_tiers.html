@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% load admin_list static i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'admin/css/changelists.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}" />
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+{% url 'admin:jsi18n' as jsi18nurl %}
+<script type="text/javascript" src="{{ jsi18nurl|default:'../../jsi18n/' }}"></script>
+{{ block.super }}
+{{ media.js }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+
+{% block content %}
+  <div id="content-main">
+      <form id="changelist-form" action="" method="post" >{% csrf_token %}
+          {{ info_form.as_div }}
+          {{ formset.management_form }}
+          {% for form in formset %}
+          <div class="form-row">
+            {{ form.as_div }}
+          </div>
+          {% endfor %}
+
+          <div class="submit-row">
+            <input type="submit" name="_save" class="default" value="{% trans 'Save' %}"/>
+          </div>
+      </form>
+  </div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; {{ opts.verbose_name_plural|capfirst }}
+</div>
+{% endblock %}

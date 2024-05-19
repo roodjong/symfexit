@@ -22,26 +22,25 @@ class Command(BaseCommand):
         self.stdout.write("Starting worker")
         last_sleep = 0
         while True:
-            tasks = (
-                Task.objects.select_for_update(skip_locked=True)
-                .filter(status=Task.STATUS_QUEUED)
-                .order_by("created_at")
-            )[: options["batch_size"]]
-            tasks_amount = len(tasks)
-
             with transaction.atomic():
+                tasks = (
+                    Task.objects.select_for_update(skip_locked=True)
+                    .filter(status=Task.Status.QUEUED)
+                    .order_by("created_at")
+                )[: options["batch_size"]]
+                tasks_amount = len(tasks)
                 for task in tasks:
                     logger.clear()
                     task.picked_up_at = timezone.now()
                     if task.name not in task_registry:
-                        task.status = Task.STATUS_ERROR_UNKNOWN_TASK
+                        task.status = Task.Status.ERROR_UNKNOWN_TASK
                         task.save()
                         self.stdout.write(f"Unknown task {task.name}, marking as error")
                         continue
                     try:
                         task_registry.execute(task, task.args, task.kwargs)
                     except Exception as e:
-                        task.status = Task.STATUS_EXCEPTION
+                        task.status = Task.Status.EXCEPTION
                         logoutput = logger.get_output()
                         task.output = f"{logoutput}\n\nTask failed with exception ({type(e)}): {traceback.format_exc()}"
                         self.stdout.write(f"Exception in task {task.name}: {e}")
@@ -49,7 +48,7 @@ class Command(BaseCommand):
                     else:
                         logoutput = logger.get_output()
                         task.output = logoutput
-                        task.status = Task.STATUS_COMPLETED
+                        task.status = Task.Status.COMPLETED
                         self.stdout.write(f"Completed task {task.name}")
                     finally:
                         task.completed_at = timezone.now()
