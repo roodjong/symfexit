@@ -14,13 +14,14 @@
 
       forSystem = system: f: f rec {
         inherit system;
+        linux-system = pkgs.lib.replaceStrings [ "darwin" ] [ "linux" ] system;
         pkgs = import nixpkgs { inherit system; overlays = [ ]; };
         lib = pkgs.lib;
       };
     in
     {
 
-      packages = forAllSystems ({ system, pkgs, ... }: rec {
+      packages = forAllSystems ({ system, linux-system, pkgs, ... }: rec {
         symfexit-package = dream2nix.lib.evalModules {
           packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
           modules = [
@@ -43,7 +44,7 @@
         symfexit-docker = pkgs.dockerTools.streamLayeredImage {
           name = "symfexit";
           config = {
-            Entrypoint = [ "${self.packages.aarch64-linux.symfexit-python}/bin/uvicorn" "symfexit.asgi:application" ];
+            Entrypoint = [ "${self.packages.${linux-system}.symfexit-python}/bin/uvicorn" "symfexit.asgi:application" ];
             ExposedPorts = { "8000/tcp" = { }; };
           };
         };
