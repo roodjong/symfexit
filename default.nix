@@ -11,6 +11,7 @@ in {
 
   deps = { nixpkgs, ... }: {
     python = nixpkgs.python312;
+    psycopg-c = nixpkgs.python312Packages.psycopg.c;
   };
 
   mkDerivation = {
@@ -40,5 +41,6 @@ in {
     requirementsFiles = [ "./requirements.txt" ];
     flattenDependencies = true;
     overrides.django.buildPythonPackage.makeWrapperArgs = [ "--set-default" "DJANGO_SETTINGS_MODULE" "symfexit.settings" ];
+    overrides.psycopg.mkDerivation.propagatedBuildInputs = [ config.deps.psycopg-c ];
   };
 }

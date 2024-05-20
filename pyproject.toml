@@ -12,7 +12,6 @@ classifiers = [
 dependencies = [
     "django ~= 5.0",
     "django-tailwind ~= 3.4",
-    "django-browser-reload ~= 1.6",
     "django-constance ~= 3.1",
     "fontawesomefree ~= 6.2",
     "pillow ~= 10.0",
@@ -25,13 +24,14 @@ dependencies = [
 requires-python = ">= 3.10"
 
 optional-dependencies.dev = [
+    "django-browser-reload ~= 1.6",
     "black",
     "isort",
     "pip-tools",
 ]
 
 [tool.setuptools]
-include-package-data = false
+include-package-data = true
 
 [tool.setuptools.packages.find]
 namespaces = false

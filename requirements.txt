@@ -7,9 +7,7 @@
 asgiref==3.8.1 \
     --hash=sha256:3e1e3ecc849832fe52ccf2cb6686b7a55f82bb1d6aee72a58826471390335e47 \
     --hash=sha256:c343bd80a0bec947a9860adb4c432ffa7db769836c64238fc34bdc3fec84d590
-    # via
-    #   django
-    #   django-browser-reload
+    # via django
 certifi==2024.2.2 \
     --hash=sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f \
     --hash=sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d55f652c6ca24a754d1cdd1
@@ -115,15 +113,10 @@ django==5.0.6 \
     --hash=sha256:ff1b61005004e476e0aeea47c7f79b85864c70124030e95146315396f1e7951f
     # via
     #   dj-database-url
-    #   django-browser-reload
     #   django-picklefield
     #   django-tailwind
     #   django-tinymce
     #   symfexit (pyproject.toml)
-django-browser-reload==1.12.1 \
-    --hash=sha256:08b457f1b6599bf782d4d2ecdfb0897d6fc936ac4035060d0269c2af5ef4ef7a \
-    --hash=sha256:875b6bd01db13380522ccb4ae75871a2edeae74bb5ac92bf32eb76763d575d86
-    # via symfexit (pyproject.toml)
 django-constance==3.1.0 \
     --hash=sha256:2b96e51de63751ef63f8f92f74e0f6aea30fb6453f3a736c21e1f8b3f6cf0b4f \
     --hash=sha256:6242486a346e396d765a9333d17f3101c8613cabc92e0b98dcb70c2a391bc53b

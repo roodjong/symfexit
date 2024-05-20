@@ -22,6 +22,13 @@ from adminsite.admin import admin_site
 from symfexit.settings import DOCS_ENABLED, HOME_ENABLED, SIGNUP_ENABLED
 from symfexit.utils import enable_if
 
+try:
+    import django_browser_reload
+
+    django_browser_reload_enabled = True
+except ImportError:
+    django_browser_reload_enabled = False
+
 urlpatterns = (
     [path("tinymce/", include("tinymce.urls"))]
     + enable_if(
@@ -53,7 +60,7 @@ urlpatterns = (
         path("accounts/", include("django.contrib.auth.urls")),
     ]
     + enable_if(
-        settings.DJANGO_ENV == "development",
+        django_browser_reload_enabled,
         lambda: [path("__reload__/", include("django_browser_reload.urls"))],
     )
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

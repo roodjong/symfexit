@@ -36,13 +36,6 @@
         "url": "https://files.pythonhosted.org/packages/1d/23/02f3795a71196019bcfec4c67890a6369e43b023474154fa0b2b7060346d/Django-5.0.6-py3-none-any.whl",
         "version": "5.0.6"
       },
-      "django-browser-reload": {
-        "is_direct": false,
-        "sha256": "08b457f1b6599bf782d4d2ecdfb0897d6fc936ac4035060d0269c2af5ef4ef7a",
-        "type": "url",
-        "url": "https://files.pythonhosted.org/packages/75/4b/a0169150ea27b11fd5745a778c6f5fb1465d2d04ff0f606c83f5e35709b7/django_browser_reload-1.12.1-py3-none-any.whl",
-        "version": "1.12.1"
-      },
       "django-constance": {
         "is_direct": false,
         "sha256": "6242486a346e396d765a9333d17f3101c8613cabc92e0b98dcb70c2a391bc53b",
@@ -175,10 +168,6 @@
         "django": [
           "asgiref",
           "sqlparse"
-        ],
-        "django-browser-reload": [
-          "asgiref",
-          "django"
         ],
         "django-constance": [
           "django-picklefield"

@@ -22,7 +22,7 @@
 
       packages = forAllSystems ({ system, pkgs, ... }: rec {
         symfexit-package = dream2nix.lib.evalModules {
-          packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
+          packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
           modules = [
             ./default.nix
             {
@@ -33,10 +33,20 @@
             }
           ];
         };
+        symfexit-staticfiles = pkgs.runCommand "symfexit-staticfiles" { } ''
+          STATIC_ROOT=$out ${symfexit-python}/bin/django-admin collectstatic --noinput
+        '';
         symfexit-python = symfexit-package.config.deps.python.withPackages (ps: with ps; [
           symfexit-package.config.package-func.result
           uvicorn
         ]);
+        symfexit-docker = pkgs.dockerTools.streamLayeredImage {
+          name = "symfexit";
+          config = {
+            Entrypoint = [ "${self.packages.aarch64-linux.symfexit-python}/bin/uvicorn" "symfexit.asgi:application" ];
+            ExposedPorts = { "8000/tcp" = { }; };
+          };
+        };
       });
 
     };
