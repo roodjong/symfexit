@@ -13,7 +13,11 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13.0-beta.1']
+        python-version:
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          # - '3.13.0-beta.1' # doesn't work yet
 
     steps:
     - uses: actions/checkout@v4
