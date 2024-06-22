@@ -104,7 +104,7 @@ def setting_from_env(
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-CONTENT_DIR = setting_from_env("CONTENT_DIR", production=None, development=BASE_DIR)
+CONTENT_DIR = Path(setting_from_env("CONTENT_DIR", development=BASE_DIR))
 
 DJANGO_ENV = os.getenv("DJANGO_ENV", "development")
 
@@ -258,7 +258,7 @@ USE_L10N = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = setting_from_env("STATIC_URL", production="static/", development="static/")
-STATIC_ROOT = setting_from_env("STATIC_ROOT", production=None)
+STATIC_ROOT = setting_from_env("STATIC_ROOT")
 
 MEDIA_URL = setting_from_env("MEDIA_URL", production="media/", development="media/")
 MEDIA_ROOT = setting_from_env("MEDIA_ROOT", production=CONTENT_DIR / "media", development=CONTENT_DIR / "media")
