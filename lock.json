@@ -17,9 +17,9 @@
       },
       "charset-normalizer": {
         "is_direct": false,
-        "sha256": "55086ee1064215781fff39a1af09518bc9255b50d6333f2e4c74ca09fac6a8f6",
+        "sha256": "90d558489962fd4918143277a773316e56c72da56ec7aa3dc3dbbe20fdfed15b",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/3a/52/9f9d17c3b54dc238de384c4cb5a2ef0e27985b42a0e5cc8e8a31d918d48d/charset_normalizer-3.3.2-cp312-cp312-macosx_11_0_arm64.whl",
+        "url": "https://files.pythonhosted.org/packages/ee/fb/14d30eb4956408ee3ae09ad34299131fb383c47df355ddb428a7331cfa1e/charset_normalizer-3.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
         "version": "3.3.2"
       },
       "dj-database-url": {
@@ -59,10 +59,10 @@
       },
       "django-tinymce": {
         "is_direct": false,
-        "sha256": "2b495dca8a6d36831ffd256e930e0919361468862eb7e5ff26f9631bc42061e0",
+        "sha256": "9804836e6d2b08de3b03a27c100f8c2e9633549913eff8b323678a10cd48b94e",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/dc/48/07b07c9c318e0b7f1f4207e393d0a5514b5914a4b893299dee0b8c95b272/django_tinymce-4.0.0-py3-none-any.whl",
-        "version": "4.0.0"
+        "url": "https://files.pythonhosted.org/packages/91/a6/467464d08495360689380906db8e67427c381545ce8af9ce633e0128b004/django_tinymce-4.1.0-py3-none-any.whl",
+        "version": "4.1.0"
       },
       "fontawesomefree": {
         "is_direct": false,
@@ -101,9 +101,9 @@
       },
       "pillow": {
         "is_direct": false,
-        "sha256": "50b8eae8f7334ec826d6eeffaeeb00e36b5e24aa0b9df322c247539714c6df19",
+        "sha256": "ff61bfd9253c3915e6d41c651d5f962da23eda633cf02262990094a18a55371a",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/5e/77/4cf407e7b033b4d8e5fcaac295b6e159cf1c70fa105d769f01ea2e1e5eca/pillow-10.3.0-cp312-cp312-macosx_11_0_arm64.whl",
+        "url": "https://files.pythonhosted.org/packages/c6/c1/3521ddb9c1f3ac106af3e4512a98c785b6ed8a39e0f778480b8a4d340165/pillow-10.3.0-cp312-cp312-manylinux_2_28_x86_64.whl",
         "version": "10.3.0"
       },
       "psycopg": {
