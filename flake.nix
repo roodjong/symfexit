@@ -48,6 +48,12 @@
             ExposedPorts = { "8000/tcp" = { }; };
           };
         };
+        relock-dependencies = pkgs.writeShellScriptBin "relock-dependencies" ''
+          reporoot=$(git rev-parse --show-toplevel)
+          cd $reporoot
+          ${pkgs.coreutils}/bin/date "+%Y-%m-%d" > ./pip-snapshot-date.txt
+          nix run .#symfexit-package.lock
+        '';
       });
 
     };

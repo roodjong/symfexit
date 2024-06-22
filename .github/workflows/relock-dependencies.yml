@@ -1,0 +1,32 @@
+name: update-flake-lock
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "flake.lock"
+      - "requirements.txt"
+  workflow_dispatch: # allows manual triggering
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Relock dependencies after requirements.txt change
+        run: |
+          nix run '.#relock-dependencies'
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
+          commit-message: "Update lock.json"
+          title: "Update lock.json"
+          body: "This PR updates the lock.json file."
+          branch: "update-lock-json-${{ github.run_id }}"
+          base: "main"
+          labels: "dependencies, automated"
+          draft: false
