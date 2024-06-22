@@ -104,6 +104,8 @@ def setting_from_env(
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+CONTENT_DIR = setting_from_env("CONTENT_DIR", production=None, development=BASE_DIR)
+
 DJANGO_ENV = os.getenv("DJANGO_ENV", "development")
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -194,6 +196,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "symfexit.context_processors.constance_vars",
+                "theme.context.current_theme",
             ],
             "string_if_invalid": ("😱 MISSING VARIABLE %s 😱" if DEBUG else ""),
         },
@@ -257,8 +260,11 @@ USE_L10N = True
 STATIC_URL = setting_from_env("STATIC_URL", production="static/", development="static/")
 STATIC_ROOT = setting_from_env("STATIC_ROOT", production=None)
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = setting_from_env("MEDIA_URL", production="media/", development="media/")
+MEDIA_ROOT = setting_from_env("MEDIA_ROOT", production=CONTENT_DIR / "media", development=CONTENT_DIR / "media")
+
+DYNAMIC_THEME_URL = setting_from_env("DYNAMIC_THEME_URL", production="theme/", development="static/css/dist/")
+DYNAMIC_THEME_ROOT = setting_from_env("DYNAMIC_THEME_ROOT", production=CONTENT_DIR / "theme", development=CONTENT_DIR / "theme" / "static" / "css" / "dist")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

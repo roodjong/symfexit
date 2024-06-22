@@ -35,7 +35,7 @@
           ];
         };
         symfexit-staticfiles = pkgs.runCommand "symfexit-staticfiles" { } ''
-          STATIC_ROOT=$out ${symfexit-python}/bin/django-admin collectstatic --noinput
+          DJANGO_ENV=production STATIC_ROOT=$out ${symfexit-python}/bin/django-admin collectstatic --noinput
         '';
         symfexit-python = symfexit-package.config.deps.python.withPackages (ps: with ps; [
           symfexit-package.config.package-func.result

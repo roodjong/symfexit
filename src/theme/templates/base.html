@@ -1,12 +1,12 @@
-{% load static tailwind_tags %}
+{% load static current_theme %}
 <!DOCTYPE html>
 <html lang="nl">
   <head>
     <title>{% block title %}{% endblock %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% tailwind_preload_css %}
-    {% tailwind_css %}
+    {% theme_css_file %}
+    {% preload_css_file %}
     <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">

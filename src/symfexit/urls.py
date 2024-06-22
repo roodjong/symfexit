@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import include, path, reverse
+from django.urls import include, path
 from django.views.generic import RedirectView
 
 from adminsite.admin import admin_site

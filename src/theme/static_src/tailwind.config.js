@@ -14,10 +14,8 @@ try {
   const django_out = child_process.execSync(`${python_exe} ${manage_py} exporttheme`, {encoding: 'utf8'})
   django_theme_config = JSON.parse(django_out)
 } catch (error) {
-  console.error('Error while reading Django theme config:', error)
-  if (process.env.CI) {
-    console.error('CI environment detected, exiting...')
-    process.exit(1)
+  if (!process.env.DJANGO_ENV === 'production') {
+    console.error('Error while reading Django theme config:', error)
   }
 }
 

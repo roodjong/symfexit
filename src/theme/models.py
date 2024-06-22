@@ -12,3 +12,13 @@ class TailwindKey(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}: {self.value}"
+
+class CurrentThemeVersion(models.Model):
+    id = models.AutoField(primary_key=True)
+    version = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        get_latest_by = "version"
+
+    def __str__(self) -> str:
+        return self.version
