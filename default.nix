@@ -37,7 +37,7 @@ in {
   version = "0.0.1";
 
   pip = {
-    pypiSnapshotDate = "2024-06-22";
+    pypiSnapshotDate = builtins.readFile ./pip-snapshot-date.txt;
     requirementsFiles = [ "./requirements.txt" ];
     flattenDependencies = true;
     overrides.django.buildPythonPackage.makeWrapperArgs = [ "--set-default" "DJANGO_SETTINGS_MODULE" "symfexit.settings" ];
