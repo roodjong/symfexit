@@ -129,9 +129,9 @@ django-tailwind==3.8.0 \
     --hash=sha256:31c2f4a7879d685c2de0feaf0b63f246200b37337bea4d7dbafb59bc3f10c008 \
     --hash=sha256:fa969c5b95d314b173fe2b2ed2cb2c03f2e2c94fdc2c01ff73a993fa159085da
     # via symfexit (pyproject.toml)
-django-tinymce==4.0.0 \
-    --hash=sha256:13a63c81c5bb3683d135f5b1ec4c7da68bc880cf5138ffb266b608914ba12236 \
-    --hash=sha256:2b495dca8a6d36831ffd256e930e0919361468862eb7e5ff26f9631bc42061e0
+django-tinymce==4.1.0 \
+    --hash=sha256:02e3b70e940fd299f0fbef4315aee5c185664e1eb8cd396b176963954e4357c9 \
+    --hash=sha256:9804836e6d2b08de3b03a27c100f8c2e9633549913eff8b323678a10cd48b94e
     # via symfexit (pyproject.toml)
 fontawesomefree==6.5.1 \
     --hash=sha256:8dec4a2ee37bf8e53379ebbf0d38cefec4e06c7c9227f59af39dbb7b1632817b
