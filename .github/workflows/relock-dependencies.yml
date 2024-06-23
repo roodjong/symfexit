@@ -32,6 +32,7 @@ jobs:
           labels: "dependencies, automated"
           draft: false
       - name: Enable Pull Request Automerge
+        if: steps.create.outputs.pull-request-number
         run: gh pr merge --merge --auto "${{ steps.create.outputs.pull-request-number }}"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
