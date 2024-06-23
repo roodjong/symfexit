@@ -20,6 +20,7 @@ jobs:
         run: |
           nix run '.#relock-dependencies'
       - name: Create Pull Request
+        id: create
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
@@ -30,3 +31,7 @@ jobs:
           base: "main"
           labels: "dependencies, automated"
           draft: false
+      - name: Enable Pull Request Automerge
+        run: gh pr merge --merge --auto "${{ steps.create.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}

@@ -53,6 +53,10 @@
           cd $reporoot
           ${pkgs.coreutils}/bin/date "+%Y-%m-%d" > ./pip-snapshot-date.txt
           nix run .#symfexit-package.lock
+          if [[ $(git diff --numstat | awk '/lock.json$/ { print ($1 == $2 && $1 == 1) }') -eq 1 ]]; then
+            # Only one line changed in lock.json, it's the invalidation hash which changed because of the date file
+            git restore lock.json pip-snapshot-date.txt
+          fi
         '';
       });
 
