@@ -11,15 +11,15 @@ classifiers = [
 ]
 dependencies = [
     "django ~= 5.0",
-    "django-tailwind ~= 3.4",
     "django-constance ~= 3.1",
-    "fontawesomefree ~= 6.2",
-    "pillow ~= 10.0",
+    "django-tailwind ~= 3.4",
     "django-tinymce ~= 4.0",
-    "mollie-api-python ~= 3.6",
-    "psycopg ~= 3.1.8",
     "dj-database-url ~= 2.1",
+    "fontawesomefree ~= 6.2",
     "hashids ~= 1.3",
+    "mollie-api-python ~= 3.6",
+    "pillow ~= 10.0",
+    "psycopg ~= 3.1.8",
 ]
 requires-python = ">= 3.10"
 
