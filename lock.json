@@ -10,10 +10,10 @@
       },
       "certifi": {
         "is_direct": false,
-        "sha256": "ddc6c8ce995e6987e7faf5e3f1b02b302836a0e5d98ece18392cb1a36c72ad56",
+        "sha256": "c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/5b/11/1e78951465b4a225519b8c3ad29769c49e0d8d157a070f681d5b6d64737f/certifi-2024.6.2-py3-none-any.whl",
-        "version": "2024.6.2"
+        "url": "https://files.pythonhosted.org/packages/1c/d5/c84e1a17bf61d4df64ca866a1c9a913874b4e9bdc131ec689a0ad013fb36/certifi-2024.7.4-py3-none-any.whl",
+        "version": "2024.7.4"
       },
       "charset-normalizer": {
         "is_direct": false,
@@ -129,10 +129,10 @@
       },
       "setuptools": {
         "is_direct": false,
-        "sha256": "d9b8b771455a97c8a9f3ab3448ebe0b29b5e105f1228bba41028be116985a267",
+        "sha256": "a58a8fde0541dab0419750bcc521fbdf8585f6e5cb41909df3a472ef7b81ca95",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/55/b3/b3a3415d2debd837106ed417f8681d8af63037fed367fa1b85dbfef081f1/setuptools-70.1.0-py3-none-any.whl",
-        "version": "70.1.0"
+        "url": "https://files.pythonhosted.org/packages/b3/7a/629889a5d76200287aa5483d753811bd247bbd1b03175186f759e0c7d3a7/setuptools-70.1.1-py3-none-any.whl",
+        "version": "70.1.1"
       },
       "sqlparse": {
         "is_direct": false,
