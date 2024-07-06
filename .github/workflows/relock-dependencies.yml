@@ -1,10 +1,10 @@
 name: update-lock-json
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - "flake.lock"
-      - "requirements.txt"
+  # push:
+  #   branches: [ "main" ]
+  #   paths:
+  #     - "flake.lock"
+  #     - "requirements.txt"
   workflow_dispatch: # allows manual triggering
 
 jobs:
