@@ -10,10 +10,10 @@
       },
       "certifi": {
         "is_direct": false,
-        "sha256": "ddc6c8ce995e6987e7faf5e3f1b02b302836a0e5d98ece18392cb1a36c72ad56",
+        "sha256": "c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/5b/11/1e78951465b4a225519b8c3ad29769c49e0d8d157a070f681d5b6d64737f/certifi-2024.6.2-py3-none-any.whl",
-        "version": "2024.6.2"
+        "url": "https://files.pythonhosted.org/packages/1c/d5/c84e1a17bf61d4df64ca866a1c9a913874b4e9bdc131ec689a0ad013fb36/certifi-2024.7.4-py3-none-any.whl",
+        "version": "2024.7.4"
       },
       "charset-normalizer": {
         "is_direct": false,
@@ -108,10 +108,10 @@
       },
       "psycopg": {
         "is_direct": false,
-        "sha256": "dca5e5521c859f6606686432ae1c94e8766d29cc91f2ee595378c510cc5b0731",
+        "sha256": "48a069cfe0ae852a331e1eb48e4da64a1a47723a6303559935801f0e0245ba22",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/f2/cf/172701ea48987548c681e011681dda1d2605131f723e89225477fe7802e9/psycopg-3.1.19-py3-none-any.whl",
-        "version": "3.1.19"
+        "url": "https://files.pythonhosted.org/packages/e4/72/d7f826af204e7d826e00c5fb28ce6fca7ee4b66f784ea8d9184c5fd0a9e4/psycopg-3.2.0-py3-none-any.whl",
+        "version": "3.2.0"
       },
       "requests": {
         "is_direct": false,
@@ -129,10 +129,10 @@
       },
       "setuptools": {
         "is_direct": false,
-        "sha256": "d9b8b771455a97c8a9f3ab3448ebe0b29b5e105f1228bba41028be116985a267",
+        "sha256": "a58a8fde0541dab0419750bcc521fbdf8585f6e5cb41909df3a472ef7b81ca95",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/55/b3/b3a3415d2debd837106ed417f8681d8af63037fed367fa1b85dbfef081f1/setuptools-70.1.0-py3-none-any.whl",
-        "version": "70.1.0"
+        "url": "https://files.pythonhosted.org/packages/b3/7a/629889a5d76200287aa5483d753811bd247bbd1b03175186f759e0c7d3a7/setuptools-70.1.1-py3-none-any.whl",
+        "version": "70.1.1"
       },
       "sqlparse": {
         "is_direct": false,
@@ -211,5 +211,5 @@
       }
     }
   },
-  "invalidationHash": "33146a767ede53b8147136911aaef46f26189fde422d380408c32d4ba079bdb4"
+  "invalidationHash": "7a430872462fd04b5351e0c59b8d97b6133ca1d7f85b3c34a7334adbe61fdc39"
 }
