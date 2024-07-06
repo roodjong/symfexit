@@ -16,6 +16,7 @@
         inherit system;
         linux-system = pkgs.lib.replaceStrings [ "darwin" ] [ "linux" ] system;
         pkgs = import nixpkgs { inherit system; overlays = [ ]; };
+        pkgs-linux = import nixpkgs { system = linux-system; overlays = [ ]; };
         lib = pkgs.lib;
       };
     in
@@ -25,9 +26,13 @@
           type = "app";
           program = "${self.packages.${system}.symfexit-docker}";
         };
+        symfexit-nginx = {
+          type = "app";
+          program = "${self.packages.${system}.symfexit-nginx}";
+        };
       });
 
-      packages = forAllSystems ({ system, linux-system, pkgs, ... }: rec {
+      packages = forAllSystems ({ system, linux-system, pkgs, pkgs-linux, ... }: rec {
         symfexit-package = dream2nix.lib.evalModules {
           packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
           modules = [
@@ -42,7 +47,7 @@
         };
         symfexit-staticfiles = pkgs.runCommand "symfexit-staticfiles" { } ''
           # dummy secret key to be able to generate static files in production mode
-          DJANGO_ENV=production SYMFEXIT_SECRET_KEY=dummy CONTENT_DIR=$(pwd) STATIC_ROOT=$out ${symfexit-python}/bin/django-admin collectstatic --noinput
+          DJANGO_ENV=production SYMFEXIT_SECRET_KEY=dummy CONTENT_DIR=$(pwd) STATIC_ROOT=$out/staticfiles ${symfexit-python}/bin/django-admin collectstatic --noinput
         '';
         symfexit-python = symfexit-package.config.deps.python.withPackages (ps: with ps; [
           symfexit-package.config.package-func.result
@@ -50,8 +55,41 @@
         ]);
         symfexit-docker = pkgs.dockerTools.streamLayeredImage {
           name = "symfexit";
+
+          contents = pkgs.buildEnv {
+            name = "symfexit-nginx";
+            paths = with pkgs-linux.dockerTools; [
+              self.packages.${linux-system}.symfexit-staticfiles
+              (fakeNss.override {
+                extraGroupLines = [
+                  "nogroup:x:65534:"
+                ];
+              })
+              binSh
+              pkgs-linux.coreutils
+            ];
+            pathsToLink = [ "/staticfiles" "/etc" "/bin" "/var" ];
+          };
+
           config = {
-            Entrypoint = [ "${self.packages.${linux-system}.symfexit-python}/bin/uvicorn" "symfexit.asgi:application" ];
+            Entrypoint = [
+              (pkgs-linux.writeShellScript "entrypoint.sh" ''
+                if [ "$1" = "nginx" ]; then
+                  mkdir -p {/tmp,/var/log/nginx}
+
+                  ln -s /dev/stderr /var/log/nginx/error.log
+                  ln -s /dev/stdout /var/log/nginx/access.log
+
+                  shift
+                  exec "${pkgs-linux.nginx}/bin/nginx" "-g" "daemon off;" "$@"
+                elif [ "$1" = "uvicorn" ]; then
+                  shift
+                  exec "${self.packages.${linux-system}.symfexit-python}/bin/uvicorn" "$@"
+                fi
+                exec "$@"
+              '')
+            ];
+            Cmd = [ "uvicorn" "symfexit.asgi:application" ];
             ExposedPorts = { "8000/tcp" = { }; };
           };
         };
