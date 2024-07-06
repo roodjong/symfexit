@@ -60,12 +60,32 @@
               ];
             };
           in
-          pkgs.runCommand "symfexit-base-theme" { } ''
-            mkdir -p $out/staticfiles/css/dist
-            cd ${deps-build.config.package-func.result}/lib/node_modules/symfexit-base-theme
-            export PATH=${pkgs.nodejs}/bin:$PATH
-            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ${./.}/src/theme/static_src/src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
-          '';
+          pkgs.stdenv.mkDerivation {
+            name = "symfexit-base-theme";
+            srcs = [deps-build.config.package-func.result ./.];
+            setSourceRoot = "sourceRoot=$(echo *-source)";
+            buildInputs = [ pkgs.nodejs ];
+            buildPhase = ''
+              mkdir -p $out/staticfiles/css/dist
+              cp -r ../*base-theme*/lib/node_modules/symfexit-base-theme/node_modules ./src/theme/static_src/node_modules
+
+              export PATH=${pkgs.nodejs}/bin:$PATH
+              cd ./src/theme/static_src
+              NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
+            '';
+            # buildCommand = ''
+            #   mkdir -p $out/staticfiles/css/dist
+
+            #   ls -al
+            #   pwd
+
+            #   cp -r ${./.} symfexit
+            #   cp -r ${deps-build.config.package-func.result}/lib/node_modules/symfexit-base-theme/node_modules ./symfexit/src/theme/static_src
+            #   cd ./symfexit/src/theme/static_src
+            #   export PATH=${pkgs.nodejs}/bin:$PATH
+            #   NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
+            # '';
+          };
         symfexit-staticfiles =
           let
             collectstatic = pkgs.runCommand "symfexit-staticfiles" { } ''
