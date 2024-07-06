@@ -45,10 +45,38 @@
             }
           ];
         };
-        symfexit-staticfiles = pkgs.runCommand "symfexit-staticfiles" { } ''
-          # dummy secret key to be able to generate static files in production mode
-          DJANGO_ENV=production SYMFEXIT_SECRET_KEY=dummy CONTENT_DIR=$(pwd) STATIC_ROOT=$out/staticfiles ${symfexit-python}/bin/django-admin collectstatic --noinput
-        '';
+        symfexit-base-theme =
+          let
+            deps-build = dream2nix.lib.evalModules {
+              packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
+              modules = [
+                ./theme.nix
+                {
+                  paths.projectRoot = ./.;
+                  paths.projectRootFile = "flake.nix";
+                  paths.package = ./src/theme/static_src;
+                  paths.lockFile = "lock.${system}.json";
+                }
+              ];
+            };
+          in
+          pkgs.runCommand "symfexit-base-theme" { } ''
+            mkdir -p $out/staticfiles/css/dist
+            cd ${deps-build.config.package-func.result}/lib/node_modules/symfexit-base-theme
+            export PATH=${pkgs.nodejs}/bin:$PATH
+            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
+          '';
+        symfexit-staticfiles =
+          let
+            collectstatic = pkgs.runCommand "symfexit-staticfiles" { } ''
+              # dummy secret key to be able to generate static files in production mode
+              DJANGO_ENV=production SYMFEXIT_SECRET_KEY=dummy CONTENT_DIR=$(pwd) STATIC_ROOT=$out/staticfiles ${symfexit-python}/bin/django-admin collectstatic --noinput
+            '';
+          in
+          pkgs.symlinkJoin {
+            name = "symfexit-staticfiles";
+            paths = [ symfexit-base-theme collectstatic ];
+          };
         symfexit-python = symfexit-package.config.deps.python.withPackages (ps: with ps; [
           symfexit-package.config.package-func.result
           uvicorn
