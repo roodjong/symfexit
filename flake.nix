@@ -61,10 +61,10 @@
             };
           in
           pkgs.runCommand "symfexit-base-theme" { } ''
-            mkdir -p $out/staticfiles/static/css/dist
+            mkdir -p $out/staticfiles/css/dist
             cd ${deps-build.config.package-func.result}/lib/node_modules/symfexit-base-theme
             export PATH=${pkgs.nodejs}/bin:$PATH
-            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/static/css/dist/styles.css --minify
+            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ${./.}/src/theme/static_src/src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
           '';
         symfexit-staticfiles =
           let
