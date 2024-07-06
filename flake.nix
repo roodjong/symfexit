@@ -85,6 +85,9 @@
                 elif [ "$1" = "uvicorn" ]; then
                   shift
                   exec "${self.packages.${linux-system}.symfexit-python}/bin/uvicorn" "$@"
+                elif [ "$1" = "django-admin" ]; then
+                  shift
+                  exec "${self.packages.${linux-system}.symfexit-python}/bin/django-admin" "$@"
                 fi
                 exec "$@"
               '')
