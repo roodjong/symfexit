@@ -44,5 +44,10 @@ in {
     overrides.django.buildPythonPackage.makeWrapperArgs = [ "--set-default" "DJANGO_SETTINGS_MODULE" "symfexit.settings" ];
     # During the lockfile generation, we need tools from postgresql for the psycopg-c dependency of psycopg
     nativeBuildInputs = [ config.deps.postgresql ];
+    overrides.psycopg-c = {
+      imports = [ dream2nix.modules.dream2nix.nixpkgs-overrides ];
+      nixpkgs-overrides.enable = true;
+      mkDerivation.nativeBuildInputs = [ config.deps.postgresql ];
+    };
   };
 }
