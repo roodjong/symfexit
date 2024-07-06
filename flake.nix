@@ -20,6 +20,12 @@
       };
     in
     {
+      apps = forAllSystems ({ system, pkgs, ... }: {
+        symfexit-docker = {
+          type = "app";
+          program = "${self.packages.${system}.symfexit-docker}";
+        };
+      });
 
       packages = forAllSystems ({ system, linux-system, pkgs, ... }: rec {
         symfexit-package = dream2nix.lib.evalModules {
@@ -49,6 +55,7 @@
             ExposedPorts = { "8000/tcp" = { }; };
           };
         };
+        symfexit-docker-tag = pkgs.writeShellScriptBin "symfexit-docker-tag" "echo ${symfexit-docker.imageTag}";
         relock-dependencies = pkgs.writeShellScriptBin "relock-dependencies" ''
           reporoot=$(git rev-parse --show-toplevel)
           cd $reporoot
