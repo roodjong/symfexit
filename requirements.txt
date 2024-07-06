@@ -223,10 +223,13 @@ pillow==10.3.0 \
     --hash=sha256:fdcbb4068117dfd9ce0138d068ac512843c52295ed996ae6dd1faf537b6dbc27 \
     --hash=sha256:ff61bfd9253c3915e6d41c651d5f962da23eda633cf02262990094a18a55371a
     # via symfexit (pyproject.toml)
-psycopg==3.2.0 \
-    --hash=sha256:48a069cfe0ae852a331e1eb48e4da64a1a47723a6303559935801f0e0245ba22 \
-    --hash=sha256:f93c5376598da868a5f761a44f920b84ec937a15a46e85df2454328f13d7009a
+psycopg==3.2.1 \
+    --hash=sha256:dc8da6dc8729dacacda3cc2f17d2c9397a70a66cf0d2b69c91065d60d5f00cb7 \
+    --hash=sha256:ece385fb413a37db332f97c49208b36cf030ff02b199d7635ed2fbd378724175
     # via symfexit (pyproject.toml)
+psycopg-c==3.2.1 \
+    --hash=sha256:2d09943cc8a855c42c1e23b4298957b7ce8f27bf3683258c52fd139f601f7cda
+    # via psycopg
 requests==2.32.3 \
     --hash=sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760 \
     --hash=sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6

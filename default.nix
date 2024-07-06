@@ -1,6 +1,7 @@
 { config
 , lib
 , dream2nix
+, system
 , ...
 }:
 let pyproject = lib.importTOML (config.mkDerivation.src + /pyproject.toml);
@@ -11,7 +12,7 @@ in {
 
   deps = { nixpkgs, ... }: {
     python = nixpkgs.python312;
-    psycopg-c = nixpkgs.python312Packages.psycopg.c;
+    inherit (nixpkgs) postgresql;
   };
 
   mkDerivation = {
@@ -41,6 +42,7 @@ in {
     requirementsFiles = [ "./requirements.txt" ];
     flattenDependencies = true;
     overrides.django.buildPythonPackage.makeWrapperArgs = [ "--set-default" "DJANGO_SETTINGS_MODULE" "symfexit.settings" ];
-    overrides.psycopg.mkDerivation.propagatedBuildInputs = [ config.deps.psycopg-c ];
+    # During the lockfile generation, we need tools from postgresql for the psycopg-c dependency of psycopg
+    nativeBuildInputs = [ config.deps.postgresql ];
   };
 }

@@ -30,6 +30,7 @@
               paths.projectRoot = ./.;
               paths.projectRootFile = "flake.nix";
               paths.package = ./.;
+              paths.lockFile = "lock.${system}.json";
             }
           ];
         };
