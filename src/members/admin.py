@@ -20,7 +20,7 @@ from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import escape
 
-from members.models import ContactPerson, LocalGroup, User
+from members.models import LocalGroup, User
 from membership.models import Membership
 
 
@@ -240,37 +240,10 @@ class UserAdmin(admin.ModelAdmin):
         return super().response_add(request, obj, post_url_continue)
 
 
-class LocalGroupForm(forms.ModelForm):
-    contactpeople = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(),
-        widget=FilteredSelectMultiple(verbose_name="contact people", is_stacked=False),
-    )
-
-    class Meta:
-        model = LocalGroup
-        fields = ("name", "contactpeople")
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["contactpeople"].initial = User.objects.filter(
-            contactperson__for_group=self.instance
-        )
-
-    def save(self, commit):
-        self.instance.save()
-        contactpeople = self.cleaned_data["contactpeople"]
-        ContactPerson.objects.filter(for_group=self.instance).delete()
-        for user in contactpeople:
-            contact_person = ContactPerson.objects.create(
-                user=user, for_group=self.instance
-            )
-            contact_person.save()
-        return super().save(commit)
-
-
 @admin.register(LocalGroup)
 class LocalGroupAdmin(admin.ModelAdmin):
-    form = LocalGroupForm
+    exclude = ("permissions",)
+    filter_horizontal = ("contact_people",)
 
 
 admin.site.unregister(Group)

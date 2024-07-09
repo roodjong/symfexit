@@ -112,12 +112,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class LocalGroup(Group):
-    pass
-
-
-class ContactPerson(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    for_group = models.ForeignKey(LocalGroup, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.user} for {self.for_group}"
+    contact_people = models.ManyToManyField(
+        User, related_name="contact_person_for_groups"
+    )
