@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      imageTags: ${{ fromJSON(steps.meta.outputs.json).tags }}
+      imageTags: ${{ steps.meta.outputs.json }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
       - name: Extract the image tag
         id: image
         run: |
-          echo "${{ needs.build.outputs.imageTags }}" | jq -r '.[] | select(test("ghcr.io/[a-z]+/[a-z]+:sha")) | "imageTag=\(.)"' >> "$GITHUB_OUTPUT"
+          echo "${{ needs.build.outputs.imageTags }}" | jq -r '.tags[] | select(test("ghcr.io/[a-z]+/[a-z]+:sha")) | "imageTag=\(.)"' >> "$GITHUB_OUTPUT"
       - name: Set the image for the deployments
         run: |
           kubectl set image deployment/symfexit symfexit=${{ steps.image.outputs.imageTag }} symfexit-migrations=${{ steps.image.outputs.imageTag }}
