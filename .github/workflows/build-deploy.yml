@@ -17,7 +17,7 @@ jobs:
       image: ${{ steps.meta.outputs.tags[0] }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
