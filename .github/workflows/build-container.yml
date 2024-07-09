@@ -5,10 +5,16 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write # This is required for requesting the JWT
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    outputs:
+      image: ${{ steps.meta.outputs.tags[0] }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -53,3 +59,33 @@ jobs:
             push: ${{ github.event_name != 'pull_request' }}
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-staging:
+    name: Deploy to staging
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://symfexit-staging.yele.dev/
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Prepare kubeconfig
+        uses: actions/github-script@v7
+        id: idtoken
+        with:
+          script: |
+            let id_token = await core.getIDToken(process.env.K8S_AUDIENCE)
+            let kubeConfig = JSON.parse(process.env.KUBECONFIG)
+            kubeConfig.users[0].user.token = id_token
+            core.setOutput('kubeconfig', JSON.stringify(kubeConfig))
+        env:
+          KUBECONFIG: ${{ secrets.K8S_KUBE_CONFIG }}
+          K8S_AUDIENCE: ${{ secrets.K8S_AUDIENCE }}
+      - name: Setup Kube Context
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ steps.idtoken.outputs.kubeconfig }}
+      - name: Set the image for the deployments
+        run: |
+          kubectl set image deployment/symfexit symfexit=${{ needs.build.outputs.image }} symfexit-migrations=${{ needs.build.outputs.image }}
+          kubectl set image deployment/symfexit-nginx nginx=${{ needs.build.outputs.image }}
