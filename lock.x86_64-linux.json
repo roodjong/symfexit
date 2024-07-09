@@ -101,10 +101,10 @@
       },
       "pillow": {
         "is_direct": false,
-        "sha256": "ff61bfd9253c3915e6d41c651d5f962da23eda633cf02262990094a18a55371a",
+        "sha256": "86dcb5a1eb778d8b25659d5e4341269e8590ad6b4e8b44d9f4b07f8d136c414a",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/c6/c1/3521ddb9c1f3ac106af3e4512a98c785b6ed8a39e0f778480b8a4d340165/pillow-10.3.0-cp312-cp312-manylinux_2_28_x86_64.whl",
-        "version": "10.3.0"
+        "url": "https://files.pythonhosted.org/packages/55/77/40daddf677897a923d5d33329acd52a2144d54a9644f2a5422c028c6bf2d/pillow-10.4.0-cp312-cp312-manylinux_2_28_x86_64.whl",
+        "version": "10.4.0"
       },
       "psycopg": {
         "is_direct": false,
@@ -136,10 +136,10 @@
       },
       "setuptools": {
         "is_direct": false,
-        "sha256": "a58a8fde0541dab0419750bcc521fbdf8585f6e5cb41909df3a472ef7b81ca95",
+        "sha256": "b8b8060bb426838fbe942479c90296ce976249451118ef566a5a0b7d8b78fb05",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/b3/7a/629889a5d76200287aa5483d753811bd247bbd1b03175186f759e0c7d3a7/setuptools-70.1.1-py3-none-any.whl",
-        "version": "70.1.1"
+        "url": "https://files.pythonhosted.org/packages/42/54/2a8ecfcc9a714a6fbf86559a4b0f50b126a4ac4269ea8134f2c75c3e73de/setuptools-70.2.0-py3-none-any.whl",
+        "version": "70.2.0"
       },
       "sqlparse": {
         "is_direct": false,
@@ -219,5 +219,5 @@
       }
     }
   },
-  "invalidationHash": "7a430872462fd04b5351e0c59b8d97b6133ca1d7f85b3c34a7334adbe61fdc39"
+  "invalidationHash": "b498584319c5220ebc3af82b862cabd651ae2d080a699251cbe5b832d50d7ccf"
 }
