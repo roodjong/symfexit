@@ -114,6 +114,9 @@ SECRET_KEY = setting_from_env(
     development="django-insecure-7b_@jve6sxl8qz4yc+hc@$(+rr_xiq4y46f^-8y%)&v!%sao6+",
 )
 
+# https://docs.djangoproject.com/en/5.0/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = setting(development=None, production=("HTTP_X_FORWARDED_PROTO", "https"))
+
 MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -138,6 +141,9 @@ SIGNUP_ENABLED = os.getenv("ENABLE_SIGNUP", True)
 MEMBERSHIP_ENABLED = os.getenv("ENABLE_MEMBERSHIP", True)
 THEMING_ENABLED = os.getenv("ENABLE_THEMING", True)
 
+if DJANGO_ENV == "development":
+    SITE_ID = 1
+
 INSTALLED_APPS = (
     [
         "adminsite.apps.MyAdminConfig",
@@ -146,6 +152,7 @@ INSTALLED_APPS = (
         "django.contrib.sessions",
         "django.contrib.messages",
         "django.contrib.staticfiles",
+        "django.contrib.sites",
         "tailwind",
         "fontawesomefree",
     ]
