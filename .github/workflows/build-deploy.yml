@@ -77,7 +77,9 @@ jobs:
             let id_token = await core.getIDToken(process.env.K8S_AUDIENCE)
             let kubeConfig = JSON.parse(process.env.KUBECONFIG)
             kubeConfig.users[0].user.token = id_token
-            core.setOutput('kubeconfig', JSON.stringify(kubeConfig))
+            const output = JSON.stringify(kubeConfig)
+            core.setOutput('kubeconfig', output)
+            core.setSecret(output)
         env:
           KUBECONFIG: ${{ secrets.K8S_KUBECONFIG }}
           K8S_AUDIENCE: ${{ secrets.K8S_AUDIENCE }}
