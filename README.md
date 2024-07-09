@@ -1,5 +1,7 @@
 # symfexit
 
+[![Tests](https://github.com/roodjong/symfexit/actions/workflows/test.yml/badge.svg)](https://github.com/roodjong/symfexit/actions/workflows/test.yml)
+
 Departure from our old symfony internal site
 
 ## Running for the first time
