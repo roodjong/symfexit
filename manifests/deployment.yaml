@@ -32,6 +32,7 @@ spec:
       initContainers:
       - name: symfexit-migrations
         image: ghcr.io/roodjong/symfexit:main
+        imagePullPolicy: Always
         args:
         - django-admin
         - migrate
@@ -57,6 +58,7 @@ spec:
       containers:
       - name: symfexit
         image: ghcr.io/roodjong/symfexit:main
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
         args:
@@ -252,6 +254,7 @@ spec:
       containers:
       - name: nginx
         image: ghcr.io/roodjong/symfexit:main
+        imagePullPolicy: Always
         args:
         - nginx
         - -c
