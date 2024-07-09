@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Build Docker Image and Deploy to Kubernetes
 
 on:
   push:
@@ -79,7 +79,7 @@ jobs:
             kubeConfig.users[0].user.token = id_token
             core.setOutput('kubeconfig', JSON.stringify(kubeConfig))
         env:
-          KUBECONFIG: ${{ secrets.K8S_KUBE_CONFIG }}
+          KUBECONFIG: ${{ secrets.K8S_KUBECONFIG }}
           K8S_AUDIENCE: ${{ secrets.K8S_AUDIENCE }}
       - name: Setup Kube Context
         uses: azure/k8s-set-context@v4
