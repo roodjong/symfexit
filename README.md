@@ -37,7 +37,7 @@ python src/manage.py createsuperuser
 
 ## Dependencies
 
-Check that you have at least python 3.10 installed:
+Check that you have at least python 3.11 installed:
 
 ```bash
 python3 --version
