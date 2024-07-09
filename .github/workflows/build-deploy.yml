@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ fromJSON(steps.meta.outputs.json).tags[-1] }}
+      imageTags: ${{ fromJSON(steps.meta.outputs.json).tags }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -87,7 +87,11 @@ jobs:
         uses: azure/k8s-set-context@v4
         with:
           kubeconfig: ${{ steps.idtoken.outputs.kubeconfig }}
+      - name: Extract the image tag
+        id: image
+        run: |
+          echo "${{ needs.build.outputs.imageTags }}" | jq -r '.[] | select(test("ghcr.io/[a-z]+/[a-z]+:sha")) | "imageTag=\(.)"' >> "$GITHUB_OUTPUT"
       - name: Set the image for the deployments
         run: |
-          kubectl set image deployment/symfexit symfexit=${{ needs.build.outputs.image }} symfexit-migrations=${{ needs.build.outputs.image }}
-          kubectl set image deployment/symfexit-nginx nginx=${{ needs.build.outputs.image }}
+          kubectl set image deployment/symfexit symfexit=${{ steps.image.outputs.imageTag }} symfexit-migrations=${{ steps.image.outputs.imageTag }}
+          kubectl set image deployment/symfexit-nginx nginx=${{ steps.image.outputs.imageTag }}
