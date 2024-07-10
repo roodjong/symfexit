@@ -33,8 +33,11 @@ optional-dependencies.dev = [
 [tool.setuptools]
 include-package-data = true
 
+[tool.setuptools.package-data]
+"*" = ["*"]
+
 [tool.setuptools.packages.find]
-namespaces = false
+namespaces = true
 where = ["src"]
 
 [build-system]
