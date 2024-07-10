@@ -32,122 +32,141 @@
         };
       });
 
-      packages = forAllSystems ({ system, linux-system, pkgs, pkgs-linux, ... }: rec {
-        symfexit-package = dream2nix.lib.evalModules {
-          packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
-          modules = [
-            ./default.nix
+      packages = forAllSystems ({ system, linux-system, pkgs, pkgs-linux, ... }:
+        let
+          lib = pkgs.lib;
+          symfexit-npm-deps = dream2nix.lib.evalModules {
+            packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
+            modules = [
+              ./theme.nix
+              {
+                paths.projectRoot = ./.;
+                paths.projectRootFile = "flake.nix";
+                paths.package = ./src/theme/static_src;
+                paths.lockFile = "lock.${system}.json";
+              }
+            ];
+          };
+          theme-sources = pkgs.runCommand "theme-sources"
             {
-              paths.projectRoot = ./.;
-              paths.projectRootFile = "flake.nix";
-              paths.package = ./.;
-              paths.lockFile = "lock.${system}.json";
-            }
-          ];
-        };
-        symfexit-npm-deps = dream2nix.lib.evalModules {
-          packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
-          modules = [
-            ./theme.nix
+              pythonSrc = lib.cleanSourceWith {
+                src = lib.cleanSource ./.;
+                filter = name: type:
+                  !(builtins.any (x: x) [
+                    (lib.hasSuffix ".nix" name)
+                    (lib.hasPrefix "lock." (builtins.baseNameOf name))
+                    (builtins.elem (builtins.baseNameOf name) [ "requirements.txt" "manifests" "pip-snapshot-date.txt" ])
+                    (lib.hasPrefix "." (builtins.baseNameOf name))
+                    (lib.hasSuffix "flake.lock" name)
+                  ]);
+              };
+              node_modules = "${symfexit-npm-deps.config.package-func.result}/lib/node_modules/symfexit-base-theme/node_modules";
+            } ''
+            mkdir -p $out
+            cp -r $pythonSrc/* $out
+            chmod -R u+w $out
+            cp -r $node_modules $out/src/theme/static_src/node_modules
+          '';
+          symfexit-base-theme = pkgs.runCommand "symfexit-base-theme"
             {
-              paths.projectRoot = ./.;
-              paths.projectRootFile = "flake.nix";
-              paths.package = ./src/theme/static_src;
-              paths.lockFile = "lock.${system}.json";
-            }
-          ];
-        };
-        symfexit-base-theme = pkgs.stdenv.mkDerivation {
-          name = "symfexit-base-theme";
-          srcs = [ symfexit-npm-deps.config.package-func.result ./. ];
-          setSourceRoot = "sourceRoot=$(echo *-source)";
-          buildInputs = [ pkgs.nodejs ];
-          buildPhase = ''
+              src = theme-sources;
+            } ''
             mkdir -p $out/staticfiles/css/dist
-            cp -r ../*base-theme*/lib/node_modules/symfexit-base-theme/node_modules ./src/theme/static_src/node_modules
-
             export PATH=${pkgs.nodejs}/bin:$PATH
-            cd ./src/theme/static_src
+            cd $src/src/theme/static_src
             NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
           '';
-        };
-        symfexit-staticfiles =
-          let
-            collectstatic = pkgs.runCommand "symfexit-staticfiles" { } ''
-              # dummy secret key to be able to generate static files in production mode
-              DJANGO_ENV=production SYMFEXIT_SECRET_KEY=dummy CONTENT_DIR=$(pwd) STATIC_ROOT=$out/staticfiles ${symfexit-python}/bin/django-admin collectstatic --noinput
-            '';
-          in
-          pkgs.symlinkJoin {
+          symfexit-python = self.packages.${system}.symfexit-package.config.deps.python.withPackages (ps: with ps; [
+            self.packages.${system}.symfexit-package.config.package-func.result
+            uvicorn
+          ]);
+          linux-symfexit-python = self.packages.${linux-system}.symfexit-package.config.deps.python.withPackages (ps: with ps; [
+            self.packages.${linux-system}.symfexit-package.config.package-func.result
+            uvicorn
+          ]);
+          collectstatic = pkgs.runCommand "symfexit-staticfiles" { } ''
+            # dummy secret key to be able to generate static files in production mode
+            DJANGO_ENV=production SYMFEXIT_SECRET_KEY=dummy CONTENT_DIR=$(pwd) STATIC_ROOT=$out/staticfiles ${symfexit-python}/bin/django-admin collectstatic --noinput
+          '';
+        in
+        rec {
+          symfexit-package = dream2nix.lib.evalModules {
+            packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
+            modules = [
+              ./default.nix
+              {
+                paths.projectRoot = ./.;
+                paths.projectRootFile = "flake.nix";
+                paths.package = ./.;
+                paths.lockFile = "lock.${system}.json";
+              }
+            ];
+          };
+          symfexit-staticfiles = pkgs.symlinkJoin {
             name = "symfexit-staticfiles";
             paths = [ symfexit-base-theme collectstatic ];
           };
-        symfexit-python = symfexit-package.config.deps.python.withPackages (ps: with ps; [
-          symfexit-package.config.package-func.result
-          uvicorn
-        ]);
-        symfexit-docker = pkgs.dockerTools.streamLayeredImage {
-          name = "symfexit";
+          symfexit-docker = pkgs.dockerTools.streamLayeredImage {
+            name = "symfexit";
+            contents = pkgs.buildEnv {
+              name = "symfexit-nginx";
+              paths = with pkgs-linux.dockerTools; [
+                self.packages.${linux-system}.symfexit-staticfiles
+                (fakeNss.override {
+                  extraGroupLines = [
+                    "nogroup:x:65534:"
+                  ];
+                })
+                binSh
+                pkgs-linux.coreutils
+              ];
+              pathsToLink = [ "/staticfiles" "/etc" "/bin" "/var" ];
+            };
 
-          contents = pkgs.buildEnv {
-            name = "symfexit-nginx";
-            paths = with pkgs-linux.dockerTools; [
-              self.packages.${linux-system}.symfexit-staticfiles
-              (fakeNss.override {
-                extraGroupLines = [
-                  "nogroup:x:65534:"
-                ];
-              })
-              binSh
-              pkgs-linux.coreutils
-            ];
-            pathsToLink = [ "/staticfiles" "/etc" "/bin" "/var" ];
+            config = {
+              Entrypoint = [
+                (pkgs-linux.writeShellScript "entrypoint.sh" ''
+                  if [ "$1" = "nginx" ]; then
+                    mkdir -p {/tmp,/var/log/nginx}
+
+                    ln -s /dev/stderr /var/log/nginx/error.log
+                    ln -s /dev/stdout /var/log/nginx/access.log
+
+                    shift
+                    exec "${pkgs-linux.nginx}/bin/nginx" "-g" "daemon off;" "$@"
+                  elif [ "$1" = "uvicorn" ]; then
+                    shift
+                    exec "${linux-symfexit-python}/bin/uvicorn" "$@"
+                  elif [ "$1" = "django-admin" ]; then
+                    shift
+                    exec "${linux-symfexit-python}/bin/django-admin" "$@"
+                  fi
+                  exec "$@"
+                '')
+              ];
+              Cmd = [ "uvicorn" "symfexit.asgi:application" ];
+              ExposedPorts = { "8000/tcp" = { }; };
+              Env = [
+                "PATH=${pkgs-linux.nodejs}/bin:/bin"
+                "NPM_COMMAND=${pkgs-linux.nodejs}/bin/npm"
+                "THEME_SRC_DIR=${theme-sources}/src/theme/static_src"
+                "DJANGO_ADMIN_COMMAND=${linux-symfexit-python}/bin/django-admin"
+              ];
+            };
           };
-
-          config = {
-            Entrypoint = [
-              (pkgs-linux.writeShellScript "entrypoint.sh" ''
-                if [ "$1" = "nginx" ]; then
-                  mkdir -p {/tmp,/var/log/nginx}
-
-                  ln -s /dev/stderr /var/log/nginx/error.log
-                  ln -s /dev/stdout /var/log/nginx/access.log
-
-                  shift
-                  exec "${pkgs-linux.nginx}/bin/nginx" "-g" "daemon off;" "$@"
-                elif [ "$1" = "uvicorn" ]; then
-                  shift
-                  exec "${self.packages.${linux-system}.symfexit-python}/bin/uvicorn" "$@"
-                elif [ "$1" = "django-admin" ]; then
-                  shift
-                  exec "${self.packages.${linux-system}.symfexit-python}/bin/django-admin" "$@"
-                fi
-                exec "$@"
-              '')
-            ];
-            Cmd = [ "uvicorn" "symfexit.asgi:application" ];
-            ExposedPorts = { "8000/tcp" = { }; };
-            Env = [
-              "PATH=${pkgs-linux.nodejs}/bin:/bin"
-              "NPM_COMMAND=${pkgs-linux.nodejs}/bin/npm"
-              "THEME_SRC_DIR=${self.packages.${linux-system}.symfexit-npm-deps}/lib/node_modules/symfexit-base-theme"
-              "DJANGO_ADMIN_COMMAND=${self.packages.${linux-system}.symfexit-python}/bin/django-admin"
-            ];
-          };
-        };
-        symfexit-docker-tag = pkgs.writeShellScriptBin "symfexit-docker-tag" "echo ${symfexit-docker.imageTag}";
-        relock-dependencies = pkgs.writeShellScriptBin "relock-dependencies" ''
-          reporoot=$(git rev-parse --show-toplevel)
-          cd $reporoot
-          ${pkgs.coreutils}/bin/date "+%Y-%m-%d" > ./pip-snapshot-date.txt
-          nix run .#symfexit-package.lock
-          if [[ $(git diff --numstat | ${pkgs.gawk}/bin/awk '/lock\..*\.json$/ { print ($1 == $2 && $1 == 1) }') -eq 1 ]]; then
-            # Only one line changed in lock.json, it's the invalidation hash which changed because of the date file
-            git restore lock.*.json pip-snapshot-date.txt
-            echo "Reset lock files and date file because only the invalidation hash changed"
-          fi
-        '';
-      });
+          symfexit-docker-tag = pkgs.writeShellScriptBin "symfexit-docker-tag" "echo ${symfexit-docker.imageTag}";
+          relock-dependencies = pkgs.writeShellScriptBin "relock-dependencies" ''
+            reporoot=$(git rev-parse --show-toplevel)
+            cd $reporoot
+            ${pkgs.coreutils}/bin/date "+%Y-%m-%d" > ./pip-snapshot-date.txt
+            nix run .#symfexit-package.lock
+            if [[ $(git diff --numstat | ${pkgs.gawk}/bin/awk '/lock\..*\.json$/ { print ($1 == $2 && $1 == 1) }') -eq 1 ]]; then
+              # Only one line changed in lock.json, it's the invalidation hash which changed because of the date file
+              git restore lock.*.json pip-snapshot-date.txt
+              echo "Reset lock files and date file because only the invalidation hash changed"
+            fi
+          '';
+        });
 
     };
 }
