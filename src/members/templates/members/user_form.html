@@ -1,30 +1,30 @@
-{% extends "menupage.html" %} {% block main %}
+{% extends "menupage.html" %}{% load i18n %} {% block main %}
 <div class="container mx-auto flex flex-row flex-wrap gap-8 pt-8 p-2">
   <div class="basis-auto grow">
-    <h1 class="font-header text-5xl mb-6">Mijn gegevens</h1>
+    <h1 class="font-header text-5xl mb-6">{% translate 'My details' %}</h1>
     <form method="post">
       {% csrf_token %} {{ user_form.as_p }}
       <input
         class="bg-primary text-white p-3 cursor-pointer"
         name="{{ user_form.prefix }}"
         type="submit"
-        value="Opslaan"
+        value="{% translate 'Save' %}"
       />
     </form>
-    <h2 class="font-header text-3xl mb-8 mt-6">Wachtwoord wijzigen</h2>
+    <h2 class="font-header text-3xl mb-8 mt-6">{% translate 'Change password' %}</h2>
     <form method="post">
       {% csrf_token %} {{ password_form.as_p }}
       <input
         class="bg-primary text-white p-3 cursor-pointer"
         name="{{ password_form.prefix }}"
         type="submit"
-        value="Wachtwoord wijzigen"
+        value="{% translate 'Change password' %}"
       />
     </form>
   </div>
 
   <div class="basis-96 grow-0 shrink-0">
-    <h1 class="font-header text-5xl mb-8">Contributie</h1>
+    <h1 class="font-header text-5xl mb-8">{% translate 'Contribution' %}</h1>
     {% for subscription in subscriptions %}
     <div class="bg-primary text-white p-4 mb-4">
       <h2 class="font-header text-3xl">{{ subscription.name }}</h2>
@@ -33,13 +33,13 @@
     </div>
     {% endfor %}
     {% if current_membership is None %}
-      <p class="pb-2">Setup your membership payments now</p>
+      <p class="pb-2">{% translate 'Setup your membership payments now' %}</p>
       <form method="post" action="{% url 'members:payment-start' %}">
         {% csrf_token %}
         <input
           class="bg-primary text-white p-3 cursor-pointer"
           type="submit"
-          value="Start subscription"
+          value="{% translate 'Start subscription' %}"
         />
       </form>
     {% endif %}

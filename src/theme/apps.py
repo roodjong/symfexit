@@ -1,9 +1,12 @@
 from django.apps import AppConfig
 from django.conf import settings
 
+from django.utils.translation import gettext_lazy as _
+
 
 class ThemeConfig(AppConfig):
     name = "theme"
+    verbose_name = _("Theme")
 
     def get_app_admin_urls(self, admin_site):
         from django.urls import path

@@ -1,8 +1,8 @@
-{% extends "menupage.html" %}
+{% extends "menupage.html" %}{% load i18n %}
 
 {% block main %}
 <div class="container mx-auto pt-8 p-2">
-  <h1 class="font-header text-5xl mb-6">Documenten</h1>
+  <h1 class="font-header text-5xl mb-6">{% translate 'Documents' %}</h1>
   {% include "documents/breadcrumbs.html" %}
   <hr class="my-4">
   {% include "documents/download_button.html" %}

@@ -1,0 +1,95 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-10 13:30+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: theme/apps.py:9
+msgid "Theme"
+msgstr "Thema"
+
+#: theme/models.py:11
+msgid "name"
+msgstr "naam"
+
+#: theme/models.py:12
+msgid "value"
+msgstr "waarde"
+
+#: theme/templates/admin/constance_theme/change_list.html:61
+msgid "Save"
+msgstr "Opslaan"
+
+#: theme/templates/admin/constance_theme/change_list.html:70
+msgid "Home"
+msgstr "Home"
+
+#: theme/templates/admin/constance_theme/includes/results_list.html:6
+msgid "Name"
+msgstr "Naam"
+
+#: theme/templates/admin/constance_theme/includes/results_list.html:7
+msgid "Default"
+msgstr "Standaardwaarde"
+
+#: theme/templates/admin/constance_theme/includes/results_list.html:8
+msgid "Value"
+msgstr "Waarde"
+
+#: theme/templates/admin/constance_theme/includes/results_list.html:9
+msgid "Is modified"
+msgstr "Is aangepast"
+
+#: theme/templates/admin/constance_theme/includes/results_list.html:43
+msgid "Reset to default"
+msgstr "Terugzetten naar standaard"
+
+#: theme/templates/admin/rebuild_theme/index.html:6
+#, python-format
+msgid ""
+"\n"
+"  <strong>Success!</strong> <a href=\"%(task_url)s\">Task</a> added.\n"
+"  "
+msgstr ""
+"\n"
+"  <strong>Success!</strong> <a href=\"%(task_url)s\">Taak</a> toegevoegd.\n"
+"  "
+
+#: theme/templates/admin/rebuild_theme/index.html:12
+msgid ""
+"Task not added as form is invalid. Click the button on the Tailwind keys "
+"page to rebuild the theme."
+msgstr ""
+"Taak niet toegevoegd omdat het formulier ongeldig is. Klik op de knop op de "
+"Tailwind keys pagina om het thema opnieuw op te bouwen."
+
+#: theme/templates/admin/rebuild_theme/index.html:15
+msgid "Back to Tailwind keys"
+msgstr "Terug naar Tailwind keys"
+
+#: theme/templates/registration/login.html:15
+#: theme/templates/registration/login.html:19
+msgid "Log In"
+msgstr "Inloggen"
+
+#: theme/templates/registration/login.html:23
+msgid "Forgot Password?"
+msgstr "Wachtwoord vergeten?"
+
+#: theme/templates/registration/login.html:26
+msgid "Back to the website"
+msgstr "Terug naar de website"

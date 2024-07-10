@@ -1,0 +1,57 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-10 12:04+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: adminsite/admin.py:20
+#, python-brace-format
+msgid "{site_title} Administration"
+msgstr "{site_title} Administratie"
+
+#: adminsite/admin.py:25
+#, python-brace-format
+msgid "{site_title} site admin"
+msgstr "{site_title} sitebeheer"
+
+#: adminsite/admin.py:30
+#, python-brace-format
+msgid "{site_title} administration"
+msgstr "{site_title} administratie"
+
+#: adminsite/apps.py:15
+msgid "Adminsite"
+msgstr "Adminsite"
+
+#: adminsite/django_overrides.py:4
+#, python-format
+msgid "Add %s"
+msgstr "Voeg een %s toe"
+
+#: adminsite/django_overrides.py:5
+#, python-format
+msgid "Change %s"
+msgstr "Verander een %s"
+
+#: adminsite/django_overrides.py:6
+#, python-format
+msgid "View %s"
+msgstr "Bekijk een %s"
+
+#: adminsite/django_overrides.py:7
+msgid "Homepage"
+msgstr "Homepagina"

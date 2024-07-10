@@ -5,7 +5,7 @@ from django.db.backends.postgresql.psycopg_any import DateTimeTZRange
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as __
+from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
 from membership.models import Membership
@@ -17,9 +17,6 @@ User = get_user_model()
 
 
 class ApplicationPayment(Order):
-    class Meta:
-        verbose_name = __("application payment")
-
     @property
     def payment_url(self):
         appl = MembershipApplication.objects.filter(_order=self).first()
@@ -27,52 +24,54 @@ class ApplicationPayment(Order):
             return None
         return appl.get_absolute_url()
 
+    class Meta:
+        verbose_name = _("application payment")
+        verbose_name_plural = _("application payments")
+
 
 class DuplicateEmailError(Exception):
     pass
 
 
 class MembershipApplication(models.Model):
-    class Meta:
-        verbose_name = __("membership application")
 
     class Status(models.TextChoices):
-        CREATED = "created", "Created"
-        ACCEPTED = "accepted", "Accepted"
-        REJECTED = "rejected", "Rejected"
+        CREATED = ("created", _("Created"))
+        ACCEPTED = ("accepted", _("Accepted"))
+        REJECTED = ("rejected", _("Rejected"))
 
     id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=100)
-    birth_date = models.DateField()
-    address = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=100)
+    first_name = models.CharField(_("first name"), max_length=100)
+    last_name = models.CharField(_("last name"), max_length=100)
+    email = models.EmailField(_("email address"))
+    phone_number = models.CharField(_("phone number"), max_length=100)
+    birth_date = models.DateField(_("date of birth"))
+    address = models.CharField(_("address"), max_length=100)
+    city = models.CharField(_("city"), max_length=100)
+    postal_code = models.CharField(_("postal code"), max_length=100)
 
-    preferred_group = models.ForeignKey("members.LocalGroup", on_delete=models.CASCADE)
-    payment_amount = models.IntegerField()  # in cents
+    preferred_group = models.ForeignKey("members.LocalGroup", on_delete=models.CASCADE, verbose_name=_("preferred group"))
+    payment_amount = models.IntegerField(_("payment amount in cents"))  # in cents
 
-    status = models.CharField(
+    status = models.CharField(_("status"),
         max_length=10, choices=Status.choices, default=Status.CREATED
     )
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=_("user"))
 
     _order = models.ForeignKey(
         ApplicationPayment,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name="payment order",
+        verbose_name=_("payment order"),
     )
     _subscription = models.ForeignKey(
         Membership,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name="associated subscription",
+        verbose_name=_("associated subscription"),
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
 
     @classmethod
     def get_or_404(cls, eid):
@@ -82,6 +81,8 @@ class MembershipApplication(models.Model):
     @property
     def eid(self):
         return hashids.encode(self.id)
+
+    eid.fget.short_description = _("external identifier")
 
     def get_absolute_url(self):
         return reverse("signup:payment", kwargs={"application_id": self.eid})
@@ -133,3 +134,7 @@ class MembershipApplication(models.Model):
 
     def __str__(self):
         return "{} {}".format(self.first_name, self.last_name)
+
+    class Meta:
+        verbose_name = _("membership application")
+        verbose_name_plural = _("membership applications")

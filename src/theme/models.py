@@ -1,5 +1,6 @@
 from django.db import models
 
+from django.utils.translation import gettext_lazy as _
 
 class TailwindKey(models.Model):
     COLOR_KEY_CHOICES = [
@@ -7,8 +8,8 @@ class TailwindKey(models.Model):
         ("secondary", "Secondary Color"),
     ]
     id = models.AutoField(primary_key=True)
-    name = models.CharField(unique=True, max_length=20, choices=COLOR_KEY_CHOICES)
-    value = models.TextField()
+    name = models.CharField(_("name"), unique=True, max_length=20, choices=COLOR_KEY_CHOICES)
+    value = models.TextField(_("value"))
 
     def __str__(self) -> str:
         return f"{self.name}: {self.value}"

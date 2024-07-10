@@ -18,11 +18,11 @@ class BillingAddress(models.Model):
         verbose_name_plural = _("billing addresses")
 
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=100)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=_("user"))
+    name = models.CharField(_("name"), max_length=100)
+    address = models.CharField(_("address"), max_length=100)
+    city = models.CharField(_("city"), max_length=100)
+    postal_code = models.CharField(_("postal code"), max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -30,6 +30,9 @@ class BillingAddress(models.Model):
             self.id, self.name, self.address, self.postal_code, self.city
         )
 
+    class Meta:
+        verbose_name = _("billing address")
+        verbose_name_plural = _("billing addresses")
 
 class Order(models.Model):
     class Status(models.TextChoices):
@@ -41,30 +44,27 @@ class Order(models.Model):
         EXPIRED = "expired", _("Expired")
 
     id = models.AutoField(primary_key=True)
-    price = models.IntegerField()  # in cents
-    description = models.TextField()
-    address = models.ForeignKey("BillingAddress", on_delete=models.PROTECT)
+    price = models.IntegerField(_("price"))  # in cents
+    description = models.TextField(_("description"))
+    address = models.ForeignKey("BillingAddress", on_delete=models.PROTECT, verbose_name=_("billing address"))
     payment_status = models.CharField(
-        max_length=10, choices=Status.choices, default=Status.INITIAL
+        max_length=10, choices=Status.choices, default=Status.INITIAL, verbose_name=_("payment status")
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    done_at = models.DateTimeField(null=True)
-    payment_method = models.CharField(max_length=100, null=True)
+    done_at = models.DateTimeField(null=True, verbose_name=_("done at"))
+    payment_method = models.CharField(max_length=100, null=True, verbose_name=_("payment method"))
 
-    return_url = models.URLField(null=True)
+    return_url = models.URLField(null=True, verbose_name=_("return URL"))
 
     subscription = models.ForeignKey(
-        "Subscription", on_delete=models.RESTRICT, null=True
+        "Subscription", on_delete=models.RESTRICT, null=True, verbose_name=_("subscription")
     )
-
-    def __str__(self):
-        return "{} voor {:.02f} ({})".format(
-            self.description, self.price / 100, Order.Status(self.payment_status).label
-        )
 
     @property
     def eid(self):
         return hashids.encode(self.id)
+
+    eid.fget.short_description = _("EID")
 
     @classmethod
     def get_or_404(cls, eid) -> "Order":
@@ -76,6 +76,13 @@ class Order(models.Model):
             self.done_at = timezone.now()
         return super().save(*args, **kwargs)
 
+    def __str__(self):
+        return "{} voor {:.02f} ({})".format(
+            self.description, self.price / 100, Order.Status(self.payment_status).label
+        )
+    class Meta:
+        verbose_name = _("order")
+        verbose_name_plural = _("orders")
 
 class SubscriptionManager(models.Manager):
     def current(self):
@@ -128,3 +135,7 @@ class Subscription(models.Model):
 
     def __str__(self):
         return "Subscription for {}".format(self.address.name)
+
+    class Meta:
+        verbose_name = _("subscription")
+        verbose_name_plural = _("subscriptions")

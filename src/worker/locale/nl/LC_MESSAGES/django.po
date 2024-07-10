@@ -1,0 +1,83 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-10 13:42+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: worker/apps.py:8
+msgid "Worker"
+msgstr "Worker"
+
+#: worker/models.py:7
+msgid "Queued"
+msgstr "In de wachtrij"
+
+#: worker/models.py:8
+msgid "Completed"
+msgstr "Afgerond"
+
+#: worker/models.py:9
+msgid "Unknown task (not registered)"
+msgstr "Onbekende taak (niet geregistreerd)"
+
+#: worker/models.py:10
+msgid "Exception"
+msgstr "Fout"
+
+#: worker/models.py:12
+msgid "identifier"
+msgstr "identifier"
+
+#: worker/models.py:13
+msgid "name"
+msgstr "naam"
+
+#: worker/models.py:14
+msgid "arguments"
+msgstr "argumenten"
+
+#: worker/models.py:15
+msgid "keyword arguments"
+msgstr "keyword argumenten"
+
+#: worker/models.py:16
+msgid "output"
+msgstr "output"
+
+#: worker/models.py:18
+msgid "status"
+msgstr "status"
+
+#: worker/models.py:23
+msgid "created at"
+msgstr "gemaakt op"
+
+#: worker/models.py:24
+msgid "picked up at"
+msgstr "opgepakt op"
+
+#: worker/models.py:25
+msgid "completed at"
+msgstr "afgerond op"
+
+#: worker/models.py:31
+msgid "task"
+msgstr "taak"
+
+#: worker/models.py:32
+msgid "tasks"
+msgstr "taken"

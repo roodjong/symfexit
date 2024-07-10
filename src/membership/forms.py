@@ -2,12 +2,14 @@ from decimal import Decimal
 
 from django import forms
 
+from django.utils.translation import gettext_lazy as _
+
 
 class PaymentTierInfo(forms.Form):
-    pay_anything_enabled = forms.BooleanField()
-    pay_anything_help_text = forms.CharField()
-    pay_more_enabled = forms.BooleanField()
-    pay_more_help_text = forms.CharField()
+    pay_anything_enabled = forms.BooleanField(label=_("Pay anything enabled"))
+    pay_anything_help_text = forms.CharField(label=_("Pay anything help text"))
+    pay_more_enabled = forms.BooleanField(label=_("Pay more enabled"))
+    pay_more_help_text = forms.CharField(label=_("Pay more help text"))
 
     # def clean(self):
     #     cleaned_data = super().clean()
@@ -18,14 +20,14 @@ class PaymentTierInfo(forms.Form):
 
 class PaymentTier(forms.Form):
     help_text = forms.CharField(
-        widget=forms.TextInput, required=True, label="Help text"
+        widget=forms.TextInput, required=True, label=_("Help text")
     )
     cents_per_period = forms.DecimalField(
         max_digits=6,
         decimal_places=2,
         localize=True,
         required=True,
-        label="Price per period (in €)",
+        label=_("Price per period (in €)"),
     )
 
     def __init__(self, *args, **kwargs):

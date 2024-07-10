@@ -1,4 +1,5 @@
-<a href="{% url "documents:documents" %}"><span>Hoofdmap</span></a>
+{% load i18n %}
+<a href="{% url "documents:documents" %}"><span>{% translate 'Main directory' %}</span></a>
 {% for crumb in breadcrumbs %}
   <span>/</span>
   {% if forloop.last %}

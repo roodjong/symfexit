@@ -1,12 +1,14 @@
 from django.apps import AppConfig
 
+from django.utils.translation import gettext_lazy as _
 
 class MembersConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "members"
+    verbose_name = _("Members")
 
     def menu_items(self):
         return [
-            {"name": "Gegevens", "viewname": "members:memberdata", "order": 1},
-            {"name": "Uitloggen", "viewname": "members:logout", "order": 3},
+            {"name": _("Details"), "viewname": "members:memberdata", "order": 1},
+            {"name": _("Log out"), "viewname": "members:logout", "order": 3},
         ]

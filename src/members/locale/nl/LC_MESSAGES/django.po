@@ -1,0 +1,199 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-10 14:18+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: members/admin.py:44
+msgid "Personal info"
+msgstr "Persoonlijke info"
+
+#: members/admin.py:59
+msgid "Permissions"
+msgstr "Rechten"
+
+#: members/admin.py:70
+msgid "Important dates"
+msgstr "Belangrijke data"
+
+#: members/apps.py:8
+msgid "Members"
+msgstr "Leden"
+
+#: members/apps.py:12
+msgid "Details"
+msgstr "Gegevens"
+
+#: members/apps.py:13 members/templates/members/logout.html:6
+msgid "Log out"
+msgstr "Uitloggen"
+
+#: members/forms.py:11
+msgid "First name"
+msgstr "Voornaam"
+
+#: members/forms.py:12
+msgid "Last name"
+msgstr "Achternaam"
+
+#: members/forms.py:29
+msgid "Member number"
+msgstr "Lidnummer"
+
+#: members/forms.py:30
+msgid "Name"
+msgstr "Naam"
+
+#: members/forms.py:31
+msgid "Email"
+msgstr "E-mailadres"
+
+#: members/forms.py:32
+msgid "Phone number"
+msgstr "Telefoonnummer"
+
+#: members/forms.py:33
+msgid "Address"
+msgstr "Adres"
+
+#: members/forms.py:34
+msgid "City"
+msgstr "Woonplaats"
+
+#: members/forms.py:35
+msgid "Postal code"
+msgstr "Postcode"
+
+#: members/forms.py:64
+msgid "Old password"
+msgstr "Oud wachtwoord"
+
+#: members/forms.py:68
+msgid "New password"
+msgstr "Nieuw wachtwoord"
+
+#: members/forms.py:72
+msgid "New password (again)"
+msgstr "Nieuw wachtwoord (nog een keer)"
+
+#: members/forms.py:83
+msgid "Old password is incorrect"
+msgstr "Oud wachtwoord is onjuist"
+
+#: members/forms.py:90
+msgid "The passwords do not match"
+msgstr "De wachtwoorden komen niet overeen"
+
+#: members/models.py:57
+msgid "member number"
+msgstr "lidnummer"
+
+#: members/models.py:58
+msgid "first name"
+msgstr "voornaam"
+
+#: members/models.py:59
+msgid "last name"
+msgstr "achternaam"
+
+#: members/models.py:60
+msgid "email"
+msgstr "email"
+
+#: members/models.py:61
+msgid "phone number"
+msgstr "telefoonnummer"
+
+#: members/models.py:62
+msgid "address"
+msgstr "adres"
+
+#: members/models.py:63
+msgid "cith"
+msgstr "plaats"
+
+#: members/models.py:64
+msgid "postal code"
+msgstr "postcode"
+
+#: members/models.py:67
+msgid "staff status"
+msgstr "stafstatus"
+
+#: members/models.py:69
+msgid "Designates whether the user can log into this admin site."
+msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
+
+#: members/models.py:72
+msgid "active"
+msgstr "actief"
+
+#: members/models.py:74
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+"Bepaalt of deze gebruiker als actief moet worden beschouwd. Schakel dit uit "
+"in plaats van accounts te verwijderen."
+
+#: members/models.py:76
+msgid "date joined"
+msgstr "datum van aanmaken"
+
+#: members/models.py:85
+msgid "member"
+msgstr "lid"
+
+#: members/models.py:86
+msgid "members"
+msgstr "leden"
+
+#: members/models.py:118
+msgid "local group"
+msgstr "groep"
+
+#: members/models.py:119
+msgid "local groups"
+msgstr "groepen"
+
+#: members/models.py:122
+msgid "contact people"
+msgstr "contactpersonen"
+
+#: members/templates/members/user_form.html:4
+msgid "My details"
+msgstr "Gegevens"
+
+#: members/templates/members/user_form.html:11
+msgid "Save"
+msgstr "Opslaan"
+
+#: members/templates/members/user_form.html:14
+#: members/templates/members/user_form.html:21
+msgid "Change password"
+msgstr "Verander wachtwoord"
+
+#: members/templates/members/user_form.html:27
+msgid "Contribution"
+msgstr "Contributie"
+
+#: members/templates/members/user_form.html:36
+msgid "Setup your membership payments now"
+msgstr "Stel nu je lidmaatschapsbetalingen in"
+
+#: members/templates/members/user_form.html:42
+msgid "Start subscription"
+msgstr "Start automatische betaling"

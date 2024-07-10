@@ -18,6 +18,8 @@ import dj_database_url
 
 from symfexit.utils import enable_if
 
+from django.utils.translation import gettext_lazy as _
+
 try:
     import django_browser_reload
 
@@ -115,7 +117,9 @@ SECRET_KEY = setting_from_env(
 )
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#secure-proxy-ssl-header
-SECURE_PROXY_SSL_HEADER = setting(development=None, production=("HTTP_X_FORWARDED_PROTO", "https"))
+SECURE_PROXY_SSL_HEADER = setting(
+    development=None, production=("HTTP_X_FORWARDED_PROTO", "https")
+)
 
 MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 
@@ -146,7 +150,6 @@ if DJANGO_ENV == "development":
 
 INSTALLED_APPS = (
     [
-        "adminsite.apps.MyAdminConfig",
         "django.contrib.auth",
         "django.contrib.contenttypes",
         "django.contrib.sessions",
@@ -163,22 +166,29 @@ INSTALLED_APPS = (
         "tinymce",
         # our own apps
         "theme",
+        # Order of the adminsite apps is important as MyAdminConfig points to the
+        # django.contrib.admin, which contains translations which should be
+        # overwritten by our own translations in AdminSiteConfig
+        "adminsite.apps.AdminSiteConfig",
         "menu.apps.MenuConfig",
         "members.apps.MembersConfig",
         "worker.apps.WorkerConfig",
         "payments.apps.PaymentsConfig",
         "payments_dummy.apps.PaymentsDummyConfig",
         "payments_mollie.apps.PaymentsMollieConfig",
+        "symfexit.apps.SymfexitConfig",
     ]
     + enable_if(DOCS_ENABLED, ["documents.apps.DocumentsConfig"])
     + enable_if(HOME_ENABLED, ["home.apps.HomeConfig"])
     + enable_if(SIGNUP_ENABLED, ["signup.apps.SignupConfig"])
     + enable_if(MEMBERSHIP_ENABLED, ["membership.apps.MembershipConfig"])
+    + ["adminsite.apps.MyAdminConfig"]
 )
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -260,6 +270,9 @@ USE_TZ = True
 
 USE_L10N = True
 
+LANGUAGE_CODE = setting_from_env(
+    "DEFAULT_LANGUAGE_CODE", production="nl-NL", development="nl-NL"
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -268,10 +281,18 @@ STATIC_URL = setting_from_env("STATIC_URL", production="static/", development="s
 STATIC_ROOT = setting_from_env("STATIC_ROOT")
 
 MEDIA_URL = setting_from_env("MEDIA_URL", production="media/", development="media/")
-MEDIA_ROOT = setting_from_env("MEDIA_ROOT", production=CONTENT_DIR / "media", development=CONTENT_DIR / "media")
+MEDIA_ROOT = setting_from_env(
+    "MEDIA_ROOT", production=CONTENT_DIR / "media", development=CONTENT_DIR / "media"
+)
 
-DYNAMIC_THEME_URL = setting_from_env("DYNAMIC_THEME_URL", production="theme/", development="static/css/dist/")
-DYNAMIC_THEME_ROOT = setting_from_env("DYNAMIC_THEME_ROOT", production=CONTENT_DIR / "theme", development=CONTENT_DIR / "theme" / "static" / "css" / "dist")
+DYNAMIC_THEME_URL = setting_from_env(
+    "DYNAMIC_THEME_URL", production="theme/", development="static/css/dist/"
+)
+DYNAMIC_THEME_ROOT = setting_from_env(
+    "DYNAMIC_THEME_ROOT",
+    production=CONTENT_DIR / "theme",
+    development=CONTENT_DIR / "theme" / "static" / "css" / "dist",
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -316,13 +337,13 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 
 # https://django-constance.readthedocs.io/en/latest/#configuration
 CONSTANCE_CONFIG = {
-    "SITE_TITLE": ("Ledensite", "Hoofdtitel van de site"),
-    "LOGO_IMAGE": ("", "Org logo", "image_field"),
-    "MAIN_SITE": ("https://roodjongeren.nl/", "Hoofdsite van de organisatie"),
-    "HOMEPAGE_CURRENT": (0, "Huidige homepage (stel in op de home pages admin)"),
+    "SITE_TITLE": ("Membersite", _("Main title of this site")),
+    "LOGO_IMAGE": ("", _("Organisation logo"), "image_field"),
+    "MAIN_SITE": ("https://roodjongeren.nl/", _("Main site of the organisation")),
+    "HOMEPAGE_CURRENT": (0, _("Current home page (configure this on the home pages admin)")),
     "PAYMENT_TIERS_JSON": (
         "{}",
-        "JSON met betalingstiers (stel in op membership admin)",
+        _("JSON with payment tiers (configure this on the membership admin)"),
     ),
 }
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"

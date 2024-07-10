@@ -1,9 +1,9 @@
-{% extends "menupage.html" %}
+{% extends "menupage.html" %}{% load i18n %}
 
 {% block main %}
 <form id="logoutform" method="POST">
   {% csrf_token %}
-  <button type="submit" class="border-2 rounded-xl p-2 m-2">Uitloggen</button>
+  <button type="submit" class="border-2 rounded-xl p-2 m-2">{% translate 'Log out' %}</button>
 </form>
 <script>
   document.getElementById("logoutform").submit();

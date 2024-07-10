@@ -9,19 +9,25 @@ class Task(models.Model):
         ERROR_UNKNOWN_TASK = "not_registered", _("Unknown task (not registered)")
         EXCEPTION = "exception", _("Exception")
 
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=20)
-    args = models.BinaryField(blank=True, null=True)
-    kwargs = models.BinaryField(blank=True, null=True)
-    output = models.TextField(blank=True, null=True)
+    id = models.AutoField(_("identifier"), primary_key=True)
+    name = models.CharField(_("name"), max_length=20)
+    args = models.BinaryField(_("arguments"), blank=True, null=True)
+    kwargs = models.BinaryField(_("keyword arguments"), blank=True, null=True)
+    output = models.TextField(_("output"), blank=True, null=True)
     status = models.CharField(
+        _("status"),
         max_length=20,
         choices=Status,
         default=Status.QUEUED,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    picked_up_at = models.DateTimeField(null=True, blank=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+    picked_up_at = models.DateTimeField(_("picked up at"), null=True, blank=True)
+    completed_at = models.DateTimeField(_("completed at"), null=True, blank=True)
 
     def __str__(self) -> str:
-        return f"{self.name}: {self.created_at} {'(done)' if self.completed_at is not None else ''}"
+        return f"{self.name}: {self.created_at} {_('(done)') if self.completed_at is not None else ''}"
+
+    class Meta:
+        verbose_name = _("task")
+        verbose_name_plural = _("tasks")
+        ordering = ["-created_at"]

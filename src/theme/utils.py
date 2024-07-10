@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional
 
 from django.conf import settings
-from theme.models import CurrentThemeVersion
 
 
 def get_theme_filename(version: Optional[datetime]):

@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group, PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 def generate_member_number():
@@ -53,26 +54,26 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     # Previously the primary_key of the User in the old mijnrood project
-    member_identifier = models.TextField("Lidnummer", unique=True)
-    first_name = models.TextField("Voornaam")
-    last_name = models.TextField("Achternaam")
-    email = models.EmailField()
-    phone_number = models.TextField("Telefoonnummer")
-    address = models.TextField("Adres")
-    city = models.TextField("Plaats")
-    postal_code = models.TextField("Postcode")
+    member_identifier = models.TextField(_("member number"), unique=True)
+    first_name = models.TextField(_("first name"))
+    last_name = models.TextField(_("last name"))
+    email = models.EmailField(_("email"))
+    phone_number = models.TextField(_("phone number"))
+    address = models.TextField(_("address"))
+    city = models.TextField(_("cith"))
+    postal_code = models.TextField(_("postal code"))
 
     is_staff = models.BooleanField(
-        "staff status",
+        _("staff status"),
         default=False,
-        help_text="Designates whether the user can log into this admin site.",
+        help_text=_("Designates whether the user can log into this admin site."),
     )
     is_active = models.BooleanField(
-        "active",
+        _("active"),
         default=True,
-        help_text="Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+        help_text=_("Designates whether this user should be treated as active. Unselect this instead of deleting accounts."),
     )
-    date_joined = models.DateTimeField("date joined", default=timezone.now)
+    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
     USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"
@@ -81,7 +82,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     class Meta:
-        verbose_name = "member"
+        verbose_name = _("member")
+        verbose_name_plural = _("members")
         constraints = [
             models.UniqueConstraint(
                 fields=["email"], name="members_user_unique_email_key"
@@ -112,6 +114,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class LocalGroup(Group):
+    class Meta:
+        verbose_name = _("local group")
+        verbose_name_plural = _("local groups")
+
     contact_people = models.ManyToManyField(
-        User, related_name="contact_person_for_groups"
+        User, related_name="contact_person_for_groups", verbose_name=_("contact people")
     )

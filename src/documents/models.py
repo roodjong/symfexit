@@ -2,20 +2,22 @@ import uuid
 
 from django.db import models
 
+from django.utils.translation import gettext_lazy as _
 
-# Create your models here.
+
 class FileNode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField()
+    name = models.TextField(_("name"))
     parent = models.ForeignKey(
         "Directory",
         on_delete=models.CASCADE,
         related_name="children",
         null=True,
         blank=True,
+        verbose_name=_("parent directory"),
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if isinstance(self.parent, File):
@@ -33,9 +35,9 @@ def file_location(instance, filename):
 
 
 class File(FileNode):
-    content = models.FileField(upload_to=file_location)
-    size = models.IntegerField(default=0)
-    content_type = models.TextField(default="application/octet-stream")
+    content = models.FileField(_("content"), upload_to=file_location)
+    size = models.IntegerField(_("size"), default=0)
+    content_type = models.TextField(_("content type"), default="application/octet-stream")
 
     def url(self):
         return self.content.url
@@ -53,6 +55,9 @@ class File(FileNode):
     def __str__(self) -> str:
         return "File: " + self.name
 
+    class Meta:
+        verbose_name = _("file")
+        verbose_name_plural = _("files")
 
 class Directory(FileNode):
     class Meta:
@@ -60,3 +65,7 @@ class Directory(FileNode):
 
     def __str__(self) -> str:
         return "Directory: " + self.name
+
+    class Meta:
+        verbose_name = _("directory")
+        verbose_name_plural = _("directories")

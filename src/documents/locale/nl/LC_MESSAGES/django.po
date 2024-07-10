@@ -1,0 +1,79 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-10 14:08+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: documents/apps.py:8 documents/apps.py:11
+#: documents/templates/documents/documents.html:6
+#: documents/templates/documents/image_file.html:5
+#: documents/templates/documents/pdf_file.html:5
+msgid "Documents"
+msgstr "Documenten"
+
+#: documents/models.py:10
+msgid "name"
+msgstr "naam"
+
+#: documents/models.py:17
+msgid "parent directory"
+msgstr "map waar die in zit"
+
+#: documents/models.py:20
+msgid "created at"
+msgstr "gemaakt op"
+
+#: documents/models.py:38
+msgid "content"
+msgstr "inhoud"
+
+#: documents/models.py:39
+msgid "size"
+msgstr "grootte"
+
+#: documents/models.py:40
+msgid "content type"
+msgstr "Inhoudstype"
+
+#: documents/models.py:59
+msgid "file"
+msgstr "bestand"
+
+#: documents/models.py:60
+msgid "files"
+msgstr "bestanden"
+
+#: documents/models.py:70
+msgid "directory"
+msgstr "map"
+
+#: documents/models.py:71
+msgid "directories"
+msgstr "mappen"
+
+#: documents/templates/documents/breadcrumbs.html:2
+msgid "Main directory"
+msgstr "Hoofdmap"
+
+#: documents/templates/documents/documents.html:12
+#: documents/templates/documents/documents.html:18
+msgid ".. (parent directory)"
+msgstr ".. (map hier boven)"
+
+#: documents/templates/documents/download_button.html:2
+msgid "Download"
+msgstr "Download"

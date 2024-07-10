@@ -3,6 +3,8 @@ from django.contrib import admin
 
 from home.models import HomePage
 
+from django.utils.translation import gettext_lazy as _
+
 
 @admin.register(HomePage)
 class HomePageAdmin(admin.ModelAdmin):
@@ -16,7 +18,7 @@ class HomePageAdmin(admin.ModelAdmin):
                 {
                     "homepage": obj,
                     "show_save_and_add_another": False,
-                    "title": "Change current homepage",
+                    "title": _("Change current homepage"),
                 },
             )
         return super().change_view(
@@ -26,7 +28,7 @@ class HomePageAdmin(admin.ModelAdmin):
             {
                 "homepage": obj,
                 "show_save_and_add_another": False,
-                "title": "Build new homepage",
+                "title": _("Build new homepage"),
                 "show_save_and_set": True,
             },
         )
@@ -34,7 +36,7 @@ class HomePageAdmin(admin.ModelAdmin):
     def response_change(self, request, obj):
         if "_setcurrent" in request.POST:
             config.HOMEPAGE_CURRENT = obj.pk
-            self.message_user(request, "This is now the current homepage.")
+            self.message_user(request, _("This is now the current homepage."))
             request.POST = request.POST.copy()
             request.POST["_continue"] = True
             return super().response_change(request, obj)

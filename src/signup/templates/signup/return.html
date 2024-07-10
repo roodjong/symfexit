@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% load static l10n %} {% block body %}
+{% extends "base.html" %} {% load static i18n l10n %} {% block body %}
 <div
   id="loginscreen"
   class="flex justify-center place-items-center flex-col pt-8"
@@ -15,14 +15,13 @@
       <h2
         class="text-3xl uppercase font-header [font-stretch:semi-expanded] font-bold"
       >
-        Inschrijven bij {{ config.SITE_TITLE }}
+        {% blocktranslate with site_title=config.SITE_TITLE%}Sign up for {{ site_title }}{% endblocktranslate %}
       </h2>
       <p>
-        Bedankt voor je betaling!
+        {% translate 'Thanks for your payment!' %}
       </p>
       <p>
-        Je inschrijving is nu voltooid. Je ontvangt een bevestigingsmail op het
-        opgegeven e-mailadres wanneer je inschrijving is goedgekeurd.
+        {% translate 'Your signup is now completed. You will receive a confirmation email on your provided email address when your signup has been approved.' %}
       </p>
     </div>
   </div>

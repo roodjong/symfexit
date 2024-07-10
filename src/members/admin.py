@@ -4,7 +4,6 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.options import IS_POPUP_VAR, csrf_protect_m
 from django.contrib.admin.utils import unquote
-from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.admin import sensitive_post_parameters_m
 from django.contrib.auth.forms import (
@@ -23,6 +22,8 @@ from django.utils.html import escape
 from members.models import LocalGroup, User
 from membership.models import Membership
 
+from django.utils.translation import gettext_lazy as _
+
 
 class MembershipInline(admin.StackedInline):
     model = Membership
@@ -40,7 +41,7 @@ class UserAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("password",)}),
         (
-            "Personal info",
+            _("Personal info"),
             {
                 "fields": (
                     "member_identifier",
@@ -55,7 +56,7 @@ class UserAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Permissions",
+            _("Permissions"),
             {
                 "fields": (
                     "is_active",
@@ -66,7 +67,7 @@ class UserAdmin(admin.ModelAdmin):
                 ),
             },
         ),
-        ("Important dates", {"fields": ("last_login", "date_joined")}),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         # ("Membership", {"fields": ("subscription_set",)}),
     )
     add_fieldsets = (

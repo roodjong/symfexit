@@ -1,1 +1,2 @@
-<div class="flex justify-end"><a class="bg-primary text-white rounded-md p-2 mb-4" href="{% url "documents:download" file.id %}">Download</a></div>
+{% load i18n %}
+<div class="flex justify-end"><a class="bg-primary text-white rounded-md p-2 mb-4" href="{% url "documents:download" file.id %}">{% translate 'Download' %}</a></div>

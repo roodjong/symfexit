@@ -1,6 +1,7 @@
-<p>Fake this payment for {{ order.price }} cents.</p>
+{% load i18n %}
+<p>{% blocktranslate with price=order.price %} Fake this payment for {{ price }} cents. {% endblocktranslate %}</p>
 
 <form method="post" class="grid grid-cols-1 gap-y-4" action={% url "payments_dummy:subscription" order.eid %}>
   {% csrf_token %} {{ form.as_div }}
-  <button type="submit">Fake pay</button>
+  <button type="submit">{% translate 'Fake pay' %}</button>
 </form>

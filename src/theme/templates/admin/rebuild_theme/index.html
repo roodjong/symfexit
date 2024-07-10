@@ -1,13 +1,16 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/base_site.html" %}{% load i18n %}
 {% block content %}
 {% if task_added %}
 <div class="alert alert-success" role="alert">
-  <strong>Success!</strong> <a href="{% url "admin:worker_task_change" task_id %}">Task</a> added.
+  {% url "admin:worker_task_change" task_id as task_url%}
+  {% blocktranslate %}
+  <strong>Success!</strong> <a href="{{ task_url }}">Task</a> added.
+  {% endblocktranslate %}
 </div>
 {% else %}
 <div class="alert alert-danger" role="alert">
-  Task not added as form is invalid. Click the button on the Tailwind keys page to rebuild the theme.
+  {% translate 'Task not added as form is invalid. Click the button on the Tailwind keys page to rebuild the theme.' %}
 </div>
 {% endif %}
-<div> <a href={% url "admin:theme_tailwindkey_changelist" %}>Back to Tailwind keys</a> </div>
+<div> <a href={% url "admin:theme_tailwindkey_changelist" %}>{% translate 'Back to Tailwind keys' %}</a> </div>
 {% endblock %}

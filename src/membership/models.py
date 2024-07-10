@@ -1,12 +1,14 @@
-from django.conf import settings
 from django.utils import formats, timezone
 
 from payments.models import Subscription
 
+from django.utils.translation import gettext_lazy as _
+
 
 class Membership(Subscription):
     class Meta:
-        verbose_name = "membership"
+        verbose_name = _("membership")
+        verbose_name_plural = _("memberships")
 
     @classmethod
     def current_for_user(cls, user):
