@@ -191,6 +191,15 @@ data:
         location /static/ {
           alias /staticfiles/;
         }
+        location /media/ {
+          alias /data/media/;
+        }
+        location /theme/ {
+          alias /data/theme/;
+        }
+        location /.proxy-bin/healthz {
+          return 200;
+        }
       }
       types {
         text/html                                        html htm shtml;
@@ -321,10 +330,21 @@ spec:
         - name: symfexit-nginx-config
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
+        - name: symfexit-data
+          mountPath: /data
+        livenessProbe:
+          httpGet:
+            path: /.proxy-bin/healthz
+            port: 80
+          initialDelaySeconds: 2
+          periodSeconds: 5
       volumes:
       - name: symfexit-nginx-config
         configMap:
           name: symfexit-nginx-config
+      - name: symfexit-data
+        persistentVolumeClaim:
+          claimName: symfexit-data
 ---
 # Service for symfexit-nginx
 apiVersion: v1
