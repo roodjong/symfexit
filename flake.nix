@@ -59,7 +59,7 @@
         };
         symfexit-base-theme = pkgs.stdenv.mkDerivation {
           name = "symfexit-base-theme";
-          srcs = [ deps-build.config.package-func.result ./. ];
+          srcs = [ symfexit-npm-deps.config.package-func.result ./. ];
           setSourceRoot = "sourceRoot=$(echo *-source)";
           buildInputs = [ pkgs.nodejs ];
           buildPhase = ''
