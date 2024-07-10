@@ -22,24 +22,30 @@ def rebuild_theme():
     new_env["NODE_ENV"] = "production"
     version = timezone.now()
     output_name = get_theme_filename(version)
-    stdout = subprocess.check_output(
-        [
-            NPM_COMMAND,
-            "run",
-            "tailwindcss",
-            "--",
-            "--postcss",
-            "--minify",
-            "-i",
-            input_css,
-            "-o",
-            settings.DYNAMIC_THEME_ROOT / output_name,
-        ],
-        cwd=theme_dir,
-        stderr=subprocess.STDOUT,
-        env=new_env,
-    )
-    for line in stdout.decode("utf-8").split("\n"):
-        logger.log(line)
-    logger.log("Rebuilding theme done")
-    CurrentThemeVersion.objects.create(version=version)
+    try:
+        stdout = subprocess.check_output(
+            [
+                NPM_COMMAND,
+                "run",
+                "tailwindcss",
+                "--",
+                "--postcss",
+                "--minify",
+                "-i",
+                input_css,
+                "-o",
+                settings.DYNAMIC_THEME_ROOT / output_name,
+            ],
+            cwd=theme_dir,
+            stderr=subprocess.STDOUT,
+            env=new_env,
+        )
+        for line in stdout.decode("utf-8").split("\n"):
+            logger.log(line)
+        logger.log("Rebuilding theme done")
+        CurrentThemeVersion.objects.create(version=version)
+    except subprocess.CalledProcessError as e:
+        logger.log("Rebuilding theme failed")
+        for line in e.output.decode("utf-8").split("\n"):
+            logger.log(line)
+        return
