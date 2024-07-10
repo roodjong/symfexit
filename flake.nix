@@ -130,7 +130,8 @@
             Env = [
               "PATH=${pkgs-linux.nodejs}/bin:/bin"
               "NPM_COMMAND=${pkgs-linux.nodejs}/bin/npm"
-              "NODE_PATH=${symfexit-npm-deps.config.package-func.result}/lib/node_modules/symfexit-base-theme/node_modules"
+              "THEME_SRC_DIR=${self.packages.${linux-system}.symfexit-npm-deps}/lib/node_modules/symfexit-base-theme"
+              "DJANGO_ADMIN_COMMAND=${self.packages.${linux-system}.symfexit-python}/bin/django-admin"
             ];
           };
         };

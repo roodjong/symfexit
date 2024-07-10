@@ -11,13 +11,12 @@ from worker import logger
 from worker.registry import task_registry
 
 NPM_COMMAND = os.getenv("NPM_COMMAND", "npm")
-
+THEME_SRC_DIR = os.getenv("THEME_SRC_DIR", str(settings.BASE_DIR / "theme" / "static_src"))
 
 @task_registry.register("rebuild_theme")
 def rebuild_theme():
     logger.log("Rebuilding theme")
     input_css = settings.BASE_DIR / "theme" / "static_src" / "src" / "styles.css"
-    theme_dir = settings.BASE_DIR / "theme" / "static_src"
     new_env = os.environ.copy()
     new_env["NODE_ENV"] = "production"
     version = timezone.now()
@@ -36,7 +35,7 @@ def rebuild_theme():
                 "-o",
                 settings.DYNAMIC_THEME_ROOT / output_name,
             ],
-            cwd=theme_dir,
+            cwd=THEME_SRC_DIR,
             stderr=subprocess.STDOUT,
             env=new_env,
         )
