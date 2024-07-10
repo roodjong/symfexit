@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from theme.models import CurrentThemeVersion
-from theme.utils import get_theme_filename
+from theme.utils import get_theme_filename, get_time_millis
 from worker import logger
 from worker.registry import task_registry
 
@@ -19,7 +19,7 @@ def rebuild_theme():
     input_css = settings.BASE_DIR / "theme" / "static_src" / "src" / "styles.css"
     new_env = os.environ.copy()
     new_env["NODE_ENV"] = "production"
-    version = timezone.now()
+    version = get_time_millis()
     output_name = get_theme_filename(version)
     try:
         stdout = subprocess.check_output(

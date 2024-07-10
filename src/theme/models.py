@@ -1,6 +1,9 @@
+from datetime import datetime
 from django.db import models
 
 from django.utils.translation import gettext_lazy as _
+
+from theme.utils import get_time_millis
 
 class TailwindKey(models.Model):
     COLOR_KEY_CHOICES = [
@@ -16,7 +19,7 @@ class TailwindKey(models.Model):
 
 class CurrentThemeVersion(models.Model):
     id = models.AutoField(primary_key=True)
-    version = models.DateTimeField(auto_now=True)
+    version = models.BigIntegerField(_("version"), unique=True, default=get_time_millis)
 
     class Meta:
         get_latest_by = "version"
