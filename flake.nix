@@ -62,7 +62,7 @@
           in
           pkgs.stdenv.mkDerivation {
             name = "symfexit-base-theme";
-            srcs = [deps-build.config.package-func.result ./.];
+            srcs = [ deps-build.config.package-func.result ./. ];
             setSourceRoot = "sourceRoot=$(echo *-source)";
             buildInputs = [ pkgs.nodejs ];
             buildPhase = ''
@@ -130,6 +130,11 @@
             ];
             Cmd = [ "uvicorn" "symfexit.asgi:application" ];
             ExposedPorts = { "8000/tcp" = { }; };
+            Env = [
+              "PATH=${pkgs-linux.nodejs}/bin:/bin"
+              "NPM_COMMAND=${pkgs-linux.nodejs}/bin/npm"
+              "NODE_PATH=${symfexit-npm-deps.config.package-func.result}/lib/node_modules/symfexit-base-theme/node_modules"
+            ];
           };
         };
         symfexit-docker-tag = pkgs.writeShellScriptBin "symfexit-docker-tag" "echo ${symfexit-docker.imageTag}";
