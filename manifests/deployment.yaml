@@ -112,6 +112,58 @@ spec:
       port: 8000
       targetPort: 8000
 ---
+# Symfexit worker
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: symfexit-worker
+  namespace: symfexit-staging
+  labels:
+    app: symfexit-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: symfexit-worker
+  template:
+    metadata:
+      labels:
+        app: symfexit-worker
+    spec:
+      containers:
+      - name: symfexit-worker
+        image: ghcr.io/roodjong/symfexit:main
+        imagePullPolicy: Always
+        args:
+        - django-admin
+        - startworker
+        env:
+        - name: DJANGO_ENV
+          value: production
+        - name: CONTENT_DIR
+          value: /data
+        - name: SYMFEXIT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: symfexit-secret
+              key: secret_key
+        - name: STATIC_ROOT
+          value: /staticfiles
+        - name: ALLOWED_HOSTS
+          value: "*"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: symfexit-pguser-symfexit
+              key: pgbouncer-uri
+        volumeMounts:
+        - name: symfexit-data
+          mountPath: /data
+      volumes:
+      - name: symfexit-data
+        persistentVolumeClaim:
+          claimName: symfexit-data
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:

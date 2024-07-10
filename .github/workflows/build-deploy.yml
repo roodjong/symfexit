@@ -94,4 +94,5 @@ jobs:
       - name: Set the image for the deployments
         run: |
           kubectl set image deployment/symfexit symfexit=${{ steps.image.outputs.imageTag }} symfexit-migrations=${{ steps.image.outputs.imageTag }}
+          kubectl set image deployment/symfexit-worker symfexit-worker=${{ steps.image.outputs.imageTag }}
           kubectl set image deployment/symfexit-nginx nginx=${{ steps.image.outputs.imageTag }}
