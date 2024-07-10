@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
 from django.urls import include, path
 from django.views.generic import RedirectView
 
@@ -28,6 +29,9 @@ try:
     django_browser_reload_enabled = True
 except ImportError:
     django_browser_reload_enabled = False
+
+def health_check(request):
+    return HttpResponse("OK")
 
 urlpatterns = (
     [path("tinymce/", include("tinymce.urls"))]
@@ -44,6 +48,7 @@ urlpatterns = (
     )
     + [
         path("", include("members.urls")),
+        path("healthz", health_check, name="healthz")
     ]
     + enable_if(DOCS_ENABLED, lambda: [path("", include("documents.urls"))])
     + enable_if(SIGNUP_ENABLED, lambda: [path("", include("signup.urls"))])

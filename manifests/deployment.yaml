@@ -85,6 +85,12 @@ spec:
             secretKeyRef:
               name: symfexit-pguser-symfexit
               key: pgbouncer-uri
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 2
+          periodSeconds: 5
         volumeMounts:
         - name: symfexit-data
           mountPath: /data
