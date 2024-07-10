@@ -45,35 +45,32 @@
             }
           ];
         };
-        symfexit-base-theme =
-          let
-            deps-build = dream2nix.lib.evalModules {
-              packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
-              modules = [
-                ./theme.nix
-                {
-                  paths.projectRoot = ./.;
-                  paths.projectRootFile = "flake.nix";
-                  paths.package = ./src/theme/static_src;
-                  paths.lockFile = "lock.${system}.json";
-                }
-              ];
-            };
-          in
-          pkgs.stdenv.mkDerivation {
-            name = "symfexit-base-theme";
-            srcs = [ deps-build.config.package-func.result ./. ];
-            setSourceRoot = "sourceRoot=$(echo *-source)";
-            buildInputs = [ pkgs.nodejs ];
-            buildPhase = ''
-              mkdir -p $out/staticfiles/css/dist
-              cp -r ../*base-theme*/lib/node_modules/symfexit-base-theme/node_modules ./src/theme/static_src/node_modules
+        symfexit-npm-deps = dream2nix.lib.evalModules {
+          packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
+          modules = [
+            ./theme.nix
+            {
+              paths.projectRoot = ./.;
+              paths.projectRootFile = "flake.nix";
+              paths.package = ./src/theme/static_src;
+              paths.lockFile = "lock.${system}.json";
+            }
+          ];
+        };
+        symfexit-base-theme = pkgs.stdenv.mkDerivation {
+          name = "symfexit-base-theme";
+          srcs = [ deps-build.config.package-func.result ./. ];
+          setSourceRoot = "sourceRoot=$(echo *-source)";
+          buildInputs = [ pkgs.nodejs ];
+          buildPhase = ''
+            mkdir -p $out/staticfiles/css/dist
+            cp -r ../*base-theme*/lib/node_modules/symfexit-base-theme/node_modules ./src/theme/static_src/node_modules
 
-              export PATH=${pkgs.nodejs}/bin:$PATH
-              cd ./src/theme/static_src
-              NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
-            '';
-          };
+            export PATH=${pkgs.nodejs}/bin:$PATH
+            cd ./src/theme/static_src
+            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
+          '';
+        };
         symfexit-staticfiles =
           let
             collectstatic = pkgs.runCommand "symfexit-staticfiles" { } ''
