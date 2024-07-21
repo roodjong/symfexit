@@ -8,6 +8,11 @@ on:
       - dependabot/pip/**
   workflow_dispatch: # allows manual triggering
 
+permissions:
+  # Give the default GITHUB_TOKEN write permission to commit and push the
+  # added or changed files to the repository.
+  contents: write
+
 jobs:
   lockfile:
     name: Commit new lock.json
