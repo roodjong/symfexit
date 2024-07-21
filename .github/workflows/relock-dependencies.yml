@@ -21,7 +21,7 @@ jobs:
       - name: Relock dependencies after requirements.txt change
         run: |
           nix run '.#relock-dependencies'
-      - uses: stefanzweifel/git-auto-commit-action@v4.1.1
+      - uses: stefanzweifel/git-auto-commit-action@v5.0.1
         with:
           commit_message: "[dependabot skip] Relock dependencies"
           branch: ${{ github.head_ref }}
