@@ -133,8 +133,8 @@ django-tinymce==4.1.0 \
     --hash=sha256:02e3b70e940fd299f0fbef4315aee5c185664e1eb8cd396b176963954e4357c9 \
     --hash=sha256:9804836e6d2b08de3b03a27c100f8c2e9633549913eff8b323678a10cd48b94e
     # via symfexit (pyproject.toml)
-fontawesomefree==6.5.1 \
-    --hash=sha256:8dec4a2ee37bf8e53379ebbf0d38cefec4e06c7c9227f59af39dbb7b1632817b
+fontawesomefree==6.6.0 \
+    --hash=sha256:599b574431c9bd92ed5fc054d1045a07c42335da36c17884f2b934755eef9089
     # via symfexit (pyproject.toml)
 hashids==1.3.1 \
     --hash=sha256:6c3dc775e65efc2ce2c157a65acb776d634cb814598f406469abef00ae3f635c \
