@@ -7,11 +7,11 @@
         "pyproject-nix": "pyproject-nix"
       },
       "locked": {
-        "lastModified": 1721316623,
-        "narHash": "sha256-WmPX3r0YtUxvcQmTgvNld2xJooWr4f/+5dURiw7/3zc=",
+        "lastModified": 1722526955,
+        "narHash": "sha256-fFS8aDnfK9Qfm2FLnQ8pqWk8FzvFEv5LvTuZTZLREnc=",
         "owner": "nix-community",
         "repo": "dream2nix",
-        "rev": "4e9fd61a1201f4b3800d6946810a6b4c2ecdcde8",
+        "rev": "3fd4c14d3683baac8d1f94286ae14fe160888b51",
         "type": "github"
       },
       "original": {
@@ -38,12 +38,12 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1721409541,
-        "narHash": "sha256-b6PLr0Ty7JPDBtJtjnYzlBf02bbH9alWMAgispMkTwk=",
-        "rev": "0c53b6b8c2a3e46c68e04417e247bba660689c9d",
-        "revCount": 633273,
+        "lastModified": 1722519197,
+        "narHash": "sha256-VEdJmVU2eLFtLqCjTYJd1J7+Go8idAcZoT11IewFiRg=",
+        "rev": "05405724efa137a0b899cce5ab4dde463b4fd30b",
+        "revCount": 633655,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.2405.633273%2Brev-0c53b6b8c2a3e46c68e04417e247bba660689c9d/0190d12a-ecb2-7cba-b494-d1e5145f6b10/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.2405.633655%2Brev-05405724efa137a0b899cce5ab4dde463b4fd30b/0191155c-b6ad-7876-8d08-9db8408432d0/source.tar.gz"
       },
       "original": {
         "type": "tarball",
