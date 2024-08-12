@@ -31,10 +31,10 @@
       },
       "django": {
         "is_direct": false,
-        "sha256": "f216510ace3de5de01329463a315a629f33480e893a9024fc93d8c32c22913da",
+        "sha256": "d3b811bf5371a26def053d7ee42a9df1267ef7622323fe70a601936725aa4557",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/b7/fc/bff93df9b0bc23d66411cc54e7cd10195b81d61d25591317038d9823e99e/Django-5.0.7-py3-none-any.whl",
-        "version": "5.0.7"
+        "url": "https://files.pythonhosted.org/packages/28/b4/110532cebfea2244d76119904da98c6fa045ebb202aee9ec7cbf36ea3cad/Django-5.1-py3-none-any.whl",
+        "version": "5.1"
       },
       "django-constance": {
         "is_direct": false,
@@ -219,5 +219,5 @@
       }
     }
   },
-  "invalidationHash": "45a6c67f883e1dbb52e9f6137a3ac29614a8c269e0739325239117bc972b15f7"
+  "invalidationHash": "2edfee3acd893767454c131e973db61acef9a8f34f62ecc32de3007816d681aa"
 }
