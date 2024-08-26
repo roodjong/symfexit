@@ -87,10 +87,10 @@
       },
       "mollie-api-python": {
         "is_direct": false,
-        "sha256": "919d36c6435b55608344b4346ea37b5b179eb6a2441c970046209798692be488",
+        "sha256": "1934814d4f039b37c9c4aba4f351f58bc8a915e46beadc89e724070b1811bf46",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/62/8e/6b87728386c98f7854554125a111df0299be11038d00120323fc8a8dfbc6/mollie_api_python-3.6.0-py3-none-any.whl",
-        "version": "3.6.0"
+        "url": "https://files.pythonhosted.org/packages/d6/71/975677477963aa2412b08967862a7ed7e3fb3203342ab2dfb9e4ffe634d7/mollie_api_python-3.7.0-py3-none-any.whl",
+        "version": "3.7.0"
       },
       "oauthlib": {
         "is_direct": false,
@@ -219,5 +219,5 @@
       }
     }
   },
-  "invalidationHash": "45a6c67f883e1dbb52e9f6137a3ac29614a8c269e0739325239117bc972b15f7"
+  "invalidationHash": "d386de2f6106e853e5f092c9adc945dfaf0e8f0a0ac0afcfaf05b6441cd58e38"
 }
