@@ -136,10 +136,10 @@
       },
       "setuptools": {
         "is_direct": false,
-        "sha256": "33874fdc59b3188304b2e7c80d9029097ea31627180896fb549c578ceb8a0855",
+        "sha256": "b208925fcb9f7af924ed2dc04708ea89791e24bde0d3020b27df0e116088b34e",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/51/a0/ee460cc54e68afcf33190d198299c9579a5eafeadef0016ae8563237ccb6/setuptools-71.1.0-py3-none-any.whl",
-        "version": "71.1.0"
+        "url": "https://files.pythonhosted.org/packages/07/6a/0270e295bf30c37567736b7fca10167640898214ff911273af37ddb95770/setuptools-73.0.1-py3-none-any.whl",
+        "version": "73.0.1"
       },
       "sqlparse": {
         "is_direct": false,
@@ -219,5 +219,5 @@
       }
     }
   },
-  "invalidationHash": "45a6c67f883e1dbb52e9f6137a3ac29614a8c269e0739325239117bc972b15f7"
+  "invalidationHash": "d386de2f6106e853e5f092c9adc945dfaf0e8f0a0ac0afcfaf05b6441cd58e38"
 }
