@@ -66,10 +66,10 @@
       },
       "fontawesomefree": {
         "is_direct": false,
-        "sha256": "8dec4a2ee37bf8e53379ebbf0d38cefec4e06c7c9227f59af39dbb7b1632817b",
+        "sha256": "599b574431c9bd92ed5fc054d1045a07c42335da36c17884f2b934755eef9089",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/8f/fc/295f4f71fc157de68dcf25a4850953e61f6eca644e7416f10a281ed42441/fontawesomefree-6.5.1-py3-none-any.whl",
-        "version": "6.5.1"
+        "url": "https://files.pythonhosted.org/packages/bb/e9/d43f5133b73e7ef9047bda28daaa6905e00b7d39f093b547f7e78ee2fc40/fontawesomefree-6.6.0-py3-none-any.whl",
+        "version": "6.6.0"
       },
       "hashids": {
         "is_direct": false,
