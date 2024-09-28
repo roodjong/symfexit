@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+
 
 jobs:
   django-checks:
@@ -15,7 +15,7 @@ jobs:
         python-version:
           - '3.11'
           - '3.12'
-          # - '3.13.0-beta.1' # doesn't work yet
+          - '3.13.0-rc2'
 
     steps:
     - uses: actions/checkout@v4
