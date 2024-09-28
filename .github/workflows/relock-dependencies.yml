@@ -3,9 +3,11 @@ on:
   push:
     branches:
       - dependabot/pip/**
+      - update_flake_lock_action
   pull_request:
     branches:
       - dependabot/pip/**
+      - update_flake_lock_action
   workflow_dispatch: # allows manual triggering
 
 permissions:
