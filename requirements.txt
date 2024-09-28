@@ -269,7 +269,7 @@ urllib3==2.2.2 \
     #   requests
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==71.1.0 \
-    --hash=sha256:032d42ee9fb536e33087fb66cac5f840eb9391ed05637b3f2a76a7c8fb477936 \
-    --hash=sha256:33874fdc59b3188304b2e7c80d9029097ea31627180896fb549c578ceb8a0855
+setuptools==75.1.0 \
+    --hash=sha256:35ab7fd3bcd95e6b7fd704e4a1539513edad446c097797f2985e0e4b960772f2 \
+    --hash=sha256:d59a21b17a275fb872a9c3dae73963160ae079f1049ed956880cd7c09b120538
     # via symfexit (pyproject.toml::build-system.requires)
