@@ -1,6 +1,3 @@
-from audioop import reverse
-
-from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.options import IS_POPUP_VAR, csrf_protect_m
 from django.contrib.admin.utils import unquote
@@ -16,7 +13,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
-from django.urls import path
+from django.urls import path, reverse
 from django.utils.html import escape
 
 from members.models import LocalGroup, User
