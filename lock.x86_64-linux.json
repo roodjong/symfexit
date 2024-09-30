@@ -38,10 +38,10 @@
       },
       "django-constance": {
         "is_direct": false,
-        "sha256": "6242486a346e396d765a9333d17f3101c8613cabc92e0b98dcb70c2a391bc53b",
+        "sha256": "bd8e847a5a6225cfc69da9d87de909dbb765e4150507eb3f555327ba32ac6fd6",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/83/13/efb68bd759aab4f8f1de5863f9e63f93fdd532ca6743c41e14a396256f98/django_constance-3.1.0-py3-none-any.whl",
-        "version": "3.1.0"
+        "url": "https://files.pythonhosted.org/packages/c7/4b/53c407f9fb9acebd973a66ee6e00ef7e9e3b149e07ee100fef58ca70d478/django_constance-4.1.2-py3-none-any.whl",
+        "version": "4.1.2"
       },
       "django-picklefield": {
         "is_direct": false,
@@ -176,9 +176,7 @@
           "asgiref",
           "sqlparse"
         ],
-        "django-constance": [
-          "django-picklefield"
-        ],
+        "django-constance": [],
         "django-picklefield": [
           "django"
         ],
@@ -219,5 +217,5 @@
       }
     }
   },
-  "invalidationHash": "e846692f0715dd0b791171cad7af1a38325e20acd89f0a5f3bf8336a6eb4be6a"
+  "invalidationHash": "0b722b5239ac1cc412354f44b71642c920aea34502f800ddaa340320e2b958a6"
 }
