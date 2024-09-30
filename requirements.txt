@@ -117,9 +117,9 @@ django==5.1.1 \
     #   django-tailwind
     #   django-tinymce
     #   symfexit (pyproject.toml)
-django-constance==3.1.0 \
-    --hash=sha256:2b96e51de63751ef63f8f92f74e0f6aea30fb6453f3a736c21e1f8b3f6cf0b4f \
-    --hash=sha256:6242486a346e396d765a9333d17f3101c8613cabc92e0b98dcb70c2a391bc53b
+django-constance==4.1.2 \
+    --hash=sha256:52163529d4b1be4404d4f8568c6742f76f4d4fc90dc31355849ea2c1e0c525d7 \
+    --hash=sha256:bd8e847a5a6225cfc69da9d87de909dbb765e4150507eb3f555327ba32ac6fd6
     # via symfexit (pyproject.toml)
 django-picklefield==3.2 \
     --hash=sha256:aa463f5d79d497dbe789f14b45180f00a51d0d670067d0729f352a3941cdfa4d \
