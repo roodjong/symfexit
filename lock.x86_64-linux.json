@@ -115,10 +115,10 @@
       },
       "psycopg-c": {
         "is_direct": false,
-        "sha256": "2d09943cc8a855c42c1e23b4298957b7ce8f27bf3683258c52fd139f601f7cda",
+        "sha256": "06ae7db8eaec1a3845960fa7f997f4ccdb1a7a7ab8dc593a680bcc74e1359671",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/a5/22/0e674f2f0ca1bda855e81e28aaa9765fe210a86f335ec9247ed15a2d94d4/psycopg_c-3.2.1.tar.gz",
-        "version": "3.2.1"
+        "url": "https://files.pythonhosted.org/packages/53/ba/74caf4eab78d95a173e65cb81507a589365aeafb1d9c84f374002b51dc53/psycopg_c-3.2.3.tar.gz",
+        "version": "3.2.3"
       },
       "requests": {
         "is_direct": false,
@@ -219,5 +219,5 @@
       }
     }
   },
-  "invalidationHash": "0b722b5239ac1cc412354f44b71642c920aea34502f800ddaa340320e2b958a6"
+  "invalidationHash": "d7bc81fd9dbcf78f2698bb29faf9abb258f2eb127bff73b1c3994fa5b0098d97"
 }
