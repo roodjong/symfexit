@@ -108,10 +108,10 @@
       },
       "psycopg": {
         "is_direct": false,
-        "sha256": "ece385fb413a37db332f97c49208b36cf030ff02b199d7635ed2fbd378724175",
+        "sha256": "644d3973fe26908c73d4be746074f6e5224b03c1101d302d9a53bf565ad64907",
         "type": "url",
-        "url": "https://files.pythonhosted.org/packages/8a/0e/0f755db36f47f96464463385552f8f132a981731356837c9a30a11ab2d35/psycopg-3.2.1-py3-none-any.whl",
-        "version": "3.2.1"
+        "url": "https://files.pythonhosted.org/packages/ce/21/534b8f5bd9734b7a2fcd3a16b1ee82ef6cad81a4796e95ebf4e0c6a24119/psycopg-3.2.3-py3-none-any.whl",
+        "version": "3.2.3"
       },
       "psycopg-c": {
         "is_direct": false,
