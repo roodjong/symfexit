@@ -238,8 +238,8 @@ psycopg==3.2.1 \
     --hash=sha256:dc8da6dc8729dacacda3cc2f17d2c9397a70a66cf0d2b69c91065d60d5f00cb7 \
     --hash=sha256:ece385fb413a37db332f97c49208b36cf030ff02b199d7635ed2fbd378724175
     # via symfexit (pyproject.toml)
-psycopg-c==3.2.1 \
-    --hash=sha256:2d09943cc8a855c42c1e23b4298957b7ce8f27bf3683258c52fd139f601f7cda
+psycopg-c==3.2.3 \
+    --hash=sha256:06ae7db8eaec1a3845960fa7f997f4ccdb1a7a7ab8dc593a680bcc74e1359671
     # via psycopg
 requests==2.32.3 \
     --hash=sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760 \
