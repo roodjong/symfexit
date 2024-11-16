@@ -13,9 +13,8 @@ jobs:
       max-parallel: 4
       matrix:
         python-version:
-          - '3.11'
           - '3.12'
-          - '3.13.0-rc.2'
+          - '3.13'
 
     steps:
     - uses: actions/checkout@v4
