@@ -29,10 +29,10 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
-        python src/manage.py test
+        python manage.py test
     - name: Run Django Check
       run: |
-        python src/manage.py check
+        python manage.py check
     - name: Check migrations
       run: |
-        python src/manage.py makemigrations --check
+        python manage.py makemigrations --check
