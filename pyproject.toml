@@ -21,13 +21,14 @@ dependencies = [
     "pillow ~= 10.0",
     "psycopg[c] ~= 3.2.1",
 ]
-requires-python = ">= 3.10"
+requires-python = ">= 3.12"
 
 optional-dependencies.dev = [
     "black",
     "django-browser-reload ~= 1.6",
     "isort",
     "pip-tools",
+    "ruff>=0.6.8",
 ]
 
 [tool.setuptools]
@@ -43,3 +44,36 @@ where = ["src"]
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+exclude = 'node_modules'
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["**/migrations/**", "**/node_modules/**"]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # isort
+    "I",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # django
+    "DJ",
+    # pylint
+    "PL",
+]
+
+[tool.ruff.lint.pylint]
+max-args = 7
+max-branches = 18
+max-returns = 10
