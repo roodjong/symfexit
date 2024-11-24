@@ -20,6 +20,7 @@ dependencies = [
     "mollie-api-python ~= 3.6",
     "pillow ~= 10.0",
     "psycopg[c] ~= 3.2.1",
+    "django-tenants ~= 3.7.0"
 ]
 requires-python = ">= 3.12"
 
@@ -39,7 +40,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 namespaces = true
-where = ["src"]
+include = ["symfexit"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

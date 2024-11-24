@@ -17,16 +17,16 @@ class MemberData(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         user_form = UserForm(instance=request.user, prefix="user_form")
         password_form = PasswordChangeForm(user=request.user, prefix="password_form")
-        memberships = Membership.objects.filter(user=request.user)
-        current_membership = Membership.current_for_user(request.user)
+        # memberships = Membership.objects.filter(user=request.user)
+        # current_membership = Membership.current_for_user(request.user)
         return render(
             request,
             self.template_name,
             {
                 "user_form": user_form,
                 "password_form": password_form,
-                "memberships": memberships,
-                "current_membership": current_membership,
+                "memberships": None,
+                "current_membership": None,
             },
         )
 

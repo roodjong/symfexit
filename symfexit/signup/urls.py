@@ -7,7 +7,7 @@ from symfexit.signup.views import (
     return_view,
 )
 
-app_name = "symfexit.signup"
+app_name = "signup"
 
 urlpatterns = [
     path("aanmelden/", MemberSignup.as_view(), name="signup"),

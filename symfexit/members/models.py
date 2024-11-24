@@ -120,5 +120,5 @@ class LocalGroup(Group):
         return self.name
 
     contact_people = models.ManyToManyField(
-        User, related_name="contact_person_for_groups", verbose_name=_("contact people")
+        User, related_name="contact_person_for_groups", verbose_name=_("contact people"), blank=True
     )

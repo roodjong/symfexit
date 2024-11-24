@@ -12,8 +12,5 @@ class ThemeConfig(AppConfig):
 
         from symfexit.theme.admin import RebuildTheme
 
-        if not settings.THEMING_ENABLED:
-            return []
-
         rebuild_theme = RebuildTheme.as_view(admin_site=admin_site)
         return [path("rebuild/", admin_site.admin_view(rebuild_theme), name="rebuild_theme")]

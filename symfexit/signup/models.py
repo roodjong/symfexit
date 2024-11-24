@@ -58,6 +58,16 @@ class MembershipApplication(models.Model):
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
 
+    class Meta:
+        verbose_name = _("membership application")
+        verbose_name_plural = _("membership applications")
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def get_absolute_url(self):
+        return reverse("signup:payment", kwargs={"application_id": self.eid})
+
     @property
     def eid(self):
         return hashids.encode(self.id)
@@ -68,29 +78,6 @@ class MembershipApplication(models.Model):
     def get_or_404(cls, eid):
         id = hashids.decode(eid)[0]
         return get_object_or_404(MembershipApplication, id=id)
-
-    def get_absolute_url(self):
-        return reverse("signup:payment", kwargs={"application_id": self.eid})
-
-    def get_or_create_subscription(self):
-        address = BillingAddress.objects.create(
-            user=self.user,
-            name=f"{self.first_name} {self.last_name}",
-            address=self.address,
-            city=self.city,
-            postal_code=self.postal_code,
-        )
-        subscription = Membership.objects.create(
-            user=self.user,
-            active_from_to=DateTimeTZRange(lower=timezone.now()),
-            period_quantity=3,  # TODO: make configurable
-            period_unit=Membership.PeriodUnit.MONTH,
-            price_per_period=self.payment_amount,
-            address=address,
-        )
-        self._subscription = subscription
-        self.save()
-        return subscription
 
     def create_user(self):
         try:
@@ -105,7 +92,7 @@ class MembershipApplication(models.Model):
             )
         except IntegrityError as e:
             if "members_user_unique_email_key" in e.args[0]:
-                raise DuplicateEmailError
+                raise DuplicateEmailError from e
             else:
                 raise e
         self.user = user
@@ -115,10 +102,3 @@ class MembershipApplication(models.Model):
         self._subscription.save()
         self.save()
         return user
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-    class Meta:
-        verbose_name = _("membership application")
-        verbose_name_plural = _("membership applications")
