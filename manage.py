@@ -4,10 +4,35 @@
 import os
 import sys
 
+from django.utils.autoreload import DJANGO_AUTORELOAD_ENV
+
+
+def run_migrations():
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
+    # In the future we may want to run all the migrations here
+    # For now, we just check if we're in single site mode, and create a default tenant in that case
+    execute_from_command_line(["", "migrate_schemas" "--shared"])
 
 def main():
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "symfexit.root.settings")
+    if (
+        len(sys.argv) > 1
+        # Explicitly only run migrate for server and worker
+        # `bootstrap_tasks` is a special case as that command might be triggered by the `ak`
+        # script to pre-run certain tasks for an automated install
+        and sys.argv[1] in ["runserver"]
+        # and don't run if this is the child process of a dev_server
+        and os.environ.get(DJANGO_AUTORELOAD_ENV, None) is None
+    ):
+        run_migrations()
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

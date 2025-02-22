@@ -12,10 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import logging
 import os
+from collections import OrderedDict
 from pathlib import Path
 
 import dj_database_url
-from django.utils.translation import gettext_lazy as _
 
 from symfexit.root.utils import enable_if
 
@@ -38,27 +38,27 @@ class Misconfiguration(Exception):
 
 # Many of the settings are dependent on the environment we're running in.
 # The default environment is development, so the programmer doesn't have to set anything
-DJANGO_ENV = os.environ.get("DJANGO_ENV", "development")
+SYMFEXIT_ENV = os.environ.get("SYMFEXIT_ENV", "development")
 
 _environments = {"development", "production", "staging", "testing"}
 
 
 def setting(*, development, production, staging=_NOT_SET, testing=_NOT_SET):
-    """Generate a setting depending on the DJANGO_ENV and the arguments.
+    """Generate a setting depending on the SYMFEXIT_ENV and the arguments.
 
-    This function is meant for static settings that depend on the DJANGO_ENV. If the
+    This function is meant for static settings that depend on the SYMFEXIT_ENV. If the
     staging or testing arguments are left to their defaults, they will fall back to
     the production and development settings respectively.
     """
-    if DJANGO_ENV == "development" or (DJANGO_ENV == "testing" and testing is _NOT_SET):
+    if SYMFEXIT_ENV == "development" or (SYMFEXIT_ENV == "testing" and testing is _NOT_SET):
         return development
-    if DJANGO_ENV == "testing":
+    if SYMFEXIT_ENV == "testing":
         return testing
-    if DJANGO_ENV == "production" or (DJANGO_ENV == "staging" and staging is _NOT_SET):
+    if SYMFEXIT_ENV == "production" or (SYMFEXIT_ENV == "staging" and staging is _NOT_SET):
         return production
-    if DJANGO_ENV == "staging":
+    if SYMFEXIT_ENV == "staging":
         return staging
-    raise Misconfiguration(f"Set DJANGO_ENV to one of: {', '.join(_environments)}")
+    raise Misconfiguration(f"Set SYMFEXIT_ENV to one of: {', '.join(_environments)}")
 
 
 def setting_from_env(
@@ -76,7 +76,7 @@ def setting_from_env(
     try:
         return os.environ[name]
     except KeyError:
-        if DJANGO_ENV == "production" or (DJANGO_ENV == "staging" and staging is _NOT_SET):
+        if SYMFEXIT_ENV == "production" or (SYMFEXIT_ENV == "staging" and staging is _NOT_SET):
             if production is _NOT_SET and os.environ.get("MANAGE_PY", "0") == "0":
                 # pylint: disable=raise-missing-from
                 raise Misconfiguration(
@@ -86,14 +86,14 @@ def setting_from_env(
                 logger.warning("Ignoring unset %s because we're running a management command", name)
                 return development
             return production
-        if DJANGO_ENV == "staging":
+        if SYMFEXIT_ENV == "staging":
             return staging
-        if DJANGO_ENV == "development" or (DJANGO_ENV == "testing" and testing is _NOT_SET):
+        if SYMFEXIT_ENV == "development" or (SYMFEXIT_ENV == "testing" and testing is _NOT_SET):
             return development
-        if DJANGO_ENV == "testing":
+        if SYMFEXIT_ENV == "testing":
             return testing
         # pylint: disable=raise-missing-from
-        raise Misconfiguration(f"DJANGO_ENV set to unsupported value: {DJANGO_ENV}") from None
+        raise Misconfiguration(f"SYMFEXIT_ENV set to unsupported value: {SYMFEXIT_ENV}") from None
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -101,7 +101,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 CONTENT_DIR = Path(setting_from_env("CONTENT_DIR", development=BASE_DIR.parent / "content"))
 
-DJANGO_ENV = os.getenv("DJANGO_ENV", "development")
+SYMFEXIT_ENV = os.getenv("SYMFEXIT_ENV", "development")
+
+SINGLE_SITE = setting_from_env("SINGLE_SITE", development=True, production=False)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = setting_from_env(
@@ -128,43 +130,58 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Application definition
 
-INSTALLED_APPS = (
-    [
-        "django.contrib.auth",
-        "django.contrib.contenttypes",
-        "django.contrib.sessions",
-        "django.contrib.messages",
-        "django.contrib.staticfiles",
-        "tailwind",
-        "fontawesomefree",
-    ]
-    + enable_if(django_browser_reload_enabled, ["django_browser_reload"])
-    + [
-        "constance",
-        "constance.backends.database",
-        "tinymce",
-        # our own apps
-        "symfexit.theme",
-        # Order of the adminsite apps is important as MyAdminConfig points to the
-        # django.contrib.admin, which contains translations which should be
-        # overwritten by our own translations in AdminSiteConfig
-        "symfexit.adminsite.apps.AdminSiteConfig",
-        "symfexit.menu.apps.MenuConfig",
-        "symfexit.members.apps.MembersConfig",
-        "symfexit.worker.apps.WorkerConfig",
-        "symfexit.payments.apps.PaymentsConfig",
-        "symfexit.payments.dummy.apps.PaymentsDummyConfig",
-        "symfexit.payments.mollie.apps.PaymentsMollieConfig",
-        "symfexit.root.apps.SymfexitConfig",
-        "symfexit.documents.apps.DocumentsConfig",
-        "symfexit.home.apps.HomeConfig",
-        "symfexit.signup.apps.SignupConfig",
-        "symfexit.membership.apps.MembershipConfig",
-        "symfexit.adminsite.apps.MyAdminConfig",
-    ]
-)
+SHARED_APPS = [
+    "django_tenants",
+    "symfexit.tenants.apps.TenantsConfig",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    "tailwind",
+    "fontawesomefree",
+    "tinymce",
+] + enable_if(django_browser_reload_enabled, ["django_browser_reload"])
+
+TENANT_APPS = [
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    "tinymce",
+    # our own apps
+    "symfexit.theme",
+    # Order of the adminsite apps is important as MyAdminConfig points to the
+    # django.contrib.admin, which contains translations which should be
+    # overwritten by our own translations in AdminSiteConfig
+    # "symfexit.adminsite.apps.AdminSiteConfig",
+    "symfexit.menu.apps.MenuConfig",
+    "symfexit.members.apps.MembersConfig",
+    "symfexit.worker.apps.WorkerConfig",
+    "symfexit.payments.apps.PaymentsConfig",
+    "symfexit.payments.dummy.apps.PaymentsDummyConfig",
+    "symfexit.payments.mollie.apps.PaymentsMollieConfig",
+    "symfexit.root.apps.SymfexitConfig",
+    "symfexit.documents.apps.DocumentsConfig",
+    "symfexit.home.apps.HomeConfig",
+    "symfexit.signup.apps.SignupConfig",
+    "symfexit.membership.apps.MembershipConfig",
+    # "symfexit.adminsite.apps.MyAdminConfig",
+]
+
+if SINGLE_SITE:
+    SHARED_APPS = list(OrderedDict.fromkeys(SHARED_APPS + TENANT_APPS))
+
+INSTALLED_APPS = list(OrderedDict.fromkeys(SHARED_APPS + TENANT_APPS))
+
+TENANT_MODEL = "tenants.Client"
+
+TENANT_DOMAIN_MODEL = "tenants.Domain"
 
 MIDDLEWARE = [
+    "django_tenants.middleware.main.TenantMainMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -179,6 +196,7 @@ MIDDLEWARE = [
 )
 
 ROOT_URLCONF = "symfexit.root.urls"
+PUBLIC_SCHEMA_URLCONF = "symfexit.root.management_urls"
 
 TEMPLATES = [
     {
@@ -187,11 +205,11 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.request",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "symfexit.root.context_processors.constance_vars",
                 "symfexit.theme.context.current_theme",
             ],
             "string_if_invalid": ("😱 MISSING VARIABLE %s 😱" if DEBUG else ""),
@@ -211,10 +229,13 @@ WSGI_APPLICATION = "symfexit.root.wsgi.application"
 DATABASES = {
     "default": dj_database_url.config(
         default="postgres://localhost/symfexit",
+        engine="django_tenants.postgresql_backend",
         conn_max_age=600,
         conn_health_checks=True,
     )
 }
+
+DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
 
 
 # Password validation
@@ -303,27 +324,3 @@ LOGGING = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-AUTH_USER_MODEL
 
 AUTH_USER_MODEL = "members.User"
-
-# Constance fields
-CONSTANCE_ADDITIONAL_FIELDS = {
-    "image_field": [
-        "django.forms.FileField",
-        {"required": False, "widget": "symfexit.root.helpers.ClearableFileInputFromStr"},
-    ]
-}
-
-# https://django-constance.readthedocs.io/en/latest/#configuration
-CONSTANCE_CONFIG = {
-    "SITE_TITLE": ("Membersite", _("Main title of this site")),
-    "LOGO_IMAGE": ("", _("Organisation logo"), "image_field"),
-    "MAIN_SITE": ("https://roodjongeren.nl/", _("Main site of the organisation")),
-    "HOMEPAGE_CURRENT": (
-        0,
-        _("Current home page (configure this on the home pages admin)"),
-    ),
-    "PAYMENT_TIERS_JSON": (
-        "{}",
-        _("JSON with payment tiers (configure this on the membership admin)"),
-    ),
-}
-CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"

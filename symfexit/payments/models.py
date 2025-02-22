@@ -59,6 +59,9 @@ class Payment(models.Model):
         verbose_name=_("order"),
     )
 
+    def __str__(self):
+        return _("Payment for {order}").format(order=self.order)
+
 
 class Order(models.Model):
     """An order is a subscription instance.
@@ -93,9 +96,8 @@ class Order(models.Model):
         verbose_name_plural = _("orders")
 
     def __str__(self):
-        return (
-            f"{self.description} voor {self.price / 100:.02f}"
-            f" ({Order.Status(self.payment_status).label})"
+        return _("{description} for {price:.02f}").format(
+            description=self.description, price=self.price / 100
         )
 
     @property

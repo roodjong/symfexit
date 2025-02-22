@@ -61,6 +61,8 @@ Install the dependencies:
 
 ```bash
 pip install -e .
+# Or equivalently:
+pip install -r requirements.txt
 ```
 
 ## Frontend dependencies

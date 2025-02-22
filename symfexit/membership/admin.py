@@ -1,6 +1,5 @@
 import json
 
-from constance import config
 from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
@@ -26,7 +25,7 @@ def save_new_tiers(tiers):
         }
         for x in tiers
     ]
-    config.PAYMENT_TIERS_JSON = json.dumps(list(tiers))
+    # config.PAYMENT_TIERS_JSON = json.dumps(list(tiers))
 
 
 class PaymentTiersAdmin(admin.ModelAdmin):

@@ -1,4 +1,3 @@
-from constance import config
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
@@ -9,17 +8,17 @@ from symfexit.home.models import HomePage
 class HomePageAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url=""):
         obj = HomePage.objects.filter(id=object_id)[0]
-        if config.HOMEPAGE_CURRENT == obj.pk:
-            return super().change_view(
-                request,
-                object_id,
-                form_url,
-                {
-                    "homepage": obj,
-                    "show_save_and_add_another": False,
-                    "title": _("Change current homepage"),
-                },
-            )
+        # if config.HOMEPAGE_CURRENT == obj.pk:
+        #     return super().change_view(
+        #         request,
+        #         object_id,
+        #         form_url,
+        #         {
+        #             "homepage": obj,
+        #             "show_save_and_add_another": False,
+        #             "title": _("Change current homepage"),
+        #         },
+        #     )
         return super().change_view(
             request,
             object_id,

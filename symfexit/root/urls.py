@@ -16,10 +16,11 @@ Including another URLconf
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 
-from symfexit.adminsite.admin import admin_site
+# from symfexit.adminsite.admin import admin_site
 from symfexit.root.utils import enable_if
 
 try:
@@ -43,18 +44,17 @@ urlpatterns = (
         path("", include("symfexit.documents.urls")),
         path("", include("symfexit.signup.urls")),
         path("mollie/", include("symfexit.payments.mollie.urls")),
-    ]
-    + enable_if(
-        settings.DEBUG,
-        lambda: [path("dummy/", include("symfexit.payments.dummy.urls"))],
-    )
-    + [
-        path("admin/", admin_site.urls),
+        path("admin/", admin.site.urls),
         path("accounts/", include("django.contrib.auth.urls")),
     ]
     + enable_if(
         django_browser_reload_enabled,
         lambda: [path("__reload__/", include("django_browser_reload.urls"))],
     )
-    + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    + enable_if(
+        settings.DEBUG,
+        lambda: [
+            path("dummy/", include("symfexit.payments.dummy.urls")),
+        ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+    )
 )
