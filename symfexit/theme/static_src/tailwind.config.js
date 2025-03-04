@@ -7,7 +7,7 @@
 
 const defaultTheme = require('tailwindcss/defaultTheme')
 const child_process = require('child_process')
-const django_admin_command = process.env.DJANGO_ADMIN_COMMAND ?? 'python3 ../../manage.py'
+const django_admin_command = process.env.DJANGO_ADMIN_COMMAND ?? 'python3 ../../../manage.py'
 let django_theme_config = {}
 try {
   const django_out = child_process.execSync(`${django_admin_command} exporttheme`, {encoding: 'utf8'})

@@ -104,6 +104,7 @@ CONTENT_DIR = Path(setting_from_env("CONTENT_DIR", development=BASE_DIR.parent /
 SYMFEXIT_ENV = os.getenv("SYMFEXIT_ENV", "development")
 
 SINGLE_SITE = setting_from_env("SINGLE_SITE", development=True, production=False)
+SINGLE_SITE_DOMAIN = setting_from_env("SINGLE_SITE_DOMAIN", development="127.0.0.1")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = setting_from_env(
@@ -228,7 +229,7 @@ WSGI_APPLICATION = "symfexit.root.wsgi.application"
 # Configure using env variable DATABASE_URL
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://localhost/symfexit",
+        default="postgres:///symfexit",
         engine="django_tenants.postgresql_backend",
         conn_max_age=600,
         conn_health_checks=True,

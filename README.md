@@ -14,14 +14,15 @@ If you're running for the first time, the order of the steps is somewhat importa
 4. Finally you can run the webserver and worker, see [Run webserver](#run-webserver).
 
 You have to make sure you have postgresql installed and running.
-The default [settings.py](src/symfexit/settings.py) file is configured to use a database named `symfexit` with the current (unix) user.
+The default [settings.py](symfexit/root/settings.py) file is configured to use a database named `symfexit` with the current (unix) user.
 
 You can change many of the settings using environment variables.
-Read the [settings.py](src/symfexit/settings.py) file to see which settings are configurable that way.
+Read the [settings.py](symfexit/root/settings.py) file to see which settings are configurable that way.
 
 If you want to use the default settings on your local machine run these commands after you started postgresql:
 
 ```bash
+# On linux, you may have to prefix these with sudo -u postgres
 createuser $(whoami)
 createdb -O $(whoami) symfexit
 ```
@@ -29,17 +30,17 @@ createdb -O $(whoami) symfexit
 Then you can run the migrations:
 
 ```bash
-python src/manage.py migrate
+python manage.py migrate
 ```
 
 To login to the website and admin page, you can create a superuser for yourself:
 ```
-python src/manage.py createsuperuser
+python manage.py createsuperuser
 ```
 
 ## Dependencies
 
-Check that you have at least python 3.11 installed:
+Check that you have at least python 3.12 installed:
 
 ```bash
 python3 --version
@@ -63,6 +64,8 @@ Install the dependencies:
 pip install -e .
 # Or equivalently:
 pip install -r requirements.txt
+# Or, if you have uv installed:
+uv sync
 ```
 
 ## Frontend dependencies
@@ -89,7 +92,7 @@ npm run dev
 ## Run webserver
 
 ```bash
-python src/manage.py runserver
+python manage.py runserver
 ```
 
 The default port is 8000, so you will be able to visit the site at: http://localhost:8000
@@ -98,5 +101,5 @@ The admin site is at: http://localhost:8000/admin
 ## Run worker
 
 ```bash
-python src/manage.py startworker
+python manage.py startworker
 ```

@@ -16,9 +16,7 @@ def run_migrations():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    # In the future we may want to run all the migrations here
-    # For now, we just check if we're in single site mode, and create a default tenant in that case
-    execute_from_command_line(["", "migrate_schemas" "--shared"])
+    execute_from_command_line(["", "migrate_schemas"])
 
 def main():
     """Run administrative tasks."""
@@ -26,9 +24,7 @@ def main():
     if (
         len(sys.argv) > 1
         # Explicitly only run migrate for server and worker
-        # `bootstrap_tasks` is a special case as that command might be triggered by the `ak`
-        # script to pre-run certain tasks for an automated install
-        and sys.argv[1] in ["runserver"]
+        and sys.argv[1] in ["runserver", "develop", "startworker"]
         # and don't run if this is the child process of a dev_server
         and os.environ.get(DJANGO_AUTORELOAD_ENV, None) is None
     ):
