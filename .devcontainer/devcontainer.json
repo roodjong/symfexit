@@ -18,7 +18,7 @@
 	"forwardPorts": [8000, 5432],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "uv sync && echo 'source /workspaces/symfexit/.venv/bin/activate' | tee -a ~/.bashrc ~/.zshrc"
+	"postCreateCommand": "uv sync && echo 'source $(pwd)/.venv/bin/activate' | tee -a ~/.bashrc ~/.zshrc"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
