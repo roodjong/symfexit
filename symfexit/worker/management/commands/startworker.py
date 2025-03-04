@@ -37,7 +37,7 @@ class Command(BaseCommand):
                         self.stdout.write(f"Unknown task {task.name}, marking as error")
                         continue
                     try:
-                        task_registry.execute(task, task.args, task.kwargs)
+                        task_registry.execute(task)
                     except Exception as e:
                         task.status = Task.Status.EXCEPTION
                         logoutput = logger.get_output()

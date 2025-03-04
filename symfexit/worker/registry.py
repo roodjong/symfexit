@@ -1,5 +1,7 @@
 import pickle
 
+from django.conf import settings
+
 
 class TaskRegistry:
     def __init__(self):
@@ -28,4 +30,6 @@ def add_task(name, *args, **kwargs):
     from worker.models import Task
 
     task = Task.objects.create(name=name, args=pickle.dumps(args), kwargs=pickle.dumps(kwargs))
+    if settings.RUN_TASKS_SYNC:
+        task_registry.execute(task)
     return task

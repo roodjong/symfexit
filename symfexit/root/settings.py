@@ -120,6 +120,8 @@ MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = setting(development=True, production=False, testing=False)
 
+RUN_TASKS_SYNC = setting_from_env("RUN_TASKS_SYNC", development=True, production=False)
+
 ALLOWED_HOSTS = setting(development=["*"], production=os.getenv("ALLOWED_HOSTS", "").split(","))
 
 if DEBUG:

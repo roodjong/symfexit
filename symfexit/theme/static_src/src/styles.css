@@ -1,6 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss' source("../../../");
+
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+
+@theme {
+  --color-primary: #C2000B;
+  --font-header: "Bebas Neue Pro", var(--default-font-family);
+}
 
 form {
   p {
