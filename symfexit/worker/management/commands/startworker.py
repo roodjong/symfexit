@@ -20,8 +20,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("Starting worker")
-        sleep(2)
-        sys.exit(12)
         last_sleep = 0
         while True:
             with transaction.atomic():

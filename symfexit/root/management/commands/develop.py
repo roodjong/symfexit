@@ -1,15 +1,19 @@
 import codecs
-from dataclasses import dataclass
 import errno
 import io
 import os
-from pathlib import Path
 import re
 import select
 import sys
-from typing import Any, Callable, List, Optional, TextIO
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, TextIO
+
 from django.conf import settings
-from django.core.management import BaseCommand, execute_from_command_line
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management import BaseCommand
+from django.db import DEFAULT_DB_ALIAS, OperationalError, connections
 
 ANSI_COLORS = [
     "\033[34m",  # Blue
@@ -203,8 +207,8 @@ class RunMultiple:
     @dataclass(frozen=True, slots=True)
     class Command:
         prefix: str
-        argv: List[str]
-        cwd: Optional[str]
+        argv: list[str]
+        cwd: str | None
         fatal: bool
 
     @dataclass(frozen=True, slots=True)
@@ -216,7 +220,7 @@ class RunMultiple:
     class Running:
         command: Any
         pid: int
-        pid_fd: Optional[int]
+        pid_fd: int | None
         fd: int
         file: TextIO
         color: int = 0
@@ -225,7 +229,7 @@ class RunMultiple:
         self.commands = []
         self.running = []
 
-    def add_command(self, prefix: str, argv: List[str], cwd: Optional[str] = None, fatal=False):
+    def add_command(self, prefix: str, argv: list[str], cwd: str | None = None, fatal=False):
         self.commands.append(self.Command(prefix, argv, cwd, fatal))
 
     def add_function(self, prefix: str, func: Callable):
@@ -246,6 +250,7 @@ class RunMultiple:
             newcmd.color = i % len(ANSI_COLORS)
             self.running.append(newcmd)
 
+        pids = {r.pid: r for r in self.running}
         # Empty if pidfd_open is not available
         pid_fds = {r.pid_fd: r for r in self.running if r.pid_fd is not None}
         select_timeout = None
@@ -253,6 +258,19 @@ class RunMultiple:
             select_timeout = 2.0
         fds = {r.fd: r for r in self.running}
         while True:
+            if not pid_fds:
+                while True:
+                    wpid, status = os.waitpid(-1, os.WNOHANG)
+                    if not wpid:
+                        break
+                    status = os.waitstatus_to_exitcode(status)
+                    color = ANSI_COLORS[pids[wpid].color]
+                    print(
+                        f"[manager] Process {color}{pids[wpid].command.prefix}{ANSI_RESET} exited with status code {status}"
+                    )
+                    if pids[wpid].command.fatal:
+                        print("[manager] Exiting...")
+                        sys.exit(1)
             rl, _, _ = select.select(
                 list(pid_fds.keys()) + list(fds.keys()), [], [], select_timeout
             )
@@ -289,7 +307,7 @@ class RunMultiple:
                 os.execvp(command.argv[0], command.argv)
                 print(f"execvp: Could not start {command.prefix}")
         return self.Running(
-            command, pid, self._get_pid_fd(pid), fd, NonBlockingTextIO(io.open(fd, "rb"))
+            command, pid, self._get_pid_fd(pid), fd, NonBlockingTextIO(open(fd, "rb"))
         )
 
     def _run_function(self, function):
@@ -305,7 +323,7 @@ class RunMultiple:
                     print(f"Exception running function {function.prefix}")
                     raise e
         return self.Running(
-            function, pid, self._get_pid_fd(pid), fd, NonBlockingTextIO(io.open(fd, "rb"))
+            function, pid, self._get_pid_fd(pid), fd, NonBlockingTextIO(open(fd, "rb"))
         )
 
     def _get_pid_fd(self, pid):
@@ -315,7 +333,7 @@ class RunMultiple:
         return pid_fd
 
 
-def get_manage_py_subcommand(argv: List[str]):
+def get_manage_py_subcommand(argv: list[str]):
     """
     Return the executable. This contains a workaround for Windows if the
     executable is reported to not have the .exe extension which can cause bugs
@@ -362,6 +380,8 @@ def get_manage_py_subcommand(argv: List[str]):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        self.check_migrations()
+
         rm = RunMultiple()
         rm.add_command(
             "tailwind", ["npm", "run", "dev"], settings.BASE_DIR / "theme" / "static_src"
@@ -369,3 +389,43 @@ class Command(BaseCommand):
         rm.add_command("startworker", get_manage_py_subcommand(["startworker"]))
         rm.add_command("runserver", get_manage_py_subcommand(["runserver"]), fatal=True)
         rm.run()
+
+    def check_migrations(self):
+        """
+        Print a warning if the set of migrations on disk don't match the
+        migrations in the database.
+        """
+        from django.db.migrations.executor import MigrationExecutor
+
+        try:
+            executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
+        except ImproperlyConfigured:
+            # No databases are configured (or the dummy one)
+            self.stdout.write(
+                self.style.NOTICE(
+                    "\nYour database is not configured. Make sure the DATABASE_URL environment variable is set to something"
+                )
+            )
+            sys.exit(1)
+        except OperationalError as e:
+            self.stdout.write("[manager] Database error:")
+            self.stdout.write("\n".join([f"[manager] {s}" for s in str(e).split("\n")]))
+            sys.exit(1)
+
+        plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
+
+        if plan:
+            apps_waiting_migration = sorted({migration.app_label for migration, backwards in plan})
+            self.stdout.write(
+                self.style.NOTICE(
+                    "\nYou have %(unapplied_migration_count)s unapplied migration(s). "
+                    "Your project may not work properly until you apply the "
+                    "migrations for app(s): %(apps_waiting_migration)s."
+                    % {
+                        "unapplied_migration_count": len(plan),
+                        "apps_waiting_migration": ", ".join(apps_waiting_migration),
+                    }
+                )
+            )
+            self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them."))
+            sys.exit(1)

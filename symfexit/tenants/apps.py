@@ -13,7 +13,7 @@ def create_dev_domains(client):
         pass
 
     try:
-        Domain.objects.create(domain="localhost:8000", tenant=client, is_primary=False)
+        Domain.objects.create(domain="localhost", tenant=client, is_primary=False)
     except django.db.utils.IntegrityError:
         pass
 

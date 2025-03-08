@@ -7,7 +7,6 @@ from django.views.generic import TemplateView
 from symfexit.theme.models import TailwindKey
 from symfexit.worker.registry import add_task
 
-
 # class ConfigAdmin(ConstanceAdmin):
 #     change_list_template = "admin/constance_theme/change_list.html"
 #     # change_list_template = 'admin/constance/includes/results_list.html'

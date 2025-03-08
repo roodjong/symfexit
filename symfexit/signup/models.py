@@ -1,15 +1,12 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, models
-from django.db.backends.postgresql.psycopg_any import DateTimeTZRange
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
-from symfexit.membership.models import Membership
-from symfexit.payments.models import BillingAddress, Order
+from symfexit.payments.models import Order
 
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)
 

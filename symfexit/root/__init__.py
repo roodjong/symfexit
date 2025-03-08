@@ -2,14 +2,14 @@
 # regardless of the project's TEMPLATES setting. Templates are
 # read directly from the filesystem so that the error handler
 # works even if the template loader is broken.
-from pathlib import Path
 import types
+from pathlib import Path
+
 from django.conf import settings
 from django.http import Http404, HttpResponseNotFound
 from django.template import Context, Engine
 from django.urls import resolve
 from django.views import debug
-
 
 DEBUG_ENGINE = Engine(
     debug=True,
