@@ -16,6 +16,7 @@ DEBUG_ENGINE = Engine(
     libraries={"i18n": "django.templatetags.i18n"},
 )
 
+
 def builtin_template_path(name):
     """
     Return a path to a builtin template.
@@ -25,6 +26,7 @@ def builtin_template_path(name):
     """
     return Path(__file__).parent / "templates" / name
 
+
 def get_caller(request):
     resolver_match = request.resolver_match
     if resolver_match is None:
@@ -33,6 +35,7 @@ def get_caller(request):
         except Http404:
             pass
     return "" if resolver_match is None else resolver_match._func_path
+
 
 def custom_404_response(request, exception):
     """Create a technical 404 error response. `exception` is the Http404."""
@@ -77,9 +80,10 @@ def custom_404_response(request, exception):
             "settings": reporter_filter.get_safe_settings(),
             "raising_view_name": get_caller(request),
             "hostname": request.get_host().split(":")[0],
-            "tenant_not_found": 'No tenant for hostname' in str(exception)
+            "tenant_not_found": "No tenant for hostname" in str(exception),
         }
     )
     return HttpResponseNotFound(t.render(c))
+
 
 debug.technical_404_response = custom_404_response

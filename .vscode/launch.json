@@ -8,9 +8,9 @@
             "name": "Python: Django",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/manage.py",
+            "program": "${workspaceFolder}/manage.py",
             "args": [
-                "runserver"
+                "develop"
             ],
             "django": true,
             "justMyCode": false

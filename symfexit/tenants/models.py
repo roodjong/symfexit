@@ -9,5 +9,6 @@ class Client(TenantMixin):
     # default true, schema will be automatically created and synced when it is saved
     auto_create_schema = True
 
+
 class Domain(DomainMixin):
     pass

@@ -23,14 +23,6 @@ dependencies = [
 ]
 requires-python = ">= 3.12"
 
-optional-dependencies.dev = [
-    "black",
-    "django-browser-reload ~= 1.6",
-    "isort",
-    "pip-tools",
-    "ruff>=0.6.8",
-]
-
 [tool.setuptools]
 include-package-data = true
 
@@ -44,6 +36,12 @@ include = ["symfexit"]
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "django-browser-reload>=1.17.0",
+    "ruff>=0.8.0",
+]
 
 [tool.black]
 line-length = 100
