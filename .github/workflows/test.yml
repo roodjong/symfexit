@@ -53,3 +53,5 @@ jobs:
     - name: Check migrations
       run: |
         uv run --frozen python manage.py makemigrations --check
+      env:
+        DATABASE_URL: postgres://symfexit:symfexit@localhost:5432/symfexit
