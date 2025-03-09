@@ -43,6 +43,8 @@ jobs:
     - name: Run Tests
       run: |
         uv run --frozen python manage.py test
+      env:
+        DATABASE_URL: postgres://symfexit:symfexit@postgres:5432/symfexit
     - name: Run Django Check
       run: |
         uv run --frozen python manage.py check
