@@ -60,6 +60,7 @@ class TestAdminThemeWriter(FastTenantTestCase):
         self.assertEqual(Task.objects.count(), 1)
         self.assertEqual(Task.objects.first().name, "rebuild_theme")
         self.assertEqual(Task.objects.first().status, Task.Status.COMPLETED)
+        self.assertTrue("Rebuilding theme done" in Task.objects.first().output)
 
         self.assertEqual(CurrentThemeVersion.objects.count(), 1)
         current_theme_version = CurrentThemeVersion.objects.first()
