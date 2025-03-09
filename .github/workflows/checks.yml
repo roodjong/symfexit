@@ -23,7 +23,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Ruff linter
       run: |
-        ruff check
+        uv run --frozen ruff check
     - name: Ruff format check
       run: |
-        ruff format --check
+        uv run --frozen ruff format --check
