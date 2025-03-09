@@ -112,7 +112,7 @@ class SignupForm(forms.Form):
             self.add_error("pay_more", "Vul een bedrag in")
         elif payment_tier != "higher" and pay_more:
             self.add_error("payment_tier", "Ongeldig")
-        elif payment_tier == "higher" and pay_more <= 22.5:
+        elif payment_tier == "higher" and pay_more <= 22.5:  # noqa: PLR2004
             self.add_error("pay_more", "Vul een bedrag van meer dan €22,50 in")
 
     def payment_amount(self):
