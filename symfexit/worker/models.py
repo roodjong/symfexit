@@ -36,7 +36,6 @@ class Task(models.Model):
         verbose_name_plural = _("tasks")
         ordering = ["-created_at"]
 
-
     def __str__(self) -> str:
         return (
             f"{self.name}: {self.created_at} {_('(done)') if self.completed_at is not None else ''}"

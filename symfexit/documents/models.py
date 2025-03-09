@@ -32,9 +32,11 @@ class FileNode(models.Model):
 def file_location(instance, filename):
     return f"{instance.id}"
 
+
 ONE_KB = 1024
 ONE_MB = ONE_KB * ONE_KB
 ONE_GB = ONE_MB * ONE_KB
+
 
 class File(FileNode):
     content = models.FileField(_("content"), upload_to=file_location)

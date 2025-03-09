@@ -28,5 +28,7 @@ def current_theme(request):
         }
     return {
         "current_theme_css_file": "/"
-        + urllib.parse.urljoin(settings.DYNAMIC_THEME_URL, get_theme_filename(request.tenant, version)),
+        + urllib.parse.urljoin(
+            settings.DYNAMIC_THEME_URL, get_theme_filename(request.tenant, version)
+        ),
     }

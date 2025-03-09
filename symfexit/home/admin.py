@@ -17,6 +17,7 @@ class HomePageAdminForm(ModelForm):
         content = bleach.clean(content, strip=True)
         return content
 
+
 @admin.register(HomePage)
 class HomePageAdmin(admin.ModelAdmin):
     form = HomePageAdminForm

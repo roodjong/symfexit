@@ -32,7 +32,11 @@ class Command(BaseCommand):
         for notify in notifies:
             task_id = int(notify.payload)
             with transaction.atomic():
-                task = Task.objects.select_for_update(skip_locked=True).filter(status=Task.Status.QUEUED, id=task_id).first()
+                task = (
+                    Task.objects.select_for_update(skip_locked=True)
+                    .filter(status=Task.Status.QUEUED, id=task_id)
+                    .first()
+                )
                 if task is None:
                     continue
                 self.handle_task(task)

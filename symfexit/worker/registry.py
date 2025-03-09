@@ -58,7 +58,6 @@ class TaskRegistry:
             task.completed_at = timezone.now()
             task.save()
 
-
     def __contains__(self, key):
         return key in self._registry
 
@@ -78,7 +77,10 @@ def add_task(name, *args, **kwargs):
     DBPickler(kwargs_bytes).dump(kwargs)
 
     task = Task.objects.create(
-        name=name, args=args_bytes.getvalue(), kwargs=kwargs_bytes.getvalue(), tenant=connection.tenant
+        name=name,
+        args=args_bytes.getvalue(),
+        kwargs=kwargs_bytes.getvalue(),
+        tenant=connection.tenant,
     )
     if settings.RUN_TASKS_SYNC:
         task_registry.execute(task)

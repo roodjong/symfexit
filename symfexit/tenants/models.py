@@ -18,8 +18,10 @@ class Client(TenantMixin):
         with tenant_context(self):
             # Set the constance SITE_TITLE if not set yet
             from constance import config
-            if config._backend.get('SITE_TITLE') is None:
+
+            if config._backend.get("SITE_TITLE") is None:
                 config.SITE_TITLE = self.name
+
 
 class Domain(DomainMixin):
     pass
