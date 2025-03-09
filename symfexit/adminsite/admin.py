@@ -1,5 +1,6 @@
 from functools import update_wrapper
 
+from constance import config
 from django.contrib import admin
 from django.urls.resolvers import URLResolver
 from django.utils.text import format_lazy

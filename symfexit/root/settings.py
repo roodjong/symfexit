@@ -14,9 +14,9 @@ import logging
 import os
 from collections import OrderedDict
 from pathlib import Path
-from django.utils.translation import gettext_lazy as _
 
 import dj_database_url
+from django.utils.translation import gettext_lazy as _
 
 from symfexit.root.utils import enable_if
 
@@ -121,7 +121,7 @@ MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = setting(development=True, production=False, testing=False)
 
-RUN_TASKS_SYNC = setting_from_env("RUN_TASKS_SYNC", development=True, production=False)
+RUN_TASKS_SYNC = setting_from_env("RUN_TASKS_SYNC", development=False, production=False)
 
 ALLOWED_HOSTS = setting(development=["*"], production=os.getenv("ALLOWED_HOSTS", "").split(","))
 
@@ -162,7 +162,6 @@ SHARED_APPS = [
     "django_tenants",
     "symfexit.tenants.apps.TenantsConfig",
     "symfexit.root.apps.SymfexitConfig",
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -171,12 +170,12 @@ SHARED_APPS = [
     "tailwind",
     "fontawesomefree",
     "tinymce",
+    "symfexit.worker.apps.WorkerConfig",
 ] + enable_if(django_browser_reload_enabled, ["django_browser_reload"])
 
 TENANT_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
-    "django.contrib.admin",
     "django.contrib.sessions",
     "django.contrib.messages",
     "tinymce",
@@ -186,10 +185,9 @@ TENANT_APPS = [
     # Order of the adminsite apps is important as MyAdminConfig points to the
     # django.contrib.admin, which contains translations which should be
     # overwritten by our own translations in AdminSiteConfig
-    # "symfexit.adminsite.apps.AdminSiteConfig",
+    "symfexit.adminsite.apps.AdminSiteConfig",
     "symfexit.menu.apps.MenuConfig",
     "symfexit.members.apps.MembersConfig",
-    "symfexit.worker.apps.WorkerConfig",
     "symfexit.payments.apps.PaymentsConfig",
     "symfexit.payments.dummy.apps.PaymentsDummyConfig",
     "symfexit.payments.mollie.apps.PaymentsMollieConfig",
@@ -197,7 +195,7 @@ TENANT_APPS = [
     "symfexit.home.apps.HomeConfig",
     "symfexit.signup.apps.SignupConfig",
     "symfexit.membership.apps.MembershipConfig",
-    # "symfexit.adminsite.apps.MyAdminConfig",
+    "symfexit.adminsite.apps.MyAdminConfig",
 ]
 
 if SINGLE_SITE:
@@ -318,7 +316,11 @@ DYNAMIC_THEME_URL = setting_from_env(
 DYNAMIC_THEME_ROOT = setting_from_env(
     "DYNAMIC_THEME_ROOT",
     production=CONTENT_DIR / "theme",
-    development=CONTENT_DIR / "theme" / "static" / "css" / "dist",
+    development=BASE_DIR / "theme" / "static" / "css" / "dist",
+)
+DYNAMIC_THEME_WORKING_DIR = setting_from_env(
+    "DYNAMIC_THEME_WORKING_DIR",
+    development=BASE_DIR / "theme" / "static_src",
 )
 
 # Default primary key field type

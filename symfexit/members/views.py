@@ -82,7 +82,7 @@ def payment_start(request):
         city=user.city,
         postal_code=user.postal_code,
     )
-    subscription = Membership.objects.create(
+    Membership.objects.create(
         user=user,
         active_from_to=DateTimeTZRange(lower=timezone.now()),
         period_quantity=3,  # TODO: make configurable

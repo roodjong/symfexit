@@ -52,7 +52,7 @@ class RebuildTheme(TemplateView):
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        task = add_task("rebuild_theme")
+        task = add_task("rebuild_theme", tenant=request.tenant)
         context = self.get_context_data()
         context["task_added"] = True
         context["task_id"] = task.id

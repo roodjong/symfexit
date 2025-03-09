@@ -3,10 +3,8 @@
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
 
-@theme {
-  --color-primary: #C2000B;
-  --font-header: "Bebas Neue Pro", var(--default-font-family);
-}
+@import "./theme-values.css";
+@import "./theme-overrides.css";
 
 form {
   p {

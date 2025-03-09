@@ -47,9 +47,9 @@ class NonBlockingTextIO:
 
     def _check_newline(self, newline):
         if newline is not None and not isinstance(newline, str):
-            raise TypeError("illegal newline type: %r" % (type(newline),))
+            raise TypeError(f"illegal newline type: {type(newline)!r}")
         if newline not in (None, "", "\n", "\r", "\r\n"):
-            raise ValueError("illegal newline value: %r" % (newline,))
+            raise ValueError(f"illegal newline value: {newline!r}")
 
     def _read_chunk(self):
         """
@@ -104,14 +104,14 @@ class NonBlockingTextIO:
         self._decoder = decoder
         return decoder
 
-    def readline(self, size=None):
+    def readline(self, size=None):  # noqa: PLR0912, PLR0915
         if size is None:
             size = -1
         else:
             try:
                 size_index = size.__index__
             except AttributeError:
-                raise TypeError(f"{size!r} is not an integer")
+                raise TypeError(f"{size!r} is not an integer")  # noqa: B904
             else:
                 size = size_index()
 
@@ -355,7 +355,7 @@ def get_manage_py_subcommand(argv: list[str]):
     py_script = Path(sys.argv[0])
     exe_entrypoint = py_script.with_suffix(".exe")
 
-    args = [sys.executable] + ["-W%s" % o for o in sys.warnoptions]
+    args = [sys.executable] + [f"-W{o}" for o in sys.warnoptions]
     if sys.implementation.name in ("cpython", "pypy"):
         args.extend(
             f"-X{key}" if value is True else f"-X{key}={value}"
@@ -378,11 +378,11 @@ def get_manage_py_subcommand(argv: list[str]):
         if exe_entrypoint.exists():
             # Should be executed directly, ignoring sys.executable.
             return [exe_entrypoint, *argv]
-        script_entrypoint = py_script.with_name("%s-script.py" % py_script.name)
+        script_entrypoint = py_script.with_name(f"{py_script.name}-script.py")
         if script_entrypoint.exists():
             # Should be executed as usual.
             return [*args, script_entrypoint, *argv]
-        raise RuntimeError("Script %s does not exist." % py_script)
+        raise RuntimeError(f"Script {py_script} does not exist.")
     else:
         args += [sys.argv[0]]
         args += argv
@@ -394,6 +394,11 @@ class Command(BaseCommand):
         parser.add_argument(
             "--no-interaction", "-n", action="store_true", help="Don't prompt for startup questions"
         )
+        parser.add_argument(
+            "--no-tailwind",
+            action="store_true",
+            help="Don't start the tailwind watcher",
+        )
         return super().add_arguments(parser)
 
     def handle(self, *args, **options):
@@ -402,9 +407,10 @@ class Command(BaseCommand):
             self.check_superuser()
 
         rm = RunMultiple()
-        rm.add_command(
-            "tailwind", ["npm", "run", "dev"], settings.BASE_DIR / "theme" / "static_src"
-        )
+        if not options["no_tailwind"]:
+            rm.add_command(
+                "tailwind", ["npm", "run", "dev"], settings.BASE_DIR / "theme" / "static_src"
+            )
         rm.add_command("startworker", get_manage_py_subcommand(["startworker"]))
         rm.add_command("runserver", get_manage_py_subcommand(["runserver"]), fatal=True)
         rm.run()
@@ -437,13 +443,12 @@ class Command(BaseCommand):
             apps_waiting_migration = sorted({migration.app_label for migration, backwards in plan})
             self.stdout.write(
                 self.style.NOTICE(
-                    "\nYou have %(unapplied_migration_count)s unapplied migration(s). "
+                    "\nYou have {unapplied_migration_count} unapplied migration(s). "
                     "Your project may not work properly until you apply the "
-                    "migrations for app(s): %(apps_waiting_migration)s."
-                    % {
-                        "unapplied_migration_count": len(plan),
-                        "apps_waiting_migration": ", ".join(apps_waiting_migration),
-                    }
+                    "migrations for app(s): {apps_waiting_migration}.".format(
+                        unapplied_migration_count=len(plan),
+                        apps_waiting_migration=", ".join(apps_waiting_migration),
+                    )
                 )
             )
             self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them."))
@@ -461,5 +466,5 @@ class Command(BaseCommand):
                 .strip()
             ) not in ["y", "n", ""]:
                 print("type Y or N")
-            if result == "y" or result == "":
+            if result in ("y", ""):
                 execute_from_command_line(["", "createsuperuser"])

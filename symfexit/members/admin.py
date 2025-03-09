@@ -157,11 +157,7 @@ class UserAdmin(admin.ModelAdmin):
             raise PermissionDenied
         if user is None:
             raise Http404(
-                "%(name)s object with primary key %(key)r does not exist."
-                % {
-                    "name": self.model._meta.verbose_name,
-                    "key": escape(id),
-                }
+                f"{self.model._meta.verbose_name} object with primary key {escape(id)!r} does not exist."
             )
         if request.method == "POST":
             form = self.change_password_form(user, request.POST)
@@ -174,12 +170,7 @@ class UserAdmin(admin.ModelAdmin):
                 update_session_auth_hash(request, form.user)
                 return HttpResponseRedirect(
                     reverse(
-                        "%s:%s_%s_change"
-                        % (
-                            self.admin_site.name,
-                            user._meta.app_label,
-                            user._meta.model_name,
-                        ),
+                        f"{self.admin_site.name}:{user._meta.app_label}_{user._meta.model_name}_change",
                         args=(user.pk,),
                     )
                 )
@@ -190,7 +181,7 @@ class UserAdmin(admin.ModelAdmin):
         adminForm = admin.helpers.AdminForm(form, fieldsets, {})
 
         context = {
-            "title": "Change password: %s" % escape(user.get_username()),
+            "title": f"Change password: {escape(user.get_username())}",
             "adminForm": adminForm,
             "form_url": form_url,
             "form": form,

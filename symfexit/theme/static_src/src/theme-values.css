@@ -1,0 +1,4 @@
+@theme {
+    --color-primary: #C2000B;
+    --font-header: "Bebas Neue Pro", var(--default-font-family);
+}

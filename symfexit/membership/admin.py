@@ -1,5 +1,6 @@
 import json
 
+from constance import config
 from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
@@ -41,12 +42,12 @@ class PaymentTiersAdmin(admin.ModelAdmin):
             path(
                 "",
                 self.admin_site.admin_view(self.changelist_view),
-                name="%s_%s_changelist" % info,
+                name="{}_{}_changelist".format(*info),
             ),
             path(
                 "",
                 self.admin_site.admin_view(self.changelist_view),
-                name="%s_%s_add" % info,
+                name="{}_{}_add".format(*info),
             ),
         ]
 
@@ -115,7 +116,7 @@ class PaymentTiers:
             return False
 
         def get_change_permission(self):
-            return "change_%s" % self.model_name
+            return f"change_{self.model_name}"
 
         @property
         def app_config(self):
@@ -123,11 +124,11 @@ class PaymentTiers:
 
         @property
         def label(self):
-            return "%s.%s" % (self.app_label, self.object_name)
+            return f"{self.app_label}.{self.object_name}"
 
         @property
         def label_lower(self):
-            return "%s.%s" % (self.app_label, self.model_name)
+            return f"{self.app_label}.{self.model_name}"
 
     _meta = Meta()
 

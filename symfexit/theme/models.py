@@ -6,11 +6,11 @@ from symfexit.theme.utils import get_time_millis
 
 class TailwindKey(models.Model):
     COLOR_KEY_CHOICES = [
-        ("primary", "Primary Color"),
-        ("secondary", "Secondary Color"),
+        ("color-primary", "Primary Color"),
+        ("color-secondary", "Secondary Color"),
     ]
     id = models.AutoField(primary_key=True)
-    name = models.CharField(_("name"), unique=True, max_length=20, choices=COLOR_KEY_CHOICES)
+    name = models.CharField(_("name"), unique=True, blank=False, max_length=20, choices=COLOR_KEY_CHOICES)
     value = models.TextField(_("value"))
 
     def __str__(self) -> str:

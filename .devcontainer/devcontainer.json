@@ -21,7 +21,7 @@
 	"forwardPorts": [8000, 5432],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "uv sync && echo '[[ -z $VIRTUAL_ENV_PROMPT ]] && source $(pwd)/.venv/bin/activate' | tee -a ~/.bashrc ~/.zshrc; cd symfexit/theme/static_src && npm install && DJANGO_SETTINGS_MODULE=\"symfexit.root.settings\" DJANGO_ADMIN_COMMAND=\"uv run django-admin\"  npm run build"
+	"postCreateCommand": "uv sync && echo '[[ -z $VIRTUAL_ENV_PROMPT ]] && source $(pwd)/.venv/bin/activate\nulimit -c 0' | tee -a ~/.bashrc ~/.zshrc; cd symfexit/theme/static_src && npm install && DJANGO_SETTINGS_MODULE=\"symfexit.root.settings\" DJANGO_ADMIN_COMMAND=\"uv run django-admin\"  npm run build"
 
 	// Configure tool-specific properties.
 	// "customizations": {},

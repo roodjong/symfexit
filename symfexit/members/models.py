@@ -41,6 +41,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("member_identifier", generate_member_number())
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
@@ -53,7 +54,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     # Previously the primary_key of the User in the old mijnrood project
     member_identifier = models.TextField(
-        _("member number"), unique=True, default=generate_member_number
+        _("member number"), unique=True, null=False, blank=False
     )
     first_name = models.TextField(_("first name"))
     last_name = models.TextField(_("last name"))

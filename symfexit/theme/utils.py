@@ -10,6 +10,6 @@ def get_time_millis() -> int:
 def get_theme_filename(version: int | None):
     if not version:
         return "styles.css"
-    if settings.DJANGO_ENV == "development":
+    if settings.SYMFEXIT_ENV == "development":
         return "styles.css"
     return f"styles-{version}.css"

@@ -10,7 +10,18 @@
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
-                "develop", "-n"
+                "develop", "-n", "--no-tailwind"
+            ],
+            "django": true,
+            "justMyCode": false
+        },
+        {
+            "name": "Python: startworker",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "startworker"
             ],
             "django": true,
             "justMyCode": false

@@ -72,6 +72,9 @@ select = [
     # pylint
     "PL",
 ]
+ignore = [
+    "E501" # line too long
+]
 
 [tool.ruff.lint.pylint]
 max-args = 7

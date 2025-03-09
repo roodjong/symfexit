@@ -14,3 +14,6 @@ class MolliePayment(models.Model):
         indexes = [
             models.Index(fields=["payment_id"]),
         ]
+
+    def __str__(self) -> str:
+        return f"{self.order} - {self.payment_id}"

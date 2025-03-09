@@ -74,7 +74,7 @@
             mkdir -p $out/staticfiles/css/dist
             export PATH=${pkgs.nodejs}/bin:$PATH
             cd $src/src/theme/static_src
-            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- --postcss -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
+            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
           '';
           symfexit-python = self.packages.${system}.symfexit-package.config.deps.python.withPackages (ps: with ps; [
             self.packages.${system}.symfexit-package.config.package-func.result

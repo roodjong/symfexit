@@ -18,6 +18,9 @@ class FileNode(models.Model):
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
 
+    def __str__(self) -> str:
+        return self.name
+
     def save(self, *args, **kwargs):
         if isinstance(self.parent, File):
             return  # Files cannot be parents
@@ -25,44 +28,44 @@ class FileNode(models.Model):
             return
         super().save(*args, **kwargs)
 
-    def __str__(self) -> str:
-        return self.name
-
 
 def file_location(instance, filename):
     return f"{instance.id}"
 
+ONE_KB = 1024
+ONE_MB = ONE_KB * ONE_KB
+ONE_GB = ONE_MB * ONE_KB
 
 class File(FileNode):
     content = models.FileField(_("content"), upload_to=file_location)
     size = models.IntegerField(_("size"), default=0)
     content_type = models.TextField(_("content type"), default="application/octet-stream")
 
-    def url(self):
-        return self.content.url
-
-    def human_size(self):
-        if self.size < 1024:
-            return f"{self.size} bytes"
-        elif self.size < 1024 * 1024:
-            return f"{self.size / 1024:.2f} KiB"
-        elif self.size < 1024 * 1024 * 1024:
-            return f"{self.size / (1024 * 1024):.2f} MiB"
-        else:
-            return f"{self.size / (1024 * 1024 * 1024):.2f} GiB"
-
-    def __str__(self) -> str:
-        return "File: " + self.name
-
     class Meta:
         verbose_name = _("file")
         verbose_name_plural = _("files")
 
+    def __str__(self) -> str:
+        return "File: " + self.name
+
+    def url(self):
+        return self.content.url
+
+    def human_size(self):
+        if self.size < ONE_KB:
+            return f"{self.size} bytes"
+        elif self.size < ONE_MB:
+            return f"{self.size / ONE_KB:.2f} KiB"
+        elif self.size < ONE_GB:
+            return f"{self.size / (ONE_MB):.2f} MiB"
+        else:
+            return f"{self.size / (ONE_GB):.2f} GiB"
+
 
 class Directory(FileNode):
-    def __str__(self) -> str:
-        return "Directory: " + self.name
-
     class Meta:
         verbose_name = _("directory")
         verbose_name_plural = _("directories")
+
+    def __str__(self) -> str:
+        return "Directory: " + self.name

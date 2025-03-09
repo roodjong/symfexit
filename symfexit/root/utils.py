@@ -6,7 +6,7 @@ def enable_if(condition, value, otherwise=None):
     if condition and callable(value):
         value = value()
     elif condition:
-        value = value
+        value = value  # noqa: PLW0127
     elif callable(otherwise):
         value = otherwise()
     else:
