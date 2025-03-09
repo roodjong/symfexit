@@ -30,7 +30,7 @@ def rebuild_theme(*, tenant: Client):
     new_env["NODE_ENV"] = "production"
 
     version = get_time_millis()
-    output_name = get_theme_filename(version)
+    output_name = get_theme_filename(tenant, version)
     try:
         stdout = subprocess.check_output(
             [

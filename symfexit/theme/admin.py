@@ -1,7 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.urls.resolvers import URLPattern
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
 from symfexit.theme.models import TailwindKey
@@ -53,7 +55,6 @@ class RebuildTheme(TemplateView):
 
     def post(self, request, *args, **kwargs):
         task = add_task("rebuild_theme", tenant=request.tenant)
-        context = self.get_context_data()
-        context["task_added"] = True
-        context["task_id"] = task.id
-        return self.render_to_response(context)
+        # Add message
+        messages.add_message(request, messages.INFO, _("Rebuilding theme, refresh to see progress"))
+        return redirect("admin:worker_task_change", task.id)

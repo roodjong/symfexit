@@ -1,7 +1,7 @@
 from django.utils.module_loading import autodiscover_modules
 
-from symfexit.worker.logger import Logger
 from symfexit.worker.registry import task_registry
+from symfexit.worker.workerlogger import Logger
 
 
 def autodiscover():

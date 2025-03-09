@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import connection, models
 from django.utils.translation import gettext_lazy as _
 
 
@@ -41,3 +41,9 @@ class Task(models.Model):
         return (
             f"{self.name}: {self.created_at} {_('(done)') if self.completed_at is not None else ''}"
         )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.status == self.Status.QUEUED:
+            with connection.cursor() as cursor:
+                cursor.execute("NOTIFY worker_task, %s;", [str(self.id)])

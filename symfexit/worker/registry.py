@@ -1,9 +1,11 @@
 import io
 import pickle
+import traceback
 
 from django.apps import apps
 from django.conf import settings
 from django.db import connection, models
+from django.utils import timezone
 
 
 class DBPickler(pickle.Pickler):
@@ -33,9 +35,29 @@ class TaskRegistry:
         return _register
 
     def execute(self, task):
+        from symfexit.worker import logger
+        from symfexit.worker.models import Task
+
         args = DBUnpickler(io.BytesIO(task.args)).load()
         kwargs = DBUnpickler(io.BytesIO(task.kwargs)).load()
-        return self._registry[task.name](*args, **kwargs)
+        logger.clear()
+        try:
+            self._registry[task.name](*args, **kwargs)
+        except Exception as e:
+            task.status = Task.Status.EXCEPTION
+            logoutput = logger.get_output()
+            task.output = (
+                f"{logoutput}\n\nTask failed with exception ({type(e)}): {traceback.format_exc()}"
+            )
+            return
+        else:
+            logoutput = logger.get_output()
+            task.output = logoutput
+            task.status = Task.Status.COMPLETED
+        finally:
+            task.completed_at = timezone.now()
+            task.save()
+
 
     def __contains__(self, key):
         return key in self._registry
@@ -58,8 +80,6 @@ def add_task(name, *args, **kwargs):
     task = Task.objects.create(
         name=name, args=args_bytes.getvalue(), kwargs=kwargs_bytes.getvalue(), tenant=connection.tenant
     )
-    with connection.cursor() as cursor:
-        cursor.execute("NOTIFY worker_task, %s;", [str(task.id)])
     if settings.RUN_TASKS_SYNC:
         task_registry.execute(task)
     return task
