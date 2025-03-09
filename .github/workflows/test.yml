@@ -16,6 +16,23 @@ jobs:
           - '3.12'
           - '3.13'
 
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:17
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: symfexit
+          POSTGRES_DB: symfexit
+          POSTGRES_PASSWORD: symfexit
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v4
     - name: Install the latest version of uv and set the Python version
