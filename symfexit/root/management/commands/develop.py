@@ -273,6 +273,7 @@ class RunMultiple:
                     process = pid_fds[r]
                     siginfo = os.waitid(os.P_PIDFD, r, os.WEXITED)
                     self._handle_process_exit(process, siginfo.si_status)
+                    os.close(r)
                     del pid_fds[r]
                 else:
                     # Process output available
