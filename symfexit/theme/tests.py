@@ -13,16 +13,22 @@ from symfexit.worker.models import Task
 
 User = get_user_model()
 
+is_npm_available = None
 def npm_available():
+    global is_npm_available  # noqa: PLW0603
+    if is_npm_available is not None:
+        return is_npm_available
     try:
         import subprocess
         subprocess.check_call(['npm', 'install'], cwd=settings.BASE_DIR / 'theme' / 'static_src')
+        is_npm_available = True
         return True
     except (FileNotFoundError, subprocess.CalledProcessError):
+        is_npm_available = False
         return False
 
 class TestThemeWriter(TestCase):
-    @skipIf(not npm_available, "npm not available")
+    @skipIf(not npm_available(), "npm not available")
     def test_write_out_overrides(self):
         TailwindKey.objects.create(
             name="color-primary",
@@ -43,7 +49,7 @@ class TestAdminThemeWriter(FastTenantTestCase):
         self.client = TenantClient(self.tenant)
         self.client.force_login(User.objects.create_superuser(email="testuser@example.com"))
 
-    @skipIf(not npm_available, "npm not available")
+    @skipIf(not npm_available(), "npm not available")
     def test_color_change_from_admin(self):
         response = self.client.post(reverse("admin:theme_tailwindkey_add"), {
             "name": "color-primary",
