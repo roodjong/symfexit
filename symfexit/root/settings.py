@@ -14,6 +14,7 @@ import logging
 import os
 from collections import OrderedDict
 from pathlib import Path
+from django.utils.translation import gettext_lazy as _
 
 import dj_database_url
 
@@ -131,6 +132,30 @@ else:
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+CONSTANCE_ADDITIONAL_FIELDS = {
+    "image_field": [
+        "django.forms.FileField",
+        {"required": False, "widget": "symfexit.root.helpers.ClearableFileInputFromStr"},
+    ]
+}
+
+CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
+
+# https://django-constance.readthedocs.io/en/latest/#configuration
+CONSTANCE_CONFIG = {
+    "SITE_TITLE": ("Membersite", _("Main title of this site")),
+    "LOGO_IMAGE": ("", _("Organisation logo"), "image_field"),
+    "MAIN_SITE": ("https://roodjongeren.nl/", _("Main site of the organisation")),
+    "HOMEPAGE_CURRENT": (
+        0,
+        _("Current home page (configure this on the home pages admin)"),
+    ),
+    "PAYMENT_TIERS_JSON": (
+        "{}",
+        _("JSON with payment tiers (configure this on the membership admin)"),
+    ),
+}
+
 # Application definition
 
 SHARED_APPS = [
@@ -155,6 +180,7 @@ TENANT_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "tinymce",
+    "constance",
     # our own apps
     "symfexit.theme",
     # Order of the adminsite apps is important as MyAdminConfig points to the
@@ -185,6 +211,7 @@ TENANT_DOMAIN_MODEL = "tenants.Domain"
 
 MIDDLEWARE = [
     "django_tenants.middleware.main.TenantMainMiddleware",
+    # "symfexit.tenants.middleware.TenantConfigMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -208,6 +235,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "constance.context_processors.config",
                 "django.template.context_processors.request",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
@@ -262,8 +290,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
-
-LANGUAGE_CODE = "nl-NL"
 
 TIME_ZONE = "Europe/Amsterdam"
 

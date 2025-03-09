@@ -1,4 +1,3 @@
-import sys
 import traceback
 from time import sleep
 

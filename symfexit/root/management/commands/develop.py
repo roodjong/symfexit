@@ -11,8 +11,9 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
-from django.core.management import BaseCommand
+from django.core.management import BaseCommand, execute_from_command_line
 from django.db import DEFAULT_DB_ALIAS, OperationalError, connections
 
 ANSI_COLORS = [
@@ -242,88 +243,98 @@ class RunMultiple:
             pass
 
     def _run(self):
+        # Process commands and build running processes list
         for i, command in enumerate(self.commands):
-            if isinstance(command, self.Command):
-                newcmd = self._run_command(command)
-            elif isinstance(command, self.Function):
-                newcmd = self._run_function(command)
+            newcmd = self._run_process(command)
             newcmd.color = i % len(ANSI_COLORS)
             self.running.append(newcmd)
 
+        # Set up process tracking collections
         pids = {r.pid: r for r in self.running}
-        # Empty if pidfd_open is not available
         pid_fds = {r.pid_fd: r for r in self.running if r.pid_fd is not None}
-        select_timeout = None
-        if not pid_fds:
-            select_timeout = 2.0
         fds = {r.fd: r for r in self.running}
+
+        # Configure timeout if pidfd monitoring isn't available
+        select_timeout = None if pid_fds else 2.0
+
         while True:
+            # Handle process exits when pidfd_open isn't available
             if not pid_fds:
-                while True:
-                    wpid, status = os.waitpid(-1, os.WNOHANG)
-                    if not wpid:
-                        break
-                    status = os.waitstatus_to_exitcode(status)
-                    color = ANSI_COLORS[pids[wpid].color]
-                    print(
-                        f"[manager] Process {color}{pids[wpid].command.prefix}{ANSI_RESET} exited with status code {status}"
-                    )
-                    if pids[wpid].command.fatal:
-                        print("[manager] Exiting...")
-                        sys.exit(1)
+                self._check_process_exits(pids)
+
+            # Monitor process outputs and exits
             rl, _, _ = select.select(
                 list(pid_fds.keys()) + list(fds.keys()), [], [], select_timeout
             )
+
             for r in rl:
                 if r in pid_fds:
+                    # Process exit detected via pidfd
+                    process = pid_fds[r]
                     siginfo = os.waitid(os.P_PIDFD, r, os.WEXITED)
-                    color = ANSI_COLORS[pid_fds[r].color]
-                    print(
-                        f"[manager] Process {color}{pid_fds[r].command.prefix}{ANSI_RESET} exited with status code {siginfo.si_status}"
-                    )
-                    if pid_fds[r].command.fatal:
-                        print("[manager] Exiting...")
-                        sys.exit(1)
+                    self._handle_process_exit(process, siginfo.si_status)
                     del pid_fds[r]
                 else:
-                    for line in fds[r].file:
-                        color = ANSI_COLORS[fds[r].color]
-                        print(
-                            f"[{color}{fds[r].command.prefix}{ANSI_RESET}]",
-                            re.sub(r"\x1b\[\d+[A-Za-ln-z]", "", line),
-                            end="",
-                            flush=True,
-                        )
+                    # Process output available
+                    process = fds[r]
+                    self._handle_process_output(process)
 
-    def _run_command(self, command):
-        try:
-            pid, fd = os.forkpty()
-        except (AttributeError, OSError):
-            print(f"forkpty: Could not start {command.prefix}")
-        else:
-            if pid == 0:
-                if command.cwd is not None:
-                    os.chdir(command.cwd)
-                os.execvp(command.argv[0], command.argv)
-                print(f"execvp: Could not start {command.prefix}")
-        return self.Running(
-            command, pid, self._get_pid_fd(pid), fd, NonBlockingTextIO(open(fd, "rb"))
+    def _check_process_exits(self, pids):
+        """Check for process exits using waitpid when pidfd isn't available."""
+        while True:
+            wpid, status = os.waitpid(-1, os.WNOHANG)
+            if not wpid:
+                break
+            status = os.waitstatus_to_exitcode(status)
+            self._handle_process_exit(pids[wpid], status)
+
+    def _handle_process_exit(self, process, status):
+        """Handle a process exit with consistent formatting and fatal checking."""
+        color = ANSI_COLORS[process.color]
+        print(
+            f"[manager] Process {color}{process.command.prefix}{ANSI_RESET} exited with status code {status}"
         )
+        if process.command.fatal:
+            print("[manager] Exiting...")
+            sys.exit(1)
 
-    def _run_function(self, function):
+    def _handle_process_output(self, process):
+        """Handle process output with consistent formatting."""
+        for line in process.file:
+            color = ANSI_COLORS[process.color]
+            print(
+                f"[{color}{process.command.prefix}{ANSI_RESET}]",
+                re.sub(r"\x1b\[\d+[A-Za-ln-z]", "", line),
+                end="",
+                flush=True,
+            )
+
+    def _run_process(self, command_obj):
+        """Common process handling for both commands and functions."""
         try:
             pid, fd = os.forkpty()
-        except (AttributeError, OSError):
-            print(f"forkpty: Could not start {function.prefix}")
+        except (AttributeError, OSError) as e:
+            print(f"forkpty: Could not start {command_obj.prefix}")
+            raise e
         else:
-            if pid == 0:
+            if pid == 0:  # Child process
+                if isinstance(command_obj, self.Command) and command_obj.cwd is not None:
+                    os.chdir(command_obj.cwd)
+
+                # Execute the appropriate operation based on command type
                 try:
-                    function.func()
+                    if isinstance(command_obj, self.Command):
+                        os.execvp(command_obj.argv[0], command_obj.argv)
+                    elif isinstance(command_obj, self.Function):
+                        command_obj.func()
                 except Exception as e:
-                    print(f"Exception running function {function.prefix}")
+                    if isinstance(command_obj, self.Function):
+                        print(f"Exception running function {command_obj.prefix}")
                     raise e
+
+        # Parent process continues here
         return self.Running(
-            function, pid, self._get_pid_fd(pid), fd, NonBlockingTextIO(open(fd, "rb"))
+            command_obj, pid, self._get_pid_fd(pid), fd, NonBlockingTextIO(open(fd, "rb"))
         )
 
     def _get_pid_fd(self, pid):
@@ -379,8 +390,16 @@ def get_manage_py_subcommand(argv: list[str]):
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--no-interaction", "-n", action="store_true", help="Don't prompt for startup questions"
+        )
+        return super().add_arguments(parser)
+
     def handle(self, *args, **options):
         self.check_migrations()
+        if not options["no_interaction"]:
+            self.check_superuser()
 
         rm = RunMultiple()
         rm.add_command(
@@ -429,3 +448,18 @@ class Command(BaseCommand):
             )
             self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them."))
             sys.exit(1)
+
+    def check_superuser(self):
+        User = get_user_model()
+        if not User.objects.filter(is_superuser=True).exists():
+            print()
+            while (
+                result := input(
+                    "No superuser has been created yet, do you want to create one now? (This prompt can be disabled by starting with -n, --no-interaction) (Y/n) "
+                )
+                .lower()
+                .strip()
+            ) not in ["y", "n", ""]:
+                print("type Y or N")
+            if result == "y" or result == "":
+                execute_from_command_line(["", "createsuperuser"])

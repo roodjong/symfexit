@@ -52,14 +52,16 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     # Previously the primary_key of the User in the old mijnrood project
-    member_identifier = models.TextField(_("member number"), unique=True)
+    member_identifier = models.TextField(
+        _("member number"), unique=True, default=generate_member_number
+    )
     first_name = models.TextField(_("first name"))
     last_name = models.TextField(_("last name"))
     email = models.EmailField(_("email"))
-    phone_number = models.TextField(_("phone number"))
-    address = models.TextField(_("address"))
-    city = models.TextField(_("cith"))
-    postal_code = models.TextField(_("postal code"))
+    phone_number = models.TextField(_("phone number"), blank=True)
+    address = models.TextField(_("address"), blank=True)
+    city = models.TextField(_("city"), blank=True)
+    postal_code = models.TextField(_("postal code"), blank=True)
 
     is_staff = models.BooleanField(
         _("staff status"),
@@ -77,7 +79,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"
-    REQUIRED_FIELDS = ["member_identifier", "first_name", "last_name"]
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     objects = UserManager()
 

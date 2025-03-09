@@ -23,6 +23,7 @@ services:
       - "PGDATABASE=symfexit"
       - "PGUSER=symfexit"
       - "PGPASSWORD=symfexit"
+      - "SINGLE_SITE=0"
 
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
