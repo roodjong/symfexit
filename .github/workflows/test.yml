@@ -32,6 +32,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
     - uses: actions/checkout@v4
@@ -44,7 +46,7 @@ jobs:
       run: |
         uv run --frozen python manage.py test
       env:
-        DATABASE_URL: postgres://symfexit:symfexit@postgres:5432/symfexit
+        DATABASE_URL: postgres://symfexit:symfexit@localhost:5432/symfexit
     - name: Run Django Check
       run: |
         uv run --frozen python manage.py check
