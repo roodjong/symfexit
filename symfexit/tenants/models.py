@@ -17,7 +17,7 @@ class Client(TenantMixin):
         super().save(*args, **kwargs)
         with tenant_context(self):
             # Set the constance SITE_TITLE if not set yet
-            from constance import config
+            from constance import config  # noqa: PLC0415
 
             if config._backend.get("SITE_TITLE") is None:
                 config.SITE_TITLE = self.name

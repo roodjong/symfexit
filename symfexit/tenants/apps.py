@@ -5,7 +5,7 @@ from django.db.models.signals import post_migrate
 
 
 def create_dev_domains(client):
-    from symfexit.tenants.models import Domain
+    from symfexit.tenants.models import Domain  # noqa: PLC0415
 
     try:
         Domain.objects.create(domain="127.0.0.1", tenant=client, is_primary=False)
@@ -19,7 +19,7 @@ def create_dev_domains(client):
 
 
 def ensure_single_tenant_if_enabled(sender, **kwargs):
-    from symfexit.tenants.models import Client, Domain
+    from symfexit.tenants.models import Client, Domain  # noqa: PLC0415
 
     if settings.SINGLE_SITE:
         (client, _) = Client.objects.get_or_create(

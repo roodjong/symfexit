@@ -21,7 +21,7 @@ def npm_available():
     if is_npm_available is not None:
         return is_npm_available
     try:
-        import subprocess
+        import subprocess  # noqa: PLC0415
 
         subprocess.check_call(["npm", "install"], cwd=settings.BASE_DIR / "theme" / "static_src")
         is_npm_available = True

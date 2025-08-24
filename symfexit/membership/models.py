@@ -14,7 +14,7 @@ class Membership(Subscription):
         return cls.objects.filter(user=user, active_from_to__contains=timezone.now()).first()
 
     def new_order(self, *, initial, return_url, description=None):
-        from signup.models import ApplicationPayment
+        from signup.models import ApplicationPayment  # noqa: PLC0415
 
         if description is None:
             description = f"Membership fee for {self.address.name}"
@@ -25,7 +25,7 @@ class Membership(Subscription):
         appl_pay = ApplicationPayment(order_ptr=order)
         appl_pay.save_base(raw=True)
         if initial:
-            from signup.models import MembershipApplication
+            from signup.models import MembershipApplication  # noqa: PLC0415
 
             appl = MembershipApplication.objects.filter(_subscription=self).first()
             assert appl is not None
