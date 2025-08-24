@@ -1,10 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseNotAllowed
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
 
 from symfexit.documents.models import Directory, File
+from symfexit.members.models import User
 
 
 # Create your views here.
@@ -19,6 +20,11 @@ class Documents(LoginRequiredMixin, TemplateView):
         context["files"] = File.objects.filter(parent=slug)
         context["breadcrumbs"] = build_breadcrumbs(context["parent"])
         return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.member_type != User.MembershipType.MEMBER:
+            return redirect("members:memberdata")
+        return super().dispatch(request, args, kwargs)
 
 
 def file(request, slug):

@@ -55,6 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class MembershipType(models.TextChoices):
         MEMBER = "MEMBER", _("Member")
         SUPPORT_MEMBER = "SUPPORT", _("Support member")
+
     # Previously the primary_key of the User in the old mijnrood project
     member_identifier = models.TextField(_("member number"), unique=True, null=False, blank=False)
     first_name = models.TextField(_("first name"))
@@ -68,9 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("cadre"), default=False, help_text=_("Designates whether the member is a cadre member.")
     )
     member_type = models.CharField(
-        _("membership type"),
-        default=MembershipType.MEMBER,
-        choices=MembershipType
+        _("membership type"), default=MembershipType.MEMBER, choices=MembershipType
     )
 
     is_staff = models.BooleanField(
