@@ -61,6 +61,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     address = models.TextField(_("address"), blank=True)
     city = models.TextField(_("city"), blank=True)
     postal_code = models.TextField(_("postal code"), blank=True)
+    cadre = models.BooleanField(
+        _("cadre"), default=False, help_text=_("Designates whether the member is a cadre member.")
+    )
 
     is_staff = models.BooleanField(
         _("staff status"),

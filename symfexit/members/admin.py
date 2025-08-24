@@ -46,6 +46,7 @@ class UserAdmin(admin.ModelAdmin):
                     "address",
                     "postal_code",
                     "city",
+                    "cadre",
                 )
             },
         ),
@@ -77,7 +78,7 @@ class UserAdmin(admin.ModelAdmin):
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
     list_display = ("email", "first_name", "last_name", "is_staff")
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups")
+    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "cadre")
     search_fields = ("username", "first_name", "last_name", "email")
     ordering = ("email",)
     filter_horizontal = (
