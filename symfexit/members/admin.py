@@ -13,7 +13,6 @@ from django.contrib.auth.forms import (
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
-from django.forms import BooleanField
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
