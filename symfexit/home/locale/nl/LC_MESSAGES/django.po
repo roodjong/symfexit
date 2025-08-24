@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 15:02+0000\n"
+"POT-Creation-Date: 2025-08-24 18:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr "Maak een nieuwe homepagina"
 msgid "This is now the current homepage."
 msgstr "Dit is nu de huidige homepagina."
 
-#: symfexit/home/apps.py:8 symfexit/home/apps.py:11
+#: symfexit/home/apps.py:8 symfexit/home/apps.py:14
 #: symfexit/home/templates/home/home.html:6
 msgid "Home"
 msgstr "Homepagina"

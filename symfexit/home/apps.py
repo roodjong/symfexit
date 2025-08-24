@@ -8,4 +8,9 @@ class HomeConfig(AppConfig):
     verbose_name = _("Home")
 
     def menu_items(self, request):
-        return [{"name": _("Home"), "viewname": "home:home", "order": 0}]
+        from symfexit.members.models import User  # noqa:PLC0415
+
+        if request.user.member_type == User.MemberType.MEMBER:
+            return [{"name": _("Home"), "viewname": "home:home", "order": 0}]
+        else:
+            return []
