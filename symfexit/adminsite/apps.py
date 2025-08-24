@@ -14,5 +14,7 @@ class AdminSiteConfig(AppConfig):
     verbose_name = _("Adminsite")
 
     def menu_items(self, request):
-        admin = request.user.is_staff
-        return [{"name": _("Administration"), "viewname": "admin:index", "order": 3}] if admin else []
+        if request.user.is_staff:
+            return [{"name": _("Administration"), "viewname": "admin:index", "order": 3}]
+        else:
+            return []
