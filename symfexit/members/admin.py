@@ -9,7 +9,6 @@ from django.contrib.auth.forms import (
     UserChangeForm,
     UserCreationForm,
 )
-from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
 from django.http import Http404, HttpResponseRedirect
@@ -228,6 +227,3 @@ class UserAdmin(admin.ModelAdmin):
 class LocalGroupAdmin(admin.ModelAdmin):
     exclude = ("permissions",)
     filter_horizontal = ("contact_people",)
-
-
-admin.site.unregister(Group)
