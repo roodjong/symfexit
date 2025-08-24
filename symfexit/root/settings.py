@@ -196,6 +196,7 @@ TENANT_APPS = [
     "symfexit.payments.dummy.apps.PaymentsDummyConfig",
     "symfexit.payments.mollie.apps.PaymentsMollieConfig",
     "symfexit.documents.apps.DocumentsConfig",
+    "symfexit.events.apps.EventsConfig",
     "symfexit.home.apps.HomeConfig",
     "symfexit.signup.apps.SignupConfig",
     "symfexit.membership.apps.MembershipConfig",
