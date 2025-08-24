@@ -39,6 +39,9 @@ The recommended setup for running symfexit locally is to use [`uv`](https://docs
 
 Of course, you can use other tools for working with Python, but the instructions below are for `uv`.
 
+
+#### Python
+
 1. Install uv following their instructions: https://docs.astral.sh/uv/getting-started/installation/
 2. Clone the repository: `git clone https://github.com/roodjong/symfexit.git`
 3. Change into the repository: `cd symfexit`
@@ -49,14 +52,36 @@ You now have the Python environment set up.
 You also need a local database.
 Use your preferred way to install PostgreSQL, only version 17 is currently recommended, as symfexit is known to work with it.
 
-Usually PostgreSQL is set up to trust your local unix user, so you can create the database and user like this:
+By default settings.py is configured to connect with your unix user to the database `symfexit`.
+If you want to use this setup, you need to have a PostgreSQL user with the same name as your unix user, and a database named `symfexit` owned by that user.
+If you installed PostgreSQL on MacOS using Homebrew, you already have a user with the same name as your unix user.
+In that case you only need to create the database.
+
+On Linux, you probably have to prefix the commands with `sudo -u postgres`.
+You may also have to start the PostgreSQL service with `sudo systemctl start postgresql`.
 
 ```bash
-createdb symfexit
+# On linux, you may have to prefix these with sudo -u postgres
+createuser $(whoami)
+createdb -O $(whoami) symfexit
 ```
 
 If you have different users for PostgreSQL, you can set the `DATABASE_URL` environment variable to the correct value.
 The default value is `postgres:///symfexit`.
+
+
+#### Theme with Tailwind
+
+You need to have Node.js installed.
+The version of Node.js is not very important.
+Tailwindcss says it should work with a Node version of 12 or higher, but you can install your distribution's default version as it should probably work.
+
+Then, you can install the dependencies with:
+
+```bash
+cd symfexit/theme/static_src
+npm install
+```
 
 
 ## Starting the server
