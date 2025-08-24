@@ -64,6 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     cadre = models.BooleanField(
         _("cadre"), default=False, help_text=_("Designates whether the member is a cadre member.")
     )
+    extra_information = models.TextField(_("Extra information"), blank=True)
 
     is_staff = models.BooleanField(
         _("staff status"),
