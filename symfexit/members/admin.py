@@ -228,6 +228,3 @@ class UserAdmin(admin.ModelAdmin):
 class LocalGroupAdmin(admin.ModelAdmin):
     exclude = ("permissions",)
     filter_horizontal = ("contact_people",)
-
-
-admin.site.unregister(Group)
