@@ -235,7 +235,7 @@ class Member(User):
 @admin.register(Member)
 class MemberAdmin(UserAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(member_type=User.MembershipType.MEMBER)
+        return super().get_queryset(request).filter(member_type=User.MemberType.MEMBER)
 
 
 # Proxy for a separate view with only support members on the admin page
@@ -249,7 +249,7 @@ class SupportMember(User):
 @admin.register(SupportMember)
 class SupportMemberAdmin(UserAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(member_type=User.MembershipType.SUPPORT_MEMBER)
+        return super().get_queryset(request).filter(member_type=User.MemberType.SUPPORT_MEMBER)
 
 
 @admin.register(LocalGroup)

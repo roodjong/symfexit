@@ -52,7 +52,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    class MembershipType(models.TextChoices):
+    class MemberType(models.TextChoices):
         MEMBER = "MEMBER", _("Member")
         SUPPORT_MEMBER = "SUPPORT", _("Support member")
 
@@ -69,7 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("cadre"), default=False, help_text=_("Designates whether the member is a cadre member.")
     )
     member_type = models.CharField(
-        _("membership type"), default=MembershipType.MEMBER, choices=MembershipType
+        _("membership type"), default=MemberType.MEMBER, choices=MemberType
     )
 
     is_staff = models.BooleanField(

@@ -20,6 +20,6 @@ class Home(LoginRequiredMixin, TemplateView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.member_type != User.MembershipType.MEMBER:
+        if request.user.is_authenticated and request.user.member_type != User.MemberType.MEMBER:
             return redirect("members:memberdata")
         return super().dispatch(request, args, kwargs)
