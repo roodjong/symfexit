@@ -7,8 +7,8 @@ class MembersConfig(AppConfig):
     name = "symfexit.members"
     verbose_name = _("Members")
 
-    def menu_items(self):
+    def menu_items(self, request):
         return [
             {"name": _("Details"), "viewname": "members:memberdata", "order": 1},
-            {"name": _("Log out"), "viewname": "members:logout", "order": 3},
+            {"name": _("Log out"), "viewname": "members:logout", "order": 99},
         ]

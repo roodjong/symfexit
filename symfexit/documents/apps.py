@@ -7,5 +7,5 @@ class DocumentsConfig(AppConfig):
     name = "symfexit.documents"
     verbose_name = _("Documents")
 
-    def menu_items(self):
+    def menu_items(self, request):
         return [{"name": _("Documents"), "viewname": "documents:documents", "order": 2}]

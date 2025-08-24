@@ -12,3 +12,7 @@ class AdminSiteConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "symfexit.adminsite"
     verbose_name = _("Adminsite")
+
+    def menu_items(self, request):
+        admin = request.user.is_staff
+        return [{"name": _("Administration"), "viewname": "admin:index", "order": 3}] if admin else []
