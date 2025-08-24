@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from symfexit.members.models import User, LocalGroup
+from symfexit.members.models import LocalGroup, User
 
 
 class NameWidget(forms.MultiWidget):
