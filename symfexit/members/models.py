@@ -52,6 +52,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class MemberType(models.TextChoices):
+        MEMBER = "MEMBER", _("Member")
+        SUPPORT_MEMBER = "SUPPORT", _("Support member")
+
     # Previously the primary_key of the User in the old mijnrood project
     member_identifier = models.TextField(_("member number"), unique=True, null=False, blank=False)
     first_name = models.TextField(_("first name"))
@@ -63,6 +67,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     postal_code = models.TextField(_("postal code"), blank=True)
     cadre = models.BooleanField(
         _("cadre"), default=False, help_text=_("Designates whether the member is a cadre member.")
+    )
+    member_type = models.CharField(
+        _("membership type"), default=MemberType.MEMBER, choices=MemberType
     )
 
     is_staff = models.BooleanField(
@@ -86,8 +93,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     class Meta:
-        verbose_name = _("member")
-        verbose_name_plural = _("members")
+        verbose_name = _("user")
+        verbose_name_plural = _("users")
         constraints = [
             models.UniqueConstraint(fields=["email"], name="members_user_unique_email_key"),
         ]

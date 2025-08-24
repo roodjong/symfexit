@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 15:02+0000\n"
+"POT-Creation-Date: 2025-08-24 18:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +17,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/members/admin.py:38
+#: symfexit/members/admin.py:37
 msgid "Personal info"
-msgstr "Persoonlijke info"
+msgstr ""
 
 #: symfexit/members/admin.py:54
 msgid "Permissions"
@@ -28,6 +28,22 @@ msgstr "Rechten"
 #: symfexit/members/admin.py:65
 msgid "Important dates"
 msgstr "Belangrijke data"
+
+#: symfexit/members/admin.py:230
+msgid "member"
+msgstr "lid"
+
+#: symfexit/members/admin.py:231
+msgid "members"
+msgstr "leden"
+
+#: symfexit/members/admin.py:244
+msgid "support member"
+msgstr "steunlid"
+
+#: symfexit/members/admin.py:245
+msgid "support members"
+msgstr "steunleden"
 
 #: symfexit/members/apps.py:8
 msgid "Members"
@@ -98,60 +114,70 @@ msgid "The passwords do not match"
 msgstr "De wachtwoorden komen niet overeen"
 
 #: symfexit/members/models.py:56
+msgid "Member"
+msgstr "Lid"
+
+#: symfexit/members/models.py:57
+msgid "Support member"
+msgstr "Steunlid"
+
+#: symfexit/members/models.py:60
 msgid "member number"
 msgstr "lidnummer"
 
-#: symfexit/members/models.py:57
+#: symfexit/members/models.py:61
 msgid "first name"
 msgstr "voornaam"
 
-#: symfexit/members/models.py:58
+#: symfexit/members/models.py:62
 msgid "last name"
 msgstr "achternaam"
 
-#: symfexit/members/models.py:59
+#: symfexit/members/models.py:63
 msgid "email"
 msgstr "email"
 
-#: symfexit/members/models.py:60
+#: symfexit/members/models.py:64
 msgid "phone number"
 msgstr "telefoonnummer"
 
-#: symfexit/members/models.py:61
+#: symfexit/members/models.py:65
 msgid "address"
 msgstr "adres"
 
-#: symfexit/members/models.py:62
+#: symfexit/members/models.py:66
 msgid "city"
 msgstr "plaats"
 
-#: symfexit/members/models.py:63
+#: symfexit/members/models.py:67
 msgid "postal code"
 msgstr "postcode"
 
-#: symfexit/members/models.py:65
+#: symfexit/members/models.py:69
 msgid "cadre"
-msgstr ""
-
-#: symfexit/members/models.py:65
-#, fuzzy
-#| msgid "Designates whether the user can log into this admin site."
-msgid "Designates whether the member is a cadre member."
-msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
+msgstr "kader"
 
 #: symfexit/members/models.py:69
+msgid "Designates whether the member is a cadre member."
+msgstr "Bepaalt of deze gebruiker een kaderlid is."
+
+#: symfexit/members/models.py:72
+msgid "membership type"
+msgstr "lidmaatschapstype"
+
+#: symfexit/members/models.py:76
 msgid "staff status"
 msgstr "stafstatus"
 
-#: symfexit/members/models.py:71
+#: symfexit/members/models.py:78
 msgid "Designates whether the user can log into this admin site."
 msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
 
-#: symfexit/members/models.py:74
+#: symfexit/members/models.py:81
 msgid "active"
 msgstr "actief"
 
-#: symfexit/members/models.py:77
+#: symfexit/members/models.py:84
 msgid ""
 "Designates whether this user should be treated as active. Unselect this "
 "instead of deleting accounts."
@@ -159,27 +185,27 @@ msgstr ""
 "Bepaalt of deze gebruiker als actief moet worden beschouwd. Schakel dit uit "
 "in plaats van accounts te verwijderen."
 
-#: symfexit/members/models.py:80
+#: symfexit/members/models.py:87
 msgid "date joined"
 msgstr "datum van aanmaken"
 
-#: symfexit/members/models.py:89
-msgid "member"
-msgstr "lid"
+#: symfexit/members/models.py:96
+msgid "user"
+msgstr "gebruiker"
 
-#: symfexit/members/models.py:90
-msgid "members"
-msgstr "leden"
+#: symfexit/members/models.py:97
+msgid "users"
+msgstr "gebruikers"
 
-#: symfexit/members/models.py:120
+#: symfexit/members/models.py:127
 msgid "local group"
 msgstr "groep"
 
-#: symfexit/members/models.py:121
+#: symfexit/members/models.py:128
 msgid "local groups"
 msgstr "groepen"
 
-#: symfexit/members/models.py:127
+#: symfexit/members/models.py:134
 msgid "contact people"
 msgstr "contactpersonen"
 

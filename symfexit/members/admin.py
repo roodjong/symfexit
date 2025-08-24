@@ -28,7 +28,6 @@ from symfexit.members.models import LocalGroup, User
 
 
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
-@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     add_form_template = "admin/auth/user/add_form.html"
     change_user_password_template = None
@@ -39,6 +38,7 @@ class UserAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "member_identifier",
+                    "member_type",
                     "first_name",
                     "last_name",
                     "email",
@@ -222,6 +222,34 @@ class UserAdmin(admin.ModelAdmin):
             request.POST = request.POST.copy()
             request.POST["_continue"] = 1
         return super().response_add(request, obj, post_url_continue)
+
+
+# Proxy for a separate view with only members on the admin page
+class Member(User):
+    class Meta(User.Meta):
+        verbose_name = _("member")
+        verbose_name_plural = _("members")
+        proxy = True
+
+
+@admin.register(Member)
+class MemberAdmin(UserAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(member_type=User.MemberType.MEMBER)
+
+
+# Proxy for a separate view with only support members on the admin page
+class SupportMember(User):
+    class Meta(User.Meta):
+        verbose_name = _("support member")
+        verbose_name_plural = _("support members")
+        proxy = True
+
+
+@admin.register(SupportMember)
+class SupportMemberAdmin(UserAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(member_type=User.MemberType.SUPPORT_MEMBER)
 
 
 @admin.register(LocalGroup)

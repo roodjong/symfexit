@@ -8,4 +8,9 @@ class DocumentsConfig(AppConfig):
     verbose_name = _("Documents")
 
     def menu_items(self, request):
-        return [{"name": _("Documents"), "viewname": "documents:documents", "order": 2}]
+        from symfexit.members.models import User  # noqa:PLC0415
+
+        if request.user.member_type == User.MemberType.MEMBER:
+            return [{"name": _("Documents"), "viewname": "documents:documents", "order": 2}]
+        else:
+            return []
