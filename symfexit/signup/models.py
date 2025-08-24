@@ -37,6 +37,8 @@ class MembershipApplication(models.Model):
         "members.LocalGroup",
         on_delete=models.CASCADE,
         verbose_name=_("preferred group"),
+        null=True,
+        blank=True,
     )
     payment_amount = models.IntegerField(_("payment amount in cents"))  # in cents
 

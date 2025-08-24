@@ -2,6 +2,7 @@ from typing import Any
 
 from django import forms
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from symfexit.members.models import LocalGroup
 from symfexit.signup.models import MembershipApplication
@@ -46,6 +47,8 @@ class SignupForm(forms.Form):
 
     preferred_group = two_wide(
         forms.ModelChoiceField(
+            required=False,
+            empty_label=_("None"),
             label="Bij welke groep wil je je aansluiten",
             queryset=LocalGroup.objects.all(),
         )
