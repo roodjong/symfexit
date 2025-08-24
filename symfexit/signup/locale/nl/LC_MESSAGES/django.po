@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-10 13:53+0200\n"
+"POT-Creation-Date: 2025-08-24 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,115 +18,121 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: signup/apps.py:9
+#: symfexit/signup/apps.py:8
 msgid "Signup"
 msgstr "Aanmelden"
 
-#: signup/models.py:28
-msgid "application payment"
-msgstr "aanmeldingsbetaling"
-
-#: signup/models.py:29
-msgid "application payments"
-msgstr "aanmeldingsbetalingen"
-
-#: signup/models.py:39
+#: symfexit/signup/models.py:22
 msgid "Created"
 msgstr "Aangemaakt"
 
-#: signup/models.py:40
+#: symfexit/signup/models.py:23
 msgid "Accepted"
 msgstr "Geaccepteerd"
 
-#: signup/models.py:41
+#: symfexit/signup/models.py:24
 msgid "Rejected"
 msgstr "Afgewezen"
 
-#: signup/models.py:44
+#: symfexit/signup/models.py:27
 msgid "first name"
 msgstr "voornaam"
 
-#: signup/models.py:45
+#: symfexit/signup/models.py:28
 msgid "last name"
 msgstr "achternaam"
 
-#: signup/models.py:46
+#: symfexit/signup/models.py:29
 msgid "email address"
 msgstr "emailadres"
 
-#: signup/models.py:47
+#: symfexit/signup/models.py:30
 msgid "phone number"
 msgstr "telefoonnummer"
 
-#: signup/models.py:48
+#: symfexit/signup/models.py:31
 msgid "date of birth"
 msgstr "geboortedatum"
 
-#: signup/models.py:49
+#: symfexit/signup/models.py:32
 msgid "address"
 msgstr "adres"
 
-#: signup/models.py:50
+#: symfexit/signup/models.py:33
 msgid "city"
 msgstr "plaats"
 
-#: signup/models.py:51
+#: symfexit/signup/models.py:34
 msgid "postal code"
 msgstr "postcode"
 
-#: signup/models.py:53
+#: symfexit/signup/models.py:39
 msgid "preferred group"
 msgstr "voorkeursgroep"
 
-#: signup/models.py:54
+#: symfexit/signup/models.py:41
 msgid "payment amount in cents"
 msgstr "betalingshoeveelheid in centen"
 
-#: signup/models.py:56
+#: symfexit/signup/models.py:44
 msgid "status"
 msgstr "status"
 
-#: signup/models.py:59
+#: symfexit/signup/models.py:46
 msgid "user"
 msgstr "gebruiker"
 
-#: signup/models.py:65
-msgid "payment order"
-msgstr "betalingsopdracht"
+#: symfexit/signup/models.py:52
+msgid "subscription order"
+msgstr ""
 
-#: signup/models.py:71
-msgid "associated subscription"
-msgstr "verwante abbonement"
-
-#: signup/models.py:74
+#: symfexit/signup/models.py:55
 msgid "created at"
 msgstr "gemaakt op"
 
-#: signup/models.py:85
-msgid "external identifier"
-msgstr "externe identifier"
+#: symfexit/signup/models.py:56
+#, fuzzy
+#| msgid "created at"
+msgid "updated at"
+msgstr "gemaakt op"
 
-#: signup/models.py:139
+#: symfexit/signup/models.py:59
 msgid "membership application"
 msgstr "lidmaatschap aanmelding"
 
-#: signup/models.py:140
+#: symfexit/signup/models.py:60
 msgid "membership applications"
 msgstr "lidmaatschap aanmeldingen"
 
-#: signup/templates/signup/return.html:18
+#: symfexit/signup/models.py:72
+msgid "external identifier"
+msgstr "externe identifier"
+
+#: symfexit/signup/templates/signup/return.html:18
 #, python-format
 msgid "Sign up for %(site_title)s"
 msgstr "Inschrijven bij %(site_title)s"
 
-#: signup/templates/signup/return.html:21
+#: symfexit/signup/templates/signup/return.html:21
 msgid "Thanks for your payment!"
 msgstr "Bedankt voor je betaling!"
 
-#: signup/templates/signup/return.html:24
+#: symfexit/signup/templates/signup/return.html:24
 msgid ""
 "Your signup is now completed. You will receive a confirmation email on your "
 "provided email address when your signup has been approved."
 msgstr ""
 "Je inschrijving is nu voltooid. Je ontvangt een bevestigingsmail op het "
 "opgegeven e-mailadres wanneer je inschrijving is goedgekeurd."
+
+#~ msgid "application payment"
+#~ msgstr "aanmeldingsbetaling"
+
+#~ msgid "application payments"
+#~ msgstr "aanmeldingsbetalingen"
+
+#~ msgid "payment order"
+#~ msgstr "betalingsopdracht"
+
+#~ msgid "associated subscription"
+#~ msgstr "verwante abbonement"

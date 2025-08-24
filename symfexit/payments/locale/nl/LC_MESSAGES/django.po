@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-10 12:59+0200\n"
+"POT-Creation-Date: 2025-08-24 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,118 +18,136 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: payments/apps.py:8
+#: symfexit/payments/apps.py:8
 msgid "Payments"
 msgstr "Betalingen"
 
-#: payments/models.py:17 payments/models.py:34 payments/models.py:49
-msgid "billing address"
-msgstr "Factuuradres"
-
-#: payments/models.py:18 payments/models.py:35
-msgid "billing addresses"
-msgstr "factuuradressen"
-
-#: payments/models.py:21
-msgid "user"
+#: symfexit/payments/dummy/templates/payments_dummy/dummy_pay.html:2
+#, python-format
+msgid " Fake this payment for %(price)s cents. "
 msgstr ""
 
-#: payments/models.py:22
-msgid "name"
-msgstr "naam"
+#: symfexit/payments/dummy/templates/payments_dummy/dummy_pay.html:6
+msgid "Fake pay"
+msgstr ""
 
-#: payments/models.py:23
-msgid "address"
-msgstr "adres"
-
-#: payments/models.py:24
-msgid "city"
-msgstr "stad"
-
-#: payments/models.py:25
-msgid "postal code"
-msgstr "postcode"
-
-#: payments/models.py:39
-msgid "Created"
-msgstr "Gemaakt"
-
-#: payments/models.py:40
-msgid "Pending"
-msgstr "Wachtend"
-
-#: payments/models.py:41
-msgid "Paid"
-msgstr "Betaald"
-
-#: payments/models.py:42
-msgid "Failed"
-msgstr "Mislukt"
-
-#: payments/models.py:43
-msgid "Cancelled"
-msgstr "Afgebroken"
-
-#: payments/models.py:44
-msgid "Expired"
-msgstr "Verlopen"
-
-#: payments/models.py:47
-msgid "price"
-msgstr "prijs"
-
-#: payments/models.py:48
-msgid "description"
-msgstr "omschrijving"
-
-#: payments/models.py:51
-msgid "payment status"
-msgstr "betaalstatus"
-
-#: payments/models.py:54
-msgid "done at"
-msgstr "klaar op"
-
-#: payments/models.py:55
-msgid "payment method"
-msgstr "betaalmethode"
-
-#: payments/models.py:57
-msgid "return URL"
-msgstr "terugkeer URL"
-
-#: payments/models.py:60 payments/models.py:140
-msgid "subscription"
-msgstr "abbonement"
-
-#: payments/models.py:67
-msgid "EID"
-msgstr "EID"
-
-#: payments/models.py:84
-msgid "order"
-msgstr "betalingsopdracht"
-
-#: payments/models.py:85
-msgid "orders"
-msgstr "betalingsopdrachten"
-
-#: payments/models.py:94
+#: symfexit/payments/models.py:14
 msgid "Day"
 msgstr "Dag"
 
-#: payments/models.py:95
+#: symfexit/payments/models.py:15
 msgid "Week"
 msgstr "Week"
 
-#: payments/models.py:96
+#: symfexit/payments/models.py:16
 msgid "Month"
 msgstr "Maand"
 
-#: payments/models.py:97
+#: symfexit/payments/models.py:17
 msgid "Year"
 msgstr "Jaar"
 
-#: payments/models.py:141
+#: symfexit/payments/models.py:22
+msgid "user"
+msgstr ""
+
+#: symfexit/payments/models.py:23
+msgid "name"
+msgstr "naam"
+
+#: symfexit/payments/models.py:24
+msgid "address"
+msgstr "adres"
+
+#: symfexit/payments/models.py:25
+msgid "city"
+msgstr "stad"
+
+#: symfexit/payments/models.py:26
+msgid "postal code"
+msgstr "postcode"
+
+#: symfexit/payments/models.py:30 symfexit/payments/models.py:78
+msgid "billing address"
+msgstr "Factuuradres"
+
+#: symfexit/payments/models.py:31
+msgid "billing addresses"
+msgstr "factuuradressen"
+
+#: symfexit/payments/models.py:39
+msgid "Created"
+msgstr "Gemaakt"
+
+#: symfexit/payments/models.py:40
+msgid "Pending"
+msgstr "Wachtend"
+
+#: symfexit/payments/models.py:41
+msgid "Paid"
+msgstr "Betaald"
+
+#: symfexit/payments/models.py:42
+msgid "Failed"
+msgstr "Mislukt"
+
+#: symfexit/payments/models.py:43
+msgid "Cancelled"
+msgstr "Afgebroken"
+
+#: symfexit/payments/models.py:44
+msgid "Expired"
+msgstr "Verlopen"
+
+#: symfexit/payments/models.py:52
+msgid "payment status"
+msgstr "betaalstatus"
+
+#: symfexit/payments/models.py:59 symfexit/payments/models.py:95
+msgid "order"
+msgstr "betalingsopdracht"
+
+#: symfexit/payments/models.py:63
+#, python-brace-format
+msgid "Payment for {order}"
+msgstr ""
+
+#: symfexit/payments/models.py:76
+msgid "description"
+msgstr "omschrijving"
+
+#: symfexit/payments/models.py:85 symfexit/payments/models.py:138
+msgid "subscription"
+msgstr "abbonement"
+
+#: symfexit/payments/models.py:96
+msgid "orders"
+msgstr "betalingsopdrachten"
+
+#: symfexit/payments/models.py:99
+#, python-brace-format
+msgid "{description} for {price:.02f}"
+msgstr ""
+
+#: symfexit/payments/models.py:107 symfexit/payments/models.py:148
+msgid "external identifier"
+msgstr ""
+
+#: symfexit/payments/models.py:139
 msgid "subscriptions"
 msgstr "abbonementen"
+
+#~ msgid "price"
+#~ msgstr "prijs"
+
+#~ msgid "done at"
+#~ msgstr "klaar op"
+
+#~ msgid "payment method"
+#~ msgstr "betaalmethode"
+
+#~ msgid "return URL"
+#~ msgstr "terugkeer URL"
+
+#~ msgid "EID"
+#~ msgstr "EID"

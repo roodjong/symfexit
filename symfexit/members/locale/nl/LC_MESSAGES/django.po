@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-10 14:18+0200\n"
+"POT-Creation-Date: 2025-08-24 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,131 +17,141 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: members/admin.py:44
+#: symfexit/members/admin.py:38
 msgid "Personal info"
 msgstr "Persoonlijke info"
 
-#: members/admin.py:59
+#: symfexit/members/admin.py:54
 msgid "Permissions"
 msgstr "Rechten"
 
-#: members/admin.py:70
+#: symfexit/members/admin.py:65
 msgid "Important dates"
 msgstr "Belangrijke data"
 
-#: members/apps.py:8
+#: symfexit/members/apps.py:8
 msgid "Members"
 msgstr "Leden"
 
-#: members/apps.py:12
+#: symfexit/members/apps.py:12
 msgid "Details"
 msgstr "Gegevens"
 
-#: members/apps.py:13 members/templates/members/logout.html:6
+#: symfexit/members/apps.py:13 symfexit/members/templates/members/logout.html:6
 msgid "Log out"
 msgstr "Uitloggen"
 
-#: members/forms.py:11
+#: symfexit/members/forms.py:10
 msgid "First name"
 msgstr "Voornaam"
 
-#: members/forms.py:12
+#: symfexit/members/forms.py:11
 msgid "Last name"
 msgstr "Achternaam"
 
-#: members/forms.py:29
+#: symfexit/members/forms.py:28
 msgid "Member number"
 msgstr "Lidnummer"
 
-#: members/forms.py:30
+#: symfexit/members/forms.py:29
 msgid "Name"
 msgstr "Naam"
 
-#: members/forms.py:31
+#: symfexit/members/forms.py:30
 msgid "Email"
 msgstr "E-mailadres"
 
-#: members/forms.py:32
+#: symfexit/members/forms.py:31
 msgid "Phone number"
 msgstr "Telefoonnummer"
 
-#: members/forms.py:33
+#: symfexit/members/forms.py:32
 msgid "Address"
 msgstr "Adres"
 
-#: members/forms.py:34
+#: symfexit/members/forms.py:33
 msgid "City"
 msgstr "Woonplaats"
 
-#: members/forms.py:35
+#: symfexit/members/forms.py:34
 msgid "Postal code"
 msgstr "Postcode"
 
-#: members/forms.py:64
+#: symfexit/members/forms.py:63
 msgid "Old password"
 msgstr "Oud wachtwoord"
 
-#: members/forms.py:68
+#: symfexit/members/forms.py:67
 msgid "New password"
 msgstr "Nieuw wachtwoord"
 
-#: members/forms.py:72
+#: symfexit/members/forms.py:71
 msgid "New password (again)"
 msgstr "Nieuw wachtwoord (nog een keer)"
 
-#: members/forms.py:83
+#: symfexit/members/forms.py:82
 msgid "Old password is incorrect"
 msgstr "Oud wachtwoord is onjuist"
 
-#: members/forms.py:90
+#: symfexit/members/forms.py:89
 msgid "The passwords do not match"
 msgstr "De wachtwoorden komen niet overeen"
 
-#: members/models.py:57
+#: symfexit/members/models.py:56
 msgid "member number"
 msgstr "lidnummer"
 
-#: members/models.py:58
+#: symfexit/members/models.py:57
 msgid "first name"
 msgstr "voornaam"
 
-#: members/models.py:59
+#: symfexit/members/models.py:58
 msgid "last name"
 msgstr "achternaam"
 
-#: members/models.py:60
+#: symfexit/members/models.py:59
 msgid "email"
 msgstr "email"
 
-#: members/models.py:61
+#: symfexit/members/models.py:60
 msgid "phone number"
 msgstr "telefoonnummer"
 
-#: members/models.py:62
+#: symfexit/members/models.py:61
 msgid "address"
 msgstr "adres"
 
-#: members/models.py:63
-msgid "cith"
+#: symfexit/members/models.py:62
+msgid "city"
 msgstr "plaats"
 
-#: members/models.py:64
+#: symfexit/members/models.py:63
 msgid "postal code"
 msgstr "postcode"
 
-#: members/models.py:67
+#: symfexit/members/models.py:65
+msgid "cadre"
+msgstr ""
+
+#: symfexit/members/models.py:65
+#, fuzzy
+#| msgid "Designates whether the user can log into this admin site."
+msgid "Designates whether the member is a cadre member."
+msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
+
+#: symfexit/members/models.py:69
 msgid "staff status"
 msgstr "stafstatus"
 
-#: members/models.py:69
+#: symfexit/members/models.py:71
 msgid "Designates whether the user can log into this admin site."
 msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
 
-#: members/models.py:72
+#: symfexit/members/models.py:74
 msgid "active"
 msgstr "actief"
 
-#: members/models.py:74
+#: symfexit/members/models.py:77
 msgid ""
 "Designates whether this user should be treated as active. Unselect this "
 "instead of deleting accounts."
@@ -149,51 +159,51 @@ msgstr ""
 "Bepaalt of deze gebruiker als actief moet worden beschouwd. Schakel dit uit "
 "in plaats van accounts te verwijderen."
 
-#: members/models.py:76
+#: symfexit/members/models.py:80
 msgid "date joined"
 msgstr "datum van aanmaken"
 
-#: members/models.py:85
+#: symfexit/members/models.py:89
 msgid "member"
 msgstr "lid"
 
-#: members/models.py:86
+#: symfexit/members/models.py:90
 msgid "members"
 msgstr "leden"
 
-#: members/models.py:118
+#: symfexit/members/models.py:120
 msgid "local group"
 msgstr "groep"
 
-#: members/models.py:119
+#: symfexit/members/models.py:121
 msgid "local groups"
 msgstr "groepen"
 
-#: members/models.py:122
+#: symfexit/members/models.py:127
 msgid "contact people"
 msgstr "contactpersonen"
 
-#: members/templates/members/user_form.html:4
+#: symfexit/members/templates/members/user_form.html:4
 msgid "My details"
 msgstr "Gegevens"
 
-#: members/templates/members/user_form.html:11
+#: symfexit/members/templates/members/user_form.html:11
 msgid "Save"
 msgstr "Opslaan"
 
-#: members/templates/members/user_form.html:14
-#: members/templates/members/user_form.html:21
+#: symfexit/members/templates/members/user_form.html:14
+#: symfexit/members/templates/members/user_form.html:21
 msgid "Change password"
 msgstr "Verander wachtwoord"
 
-#: members/templates/members/user_form.html:27
+#: symfexit/members/templates/members/user_form.html:27
 msgid "Contribution"
 msgstr "Contributie"
 
-#: members/templates/members/user_form.html:36
+#: symfexit/members/templates/members/user_form.html:36
 msgid "Setup your membership payments now"
 msgstr "Stel nu je lidmaatschapsbetalingen in"
 
-#: members/templates/members/user_form.html:42
+#: symfexit/members/templates/members/user_form.html:42
 msgid "Start subscription"
 msgstr "Start automatische betaling"

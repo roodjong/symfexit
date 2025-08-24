@@ -7,5 +7,5 @@ class HomeConfig(AppConfig):
     name = "symfexit.home"
     verbose_name = _("Home")
 
-    def menu_items(self):
+    def menu_items(self, request):
         return [{"name": _("Home"), "viewname": "home:home", "order": 0}]

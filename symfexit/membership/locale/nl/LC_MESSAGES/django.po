@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-10 12:48+0200\n"
+"POT-Creation-Date: 2025-08-24 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,70 +18,70 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: membership/admin.py:74
+#: symfexit/membership/admin.py:70
 msgid "Live settings updated successfully."
 msgstr "Huidige instellingen succesvol bijgewerkt."
 
-#: membership/admin.py:81
+#: symfexit/membership/admin.py:77
 msgid "Failed to update live settings."
 msgstr "Kon huidige instellingen niet bijwerken."
 
-#: membership/admin.py:90
+#: symfexit/membership/admin.py:86
 msgid "Payment Tiers"
 msgstr "Betaalschijven"
 
-#: membership/admin.py:115
+#: symfexit/membership/admin.py:111
 msgid "payment tiers"
 msgstr "betaalschijven"
 
-#: membership/admin.py:162
+#: symfexit/membership/admin.py:158
 msgid "is current"
 msgstr "is huidig"
 
-#: membership/admin.py:176
+#: symfexit/membership/admin.py:172
 msgid "has user"
 msgstr "heeft een gebruiker"
 
-#: membership/apps.py:9
+#: symfexit/membership/apps.py:8
 msgid "Membership"
 msgstr "Lidmaatschap"
 
-#: membership/forms.py:9
+#: symfexit/membership/forms.py:8
 msgid "Pay anything enabled"
 msgstr "Maak zelf hoeveelheid bepalen mogelijk"
 
-#: membership/forms.py:10
+#: symfexit/membership/forms.py:9
 msgid "Pay anything help text"
 msgstr "Help text voor zelf hoeveelheid bepalen"
 
-#: membership/forms.py:11
+#: symfexit/membership/forms.py:10
 msgid "Pay more enabled"
 msgstr "Maak meer betalen mogelijk"
 
-#: membership/forms.py:12
+#: symfexit/membership/forms.py:11
 msgid "Pay more help text"
 msgstr "Meer betalen help text"
 
-#: membership/forms.py:23
+#: symfexit/membership/forms.py:21
 msgid "Help text"
 msgstr "Help text"
 
-#: membership/forms.py:30
+#: symfexit/membership/forms.py:27
 msgid "Price per period (in €)"
 msgstr "Prijs per periode (in €)"
 
-#: membership/models.py:10
+#: symfexit/membership/models.py:9
 msgid "membership"
 msgstr "lidmaatschap"
 
-#: membership/models.py:11
+#: symfexit/membership/models.py:10
 msgid "memberships"
 msgstr "lidmaatschappen"
 
-#: membership/templates/admin/membership/payment_tiers.html:32
+#: symfexit/membership/templates/admin/membership/payment_tiers.html:32
 msgid "Save"
 msgstr "Opslaan"
 
-#: membership/templates/admin/membership/payment_tiers.html:40
+#: symfexit/membership/templates/admin/membership/payment_tiers.html:40
 msgid "Home"
 msgstr "Home"
