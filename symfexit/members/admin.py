@@ -39,6 +39,7 @@ class UserAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "member_identifier",
+                    "member_type",
                     "first_name",
                     "last_name",
                     "email",
