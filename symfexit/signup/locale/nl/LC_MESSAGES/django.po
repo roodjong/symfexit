@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 15:02+0000\n"
+"POT-Creation-Date: 2025-08-24 18:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,10 @@ msgstr ""
 #: symfexit/signup/apps.py:8
 msgid "Signup"
 msgstr "Aanmelden"
+
+#: symfexit/signup/forms.py:51
+msgid "None"
+msgstr ""
 
 #: symfexit/signup/models.py:22
 msgid "Created"
@@ -70,41 +74,41 @@ msgstr "postcode"
 msgid "preferred group"
 msgstr "voorkeursgroep"
 
-#: symfexit/signup/models.py:41
+#: symfexit/signup/models.py:43
 msgid "payment amount in cents"
 msgstr "betalingshoeveelheid in centen"
 
-#: symfexit/signup/models.py:44
+#: symfexit/signup/models.py:46
 msgid "status"
 msgstr "status"
 
-#: symfexit/signup/models.py:46
+#: symfexit/signup/models.py:48
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/signup/models.py:52
+#: symfexit/signup/models.py:54
 msgid "subscription order"
 msgstr ""
 
-#: symfexit/signup/models.py:55
+#: symfexit/signup/models.py:57
 msgid "created at"
 msgstr "gemaakt op"
 
-#: symfexit/signup/models.py:56
+#: symfexit/signup/models.py:58
 #, fuzzy
 #| msgid "created at"
 msgid "updated at"
 msgstr "gemaakt op"
 
-#: symfexit/signup/models.py:59
+#: symfexit/signup/models.py:61
 msgid "membership application"
 msgstr "lidmaatschap aanmelding"
 
-#: symfexit/signup/models.py:60
+#: symfexit/signup/models.py:62
 msgid "membership applications"
 msgstr "lidmaatschap aanmeldingen"
 
-#: symfexit/signup/models.py:72
+#: symfexit/signup/models.py:74
 msgid "external identifier"
 msgstr "externe identifier"
 
