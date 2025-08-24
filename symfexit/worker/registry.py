@@ -35,8 +35,8 @@ class TaskRegistry:
         return _register
 
     def execute(self, task):
-        from symfexit.worker import logger
-        from symfexit.worker.models import Task
+        from symfexit.worker import logger  # noqa: PLC0415
+        from symfexit.worker.models import Task  # noqa: PLC0415
 
         args = DBUnpickler(io.BytesIO(task.args)).load()
         kwargs = DBUnpickler(io.BytesIO(task.kwargs)).load()
@@ -66,7 +66,7 @@ task_registry = TaskRegistry()
 
 
 def add_task(name, *args, **kwargs):
-    from symfexit.worker.models import Task
+    from symfexit.worker.models import Task  # noqa: PLC0415
 
     if name not in task_registry:
         raise ValueError(f"Unknown task {name}")

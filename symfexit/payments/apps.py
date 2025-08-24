@@ -8,7 +8,7 @@ class PaymentsConfig(AppConfig):
     verbose_name = _("Payments")
 
     def ready(self):
-        from symfexit.payments.registry import payments_registry
+        from symfexit.payments.registry import payments_registry  # noqa: PLC0415
 
         self.module.autodiscover()
         payments_registry.initialize()

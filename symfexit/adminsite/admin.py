@@ -28,8 +28,8 @@ class MyAdminSite(admin.AdminSite):
         return format_lazy(_("{site_title} administration"), site_title=config.SITE_TITLE)
 
     def get_urls(self) -> list[URLResolver]:
-        from django.apps import apps
-        from django.urls import include, path, re_path
+        from django.apps import apps  # noqa: PLC0415
+        from django.urls import include, path, re_path  # noqa: PLC0415
 
         def wrap(view, cacheable=False):
             def wrapper(*args, **kwargs):

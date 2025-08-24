@@ -19,7 +19,7 @@ def health_check(request):
 
 
 def regular_urlpatterns():
-    from symfexit.root.urls import urlpatterns
+    from symfexit.root.urls import urlpatterns  # noqa: PLC0415
 
     return urlpatterns
 

@@ -351,7 +351,7 @@ def get_manage_py_subcommand(argv: list[str]):
     executable is reported to not have the .exe extension which can cause bugs
     on reloading.
     """
-    import __main__
+    import __main__  # noqa: PLC0415
 
     py_script = Path(sys.argv[0])
     exe_entrypoint = py_script.with_suffix(".exe")
@@ -421,7 +421,7 @@ class Command(BaseCommand):
         Print a warning if the set of migrations on disk don't match the
         migrations in the database.
         """
-        from django.db.migrations.executor import MigrationExecutor
+        from django.db.migrations.executor import MigrationExecutor  # noqa: PLC0415
 
         try:
             executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
