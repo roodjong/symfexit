@@ -6,7 +6,6 @@ from django.views.generic import TemplateView
 from symfexit.home.models import HomePage
 from symfexit.members.models import User
 
-
 # Create your views here.
 
 
