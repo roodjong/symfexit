@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-10 17:40+0200\n"
+"POT-Creation-Date: 2025-08-24 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,51 +18,55 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: theme/apps.py:9
+#: symfexit/theme/admin.py:59
+msgid "Rebuilding theme, refresh to see progress"
+msgstr ""
+
+#: symfexit/theme/apps.py:7
 msgid "Theme"
 msgstr "Thema"
 
-#: theme/models.py:14
+#: symfexit/theme/models.py:14
 msgid "name"
 msgstr "naam"
 
-#: theme/models.py:15
+#: symfexit/theme/models.py:16
 msgid "value"
 msgstr "waarde"
 
-#: theme/models.py:22
+#: symfexit/theme/models.py:24
 msgid "version"
 msgstr "versie"
 
-#: theme/templates/admin/constance_theme/change_list.html:61
+#: symfexit/theme/templates/admin/constance_theme/change_list.html:61
 msgid "Save"
 msgstr "Opslaan"
 
-#: theme/templates/admin/constance_theme/change_list.html:70
+#: symfexit/theme/templates/admin/constance_theme/change_list.html:70
 msgid "Home"
 msgstr "Home"
 
-#: theme/templates/admin/constance_theme/includes/results_list.html:6
+#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:6
 msgid "Name"
 msgstr "Naam"
 
-#: theme/templates/admin/constance_theme/includes/results_list.html:7
+#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:7
 msgid "Default"
 msgstr "Standaardwaarde"
 
-#: theme/templates/admin/constance_theme/includes/results_list.html:8
+#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:8
 msgid "Value"
 msgstr "Waarde"
 
-#: theme/templates/admin/constance_theme/includes/results_list.html:9
+#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:9
 msgid "Is modified"
 msgstr "Is aangepast"
 
-#: theme/templates/admin/constance_theme/includes/results_list.html:43
+#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:43
 msgid "Reset to default"
 msgstr "Terugzetten naar standaard"
 
-#: theme/templates/admin/rebuild_theme/index.html:6
+#: symfexit/theme/templates/admin/rebuild_theme/index.html:6
 #, python-format
 msgid ""
 "\n"
@@ -73,7 +77,7 @@ msgstr ""
 "  <strong>Success!</strong> <a href=\"%(task_url)s\">Taak</a> toegevoegd.\n"
 "  "
 
-#: theme/templates/admin/rebuild_theme/index.html:12
+#: symfexit/theme/templates/admin/rebuild_theme/index.html:12
 msgid ""
 "Task not added as form is invalid. Click the button on the Tailwind keys "
 "page to rebuild the theme."
@@ -81,19 +85,19 @@ msgstr ""
 "Taak niet toegevoegd omdat het formulier ongeldig is. Klik op de knop op de "
 "Tailwind keys pagina om het thema opnieuw op te bouwen."
 
-#: theme/templates/admin/rebuild_theme/index.html:15
+#: symfexit/theme/templates/admin/rebuild_theme/index.html:15
 msgid "Back to Tailwind keys"
 msgstr "Terug naar Tailwind keys"
 
-#: theme/templates/registration/login.html:15
-#: theme/templates/registration/login.html:19
+#: symfexit/theme/templates/registration/login.html:15
+#: symfexit/theme/templates/registration/login.html:19
 msgid "Log In"
 msgstr "Inloggen"
 
-#: theme/templates/registration/login.html:23
+#: symfexit/theme/templates/registration/login.html:23
 msgid "Forgot Password?"
 msgstr "Wachtwoord vergeten?"
 
-#: theme/templates/registration/login.html:26
+#: symfexit/theme/templates/registration/login.html:26
 msgid "Back to the website"
 msgstr "Terug naar de website"

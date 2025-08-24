@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-10 14:08+0200\n"
+"POT-Creation-Date: 2025-08-24 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,62 +18,62 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: documents/apps.py:8 documents/apps.py:11
-#: documents/templates/documents/documents.html:6
-#: documents/templates/documents/image_file.html:5
-#: documents/templates/documents/pdf_file.html:5
+#: symfexit/documents/apps.py:8 symfexit/documents/apps.py:11
+#: symfexit/documents/templates/documents/documents.html:6
+#: symfexit/documents/templates/documents/image_file.html:5
+#: symfexit/documents/templates/documents/pdf_file.html:5
 msgid "Documents"
 msgstr "Documenten"
 
-#: documents/models.py:10
+#: symfexit/documents/models.py:9
 msgid "name"
 msgstr "naam"
 
-#: documents/models.py:17
+#: symfexit/documents/models.py:16
 msgid "parent directory"
 msgstr "map waar die in zit"
 
-#: documents/models.py:20
+#: symfexit/documents/models.py:19
 msgid "created at"
 msgstr "gemaakt op"
 
-#: documents/models.py:38
+#: symfexit/documents/models.py:42
 msgid "content"
 msgstr "inhoud"
 
-#: documents/models.py:39
+#: symfexit/documents/models.py:43
 msgid "size"
 msgstr "grootte"
 
-#: documents/models.py:40
+#: symfexit/documents/models.py:44
 msgid "content type"
 msgstr "Inhoudstype"
 
-#: documents/models.py:59
+#: symfexit/documents/models.py:47
 msgid "file"
 msgstr "bestand"
 
-#: documents/models.py:60
+#: symfexit/documents/models.py:48
 msgid "files"
 msgstr "bestanden"
 
-#: documents/models.py:70
+#: symfexit/documents/models.py:69
 msgid "directory"
 msgstr "map"
 
-#: documents/models.py:71
+#: symfexit/documents/models.py:70
 msgid "directories"
 msgstr "mappen"
 
-#: documents/templates/documents/breadcrumbs.html:2
+#: symfexit/documents/templates/documents/breadcrumbs.html:2
 msgid "Main directory"
 msgstr "Hoofdmap"
 
-#: documents/templates/documents/documents.html:12
-#: documents/templates/documents/documents.html:18
+#: symfexit/documents/templates/documents/documents.html:12
+#: symfexit/documents/templates/documents/documents.html:18
 msgid ".. (parent directory)"
 msgstr ".. (map hier boven)"
 
-#: documents/templates/documents/download_button.html:2
+#: symfexit/documents/templates/documents/download_button.html:2
 msgid "Download"
 msgstr "Download"
