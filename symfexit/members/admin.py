@@ -9,6 +9,7 @@ from django.contrib.auth.forms import (
     UserChangeForm,
     UserCreationForm,
 )
+from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
 from django.http import Http404, HttpResponseRedirect
@@ -18,6 +19,9 @@ from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.members.models import LocalGroup, User
+
+Group._meta.verbose_name = _("Permission Group")
+Group._meta.verbose_name_plural = _("Permission Groups")
 
 # class MembershipInline(admin.StackedInline):
 #     model = Membership
