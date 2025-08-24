@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.admin.filters import SimpleListFilter
 from django.contrib.admin.options import IS_POPUP_VAR, csrf_protect_m
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import update_session_auth_hash
@@ -12,9 +13,11 @@ from django.contrib.auth.forms import (
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
+from django.forms import BooleanField
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
 
@@ -29,6 +32,34 @@ Group._meta.verbose_name_plural = _("Permission Groups")
 
 #     # autocomplete_fields = ("address",)
 #     exclude = ()
+
+
+class IsActiveFilter(SimpleListFilter):
+    title = _("is a member")
+    parameter_name = "is_active"
+
+    def lookups(self, request, model_admin):
+        return [(None, _("Yes")), ("N", _("No")), ("A", _("All"))]
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset.filter(is_active=True)
+        if self.value() == "N":
+            return queryset.filter(is_active=False)
+        return queryset
+
+    def choices(self, cl):
+        for lookup, title in self.lookup_choices:
+            yield {
+                "selected": self.value() == lookup,
+                "query_string": cl.get_query_string(
+                    {
+                        self.parameter_name: lookup,
+                    },
+                    [],
+                ),
+                "display": title,
+            }
 
 
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
@@ -62,11 +93,10 @@ class UserAdmin(admin.ModelAdmin):
                     "is_staff",
                     "is_superuser",
                     "groups",
-                    "user_permissions",
                 ),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+        (_("Important dates"), {"fields": ("last_login", "date_joined", "date_left")}),
         # ("Membership", {"fields": ("subscription_set",)}),
     )
     add_fieldsets = (
@@ -78,17 +108,20 @@ class UserAdmin(admin.ModelAdmin):
             },
         ),
     )
+    readonly_fields = ("member_identifier", "last_login", "date_joined", "date_left", "is_active")
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
     list_display = ("email", "first_name", "last_name", "is_staff")
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "cadre")
+    list_filter = ("is_staff", "is_superuser", IsActiveFilter, "groups", "cadre")
+
     search_fields = ("username", "first_name", "last_name", "email")
     ordering = ("email",)
     filter_horizontal = (
         "groups",
         "user_permissions",
     )
+    delete_confirmation_template = "admin/members/membership_cancellation_confirm.html"
 
     # inlines = (MembershipInline,)
 
@@ -226,6 +259,29 @@ class UserAdmin(admin.ModelAdmin):
             request.POST = request.POST.copy()
             request.POST["_continue"] = 1
         return super().response_add(request, obj, post_url_continue)
+
+    def render_change_form(self, request, context, add=False, change=False, form_url="", obj=None):
+        context.update({"delete_is_cancel": True})
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
+    def delete_model(self, request, obj: User):
+        obj.is_active = False
+        obj.date_left = timezone.now()
+        obj.save()
+
+    def has_delete_permission(self, request, obj: User = None):
+        if obj is None:
+            return super().has_delete_permission(request, obj)
+        if obj.date_left is not None:
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def has_change_permission(self, request, obj: User = None):
+        if obj is None:
+            return super().has_change_permission(request, obj)
+        if obj.date_left is not None:
+            return False
+        return super().has_change_permission(request, obj)
 
 
 # Proxy for a separate view with only members on the admin page
