@@ -34,7 +34,7 @@ Group._meta.verbose_name_plural = _("Permission Groups")
 
 
 class IsActiveFilter(SimpleListFilter):
-    title = _("is a member")
+    title = _("is registered")
     parameter_name = "is_active"
 
     def lookups(self, request, model_admin):

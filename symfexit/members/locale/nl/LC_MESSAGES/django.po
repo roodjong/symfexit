@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-25 20:00+0200\n"
+"POT-Creation-Date: 2025-08-25 20:24+0200\n"
 "PO-Revision-Date: 2025-08-25 20:02+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,22 +18,16 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: symfexit/members/admin.py:25
-#, fuzzy
-#| msgid "Permission group"
 msgid "Permission Group"
 msgstr "Rechtengroep"
 
 #: symfexit/members/admin.py:26
-#, fuzzy
-#| msgid "Permission groups"
 msgid "Permission Groups"
 msgstr "Rechtengroepen"
 
-#: symfexit/members/admin.py:37
-#, fuzzy
-#| msgid "member"
-msgid "is a member"
-msgstr "lid"
+#: symfexit/members/admin.py:37 symfexit/members/models.py:81
+msgid "is registered"
+msgstr "is ingeschreven"
 
 #: symfexit/members/admin.py:41
 msgid "Yes"
@@ -202,10 +196,6 @@ msgstr "stafstatus"
 #: symfexit/members/models.py:78
 msgid "Designates whether the user can log into this admin site."
 msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
-
-#: symfexit/members/models.py:81
-msgid "is registered"
-msgstr "is ingeschreven"
 
 #: symfexit/members/models.py:84
 msgid ""
