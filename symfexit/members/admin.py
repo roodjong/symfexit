@@ -81,6 +81,7 @@ class UserAdmin(admin.ModelAdmin):
                     "postal_code",
                     "city",
                     "cadre",
+                    "extra_information",
                 )
             },
         ),

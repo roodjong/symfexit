@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from symfexit.members.models import User
+from symfexit.members.models import LocalGroup, User
 
 
 class NameWidget(forms.MultiWidget):
@@ -32,6 +32,12 @@ class UserForm(forms.ModelForm):
     address = forms.CharField(label=_("Address"))
     city = forms.CharField(label=_("City"))
     postal_code = forms.CharField(label=_("Postal code"))
+    local_group = forms.ModelChoiceField(
+        LocalGroup.objects.all(), label=_("Local group"), required=False
+    )
+    extra_information = forms.CharField(
+        label=_("Extra information"), widget=forms.Textarea, required=False
+    )
 
     class Meta:
         model = User
@@ -43,6 +49,8 @@ class UserForm(forms.ModelForm):
             "address",
             "city",
             "postal_code",
+            "local_group",
+            "extra_information",
         )
 
     def __init__(self, *args, **kwargs) -> None:
@@ -52,8 +60,13 @@ class UserForm(forms.ModelForm):
             self.instance.last_name,
         )
 
+        self.fields["local_group"].initial = LocalGroup.objects.filter(user=self.instance).first()
+
     def save(self, commit=True):
         self.instance.first_name, self.instance.last_name = self.cleaned_data["name"]
+        self.instance.groups.remove(*LocalGroup.objects.filter(user=self.instance))
+        if self.cleaned_data["local_group"] is not None:
+            self.instance.groups.add(self.cleaned_data["local_group"])
         return super().save(commit)
 
 

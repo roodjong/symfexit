@@ -68,6 +68,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     cadre = models.BooleanField(
         _("cadre"), default=False, help_text=_("Designates whether the member is a cadre member.")
     )
+    extra_information = models.TextField(_("Extra information"), blank=True)
     member_type = models.CharField(
         _("membership type"), default=MemberType.MEMBER, choices=MemberType
     )
