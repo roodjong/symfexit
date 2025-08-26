@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 18:33+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2025-08-25 20:24+0200\n"
+"PO-Revision-Date: 2025-08-25 20:02+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -17,31 +17,55 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/members/admin.py:37
-msgid "Personal info"
-msgstr ""
+#: symfexit/members/admin.py:25
+msgid "Permission Group"
+msgstr "Rechtengroep"
 
-#: symfexit/members/admin.py:54
+#: symfexit/members/admin.py:26
+msgid "Permission Groups"
+msgstr "Rechtengroepen"
+
+#: symfexit/members/admin.py:37 symfexit/members/models.py:81
+msgid "is registered"
+msgstr "is ingeschreven"
+
+#: symfexit/members/admin.py:41
+msgid "Yes"
+msgstr "Ja"
+
+#: symfexit/members/admin.py:41
+msgid "No"
+msgstr "Nee"
+
+#: symfexit/members/admin.py:41
+msgid "All"
+msgstr "Alle"
+
+#: symfexit/members/admin.py:71
+msgid "Personal info"
+msgstr "Persoonlijke informatie"
+
+#: symfexit/members/admin.py:88
 msgid "Permissions"
 msgstr "Rechten"
 
-#: symfexit/members/admin.py:65
+#: symfexit/members/admin.py:98
 msgid "Important dates"
 msgstr "Belangrijke data"
 
-#: symfexit/members/admin.py:230
+#: symfexit/members/admin.py:289
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:231
+#: symfexit/members/admin.py:290
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:244
+#: symfexit/members/admin.py:303
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:245
+#: symfexit/members/admin.py:304
 msgid "support members"
 msgstr "steunleden"
 
@@ -173,54 +197,113 @@ msgstr "stafstatus"
 msgid "Designates whether the user can log into this admin site."
 msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
 
-#: symfexit/members/models.py:81
-msgid "active"
-msgstr "actief"
-
 #: symfexit/members/models.py:84
 msgid ""
-"Designates whether this user should be treated as active. Unselect this "
-"instead of deleting accounts."
+"Designates whether this user should be treated as active. Cancel membership "
+"below instead of deleting accounts."
 msgstr ""
-"Bepaalt of deze gebruiker als actief moet worden beschouwd. Schakel dit uit "
-"in plaats van accounts te verwijderen."
+"Bepaalt of deze gebruiker als actief moet worden beschouwd. Schrijf iemand "
+"uit in plaats van accounts te verwijderen."
 
 #: symfexit/members/models.py:87
 msgid "date joined"
 msgstr "datum van aanmaken"
 
-#: symfexit/members/models.py:96
+#: symfexit/members/models.py:89
+msgid "date left"
+msgstr "uitschrijfdatum"
+
+#: symfexit/members/models.py:90
+msgid "Date someone's membership was cancelled"
+msgstr "Datum dat iemand uitgeschreven is als (steun)lid"
+
+#: symfexit/members/models.py:102
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/members/models.py:97
+#: symfexit/members/models.py:103
 msgid "users"
 msgstr "gebruikers"
 
-#: symfexit/members/models.py:127
+#: symfexit/members/models.py:133
 msgid "local group"
 msgstr "groep"
 
-#: symfexit/members/models.py:128
+#: symfexit/members/models.py:134
 msgid "local groups"
 msgstr "groepen"
 
-#: symfexit/members/models.py:134
+#: symfexit/members/models.py:140
 msgid "contact people"
 msgstr "contactpersonen"
+
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:14
+msgid "Home"
+msgstr "Homepagina"
+
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:18
+#: symfexit/members/templates/admin/members/submit_line.html:19
+msgid "Delete"
+msgstr "Verwijder"
+
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:25
+msgid "You are not allowed to cancel memberships."
+msgstr "Je mag geen lidmaatschappen opzeggen."
+
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:29
+#, python-format
+msgid ""
+"Are you sure you want to cancel the membership of %(object_name)s "
+"“%(escaped_object)s”? "
+msgstr ""
+"Weet je zeker dat je het lidmaatschap van %(object_name)s "
+"“%(escaped_object)s” wil opzeggen?"
+
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:41
+msgid "Yes, I’m sure"
+msgstr "Ja, ik weet het zeker"
+
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:42
+msgid "No, take me back"
+msgstr "Nee, breng me terug"
+
+#: symfexit/members/templates/admin/members/submit_line.html:5
+#: symfexit/members/templates/members/user_form.html:11
+msgid "Save"
+msgstr "Opslaan"
+
+#: symfexit/members/templates/admin/members/submit_line.html:6
+msgid "Save as new"
+msgstr "Opslaan als nieuw"
+
+#: symfexit/members/templates/admin/members/submit_line.html:7
+msgid "Save and add another"
+msgstr "Opslaan en nieuwe toevoegen"
+
+#: symfexit/members/templates/admin/members/submit_line.html:8
+msgid "Save and continue editing"
+msgstr "Opslaan en doorgaan met bewerken"
+
+#: symfexit/members/templates/admin/members/submit_line.html:8
+msgid "Save and view"
+msgstr "Opslaan en bekijken"
+
+#: symfexit/members/templates/admin/members/submit_line.html:11
+msgid "Close"
+msgstr "Sluiten"
+
+#: symfexit/members/templates/admin/members/submit_line.html:16
+msgid "Cancel Membership"
+msgstr "Lidmaatschap opzeggen"
 
 #: symfexit/members/templates/members/user_form.html:4
 msgid "My details"
 msgstr "Gegevens"
 
-#: symfexit/members/templates/members/user_form.html:11
-msgid "Save"
-msgstr "Opslaan"
-
 #: symfexit/members/templates/members/user_form.html:14
 #: symfexit/members/templates/members/user_form.html:21
 msgid "Change password"
-msgstr "Verander wachtwoord"
+msgstr "Wachtwoord veranderen"
 
 #: symfexit/members/templates/members/user_form.html:27
 msgid "Contribution"
