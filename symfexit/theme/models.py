@@ -7,7 +7,7 @@ from symfexit.theme.utils import get_time_millis
 class TailwindKey(models.Model):
     COLOR_KEY_CHOICES = [
         ("color-primary", "Primary Color"),
-        ("color-secondary", "Secondary Color"),
+        ("font-header", "Font used in the header"),
     ]
     id = models.AutoField(primary_key=True)
     name = models.CharField(
