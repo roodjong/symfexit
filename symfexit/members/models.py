@@ -3,6 +3,8 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -128,6 +130,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
+    def set_staff_rights(self) -> bool:
+        # TODO: add other reasons to set users staff rights
+        # I am guessing we will create permission groups that are allowed to have some administation rights as well.
+        if self.is_superuser:
+            # This should already be set to True
+            self.is_staff = True
+        else:
+            # make member staff, if member is contactperson of 1 or more groups
+            self.is_staff = self.contact_person_for_groups.count() >= 1
+
 
 class LocalGroup(Group):
     class Meta:
@@ -140,3 +152,14 @@ class LocalGroup(Group):
     contact_people = models.ManyToManyField(
         User, related_name="contact_person_for_groups", verbose_name=_("contact people"), blank=True
     )
+
+
+@receiver(m2m_changed, sender=LocalGroup.contact_people.through)
+def local_group_contact_people_changed(sender, instance, action, pk_set, **kwargs):
+    if action not in ["post_add", "post_remove", "post_clear"]:
+        return
+
+    # foreach touched user, check if their is_staff should be added or removed
+    for user in User.objects.filter(pk__in=pk_set):
+        user.set_staff_rights()
+        user.save()
