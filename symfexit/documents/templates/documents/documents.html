@@ -12,6 +12,32 @@
 {% endblock css %}
 {% block main %}
 <div class="container mx-auto pt-8 p-2">
+  {% if edit_mode %}
+    <div id="edit-dialog">
+      <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-0" onclick="dismissEdit()"></div>
+      <dialog open popover class="z-1 backdrop:bg-gray-50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
+        <form method="POST" class="flex flex-col gap-4" action="{% url 'documents:edit' %}{{ sorting_query }}">
+          {% csrf_token %}
+          <input type="hidden" name="node_id" value="{{ edit_mode }}">
+          <label for="newname">{% blocktranslate %}New name for "{{ edit_old_name }}"{% endblocktranslate %}</label>
+          <div class="flex flex-row gap-2">
+            <input autofocus type="text" id="newname" name="newname" autocomplete="off" id="name" class="border p-2 grow" required value="{{ edit_old_name }}">
+            {% if edit_old_ext %}
+            <span autofocus type="text" disabled class="border p-2 bg-gray-100 shrink">.{{ edit_old_ext }}</span>
+            {% endif %}
+            <input type="hidden" name="newext" value="{{ edit_old_ext }}">
+          </div>
+          <div class="flex flex-row gap-4">
+            <button type="submit" class="bg-primary text-white p-2 cursor-pointer">{% translate 'Save' %}</button>
+          </div>
+        </form>
+        {% comment %} Close button {% endcomment %}
+        <button onclick="dismissEdit()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 cursor-pointer" title="{% translate 'Dismiss' %}">
+          <i class="fa fa-close fa-lg"></i>
+        </button>
+      </dialog>
+    </div>
+  {% endif %}
   <h1 class="font-header text-5xl mb-6">{% translate 'Documents' %}</h1>
   <div class="flex flex-row flex-wrap justify-between items-center mb-4">
     <div class="flex flex-row items-center gap-2">
@@ -29,7 +55,7 @@
       <dialog id="new-folder-popover" popover class="backdrop:bg-gray-50/50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
         <form class="flex md:flex-row md:items-top gap-4 flex-wrap items-start" action="{% url 'documents:create-directory' %}" method="POST">
           {% csrf_token %}
-          <input type="text" name="name" id="new-folder-name" class="border p-2 flex-grow" placeholder="{% translate 'Name of the directory' %}" required>
+          <input type="text" name="name" autocomplete="off" id="new-folder-name" class="border p-2 flex-grow" placeholder="{% translate 'Name of the directory' %}" required>
           <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
           <button type="submit" id="create-folder-btn" class="bg-primary text-white p-2 cursor-pointer">{% translate 'Create directory' %}</button>
         </form>
@@ -59,11 +85,12 @@
       <col span="2">
       <col class="w-1/5">
       <col class="w-1/5">
+      <col class="w-[1px]">
     </colgroup>
     <thead>
       <tr class="border-b border-gray-300">
-        <th class="border-l border-t border-gray-300" onclick="window.location.href='{{ name_url }}'"></th>
-        <th class="py-3 pl-1 pr-4 text-left text-primary border-r border-t border-gray-300" onclick="window.location.href='{{ name_url }}'">
+        <th class="border-l border-t border-gray-300" data-href="{{ name_url }}"></th>
+        <th class="py-3 pl-1 pr-4 text-left text-primary border-r border-t border-gray-300" data-href="{{ name_url }}">
           <div class="flex flex-row items-center gap-1 place-content-between">
             <a href="{{ name_url }}" class="{% if '-name' in sorting_query or sorting_query == '' %}font-bold{% else %}font-normal{% endif %}">{% translate 'Name' %}</a>
             {% if '-name' in sorting_query %}
@@ -73,7 +100,7 @@
             {% endif %}
           </div>
         </th>
-        <th class="py-3 pl-1 pr-4 border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" onclick="window.location.href='{{ size_url }}'">
+        <th class="py-3 pl-1 pr-4 border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ size_url }}">
           <div class="flex flex-row items-center gap-1 place-content-between">
             <a href="{{ size_url }}" class="{% if 'size' in sorting_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Size' %}</a>
             {% if '-size' in sorting_query %}
@@ -83,7 +110,7 @@
             {% endif %}
           </div>
         </th>
-        <th class="py-3 pl-1 pr-4  border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" onclick="window.location.href='{{ created_at_url }}'">
+        <th class="py-3 pl-1 pr-4  border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ created_at_url }}">
           <div class="flex flex-row items-center gap-1 place-content-between">
             <a href="{{ created_at_url }}" class="{% if 'created_at' in sorting_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Date' %}</a>
             {% if '-created_at' in sorting_query %}
@@ -93,52 +120,70 @@
             {% endif %}
           </div>
         </th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
-      {% comment %} parent (current) directory has it's own parent {% endcomment %}
       {% if parent.parent %}
-        <tr class="even:bg-gray-100 odd:bg-white" onclick="window.location.href='{% url "documents:documents" parent.parent.id %}{{ sorting_query }}'">
+        <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" parent.parent.id %}{{ sorting_query }}">
           <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
           <td class="py-3 px-1"><a href="{% url "documents:documents" parent.parent.id %}{{ sorting_query }}">{% translate '.. (parent directory)' %}</a>
             <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
           </td>
+          <td></td>
         </tr>
-      {% comment %} parent (current) directory is the toplevel {% endcomment %}
       {% elif parent %}
-        <tr class="even:bg-gray-100 odd:bg-white" onclick="window.location.href='{% url "documents:documents" %}{{ sorting_query }}'">
+        <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" %}{{ sorting_query }}">
           <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
           <td class="py-3 px-1"><a href="{% url "documents:documents" %}{{ sorting_query }}">{% translate '.. (parent directory)' %}</a>
             <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
           </td>
+          <td></td>
         </tr>
       {% endif %}
-    {% comment %} First show all the directories {% endcomment %}
     {% for document in directories %}
-      <tr class="even:bg-gray-100 odd:bg-white" onclick="window.location.href='{% url "documents:documents" document.id %}{{ sorting_query }}'">
+      <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" document.id %}{{ sorting_query }}">
         <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-folder-open text-primary"></i></td>
         <td class="py-3 pl-1 pr-1 "><a href="{% url "documents:documents" document.id %}{{ sorting_query }}">{{ document.name }}</a>
-          <td class="py-3 pl-3 pr-1">
-            {% if document.size == 1 %}
-              {{ document.size }} {% translate 'item' %}
-            {% else %}
-              {{ document.size }} {% translate 'items' %}
-            {% endif %}
-          </td><td class="py-3 pl-3 pr-1 ">
-              {{ document.created_at|date:"DATE_FORMAT" }}
-          </td>
+        <td class="py-3 pl-3 pr-1">
+          {% if document.size == 1 %}
+            {{ document.size }} {% translate 'item' %}
+          {% else %}
+            {{ document.size }} {% translate 'items' %}
+          {% endif %}
+        </td><td class="py-3 pl-3 pr-1 ">
+            {{ document.created_at|date:"DATE_FORMAT" }}
+        </td>
+        <td>
+          <form class="flex flex-row items-center gap-2 px-3 text-gray-500" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="node_id" value="{{ document.id }}">
+            <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+            <input formaction="{% url "documents:edit" %}{{ sorting_query }}" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+          </form>
         </td>
       </tr>
     {% endfor %}
-    {% comment %} Then show all the files {% endcomment %}
-    {% for file in files %}
-      <tr class="even:bg-gray-100 odd:bg-white" onclick="window.location.href='{% url "documents:file" file.id %}{{ sorting_query }}'">
+    {% for document in files %}
+      <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:file" document.id %}{{ sorting_query }}">
         <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-file text-primary"></i></td>
         <td class="py-3 px-1">
-          <a href="{% url "documents:file" file.id %}{{ sorting_query }}">{{ file.name }}</a>
+          <a href="{% url "documents:file" document.id %}{{ sorting_query }}">{{ document.name }}</a>
         </td>
-        <td class="py-3 pl-3 pr-1">{{ file.human_size }}</td>
-        <td class="py-3 pl-3 pr-1">{{ file.created_at|date:"DATE_FORMAT"}}</td>
+        <td class="py-3 pl-3 pr-1">{{ document.human_size }}</td>
+        <td class="py-3 pl-3 pr-1">{{ document.created_at|date:"DATE_FORMAT"}}</td>
+        <td>
+          <form class="flex flex-row items-center gap-2 px-3 text-gray-500" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="node_id" value="{{ document.id }}">
+            <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+            <input formaction="{% url "documents:edit" %}{{ sorting_query }}" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+          </form>
+        </td>
       </tr>
     {% endfor %}
     </tbody>
@@ -210,11 +255,29 @@
 
   $addBtn.disabled = false;
 
-  document.querySelectorAll('tr[onclick]').forEach(row => {
-    row.classList.add('cursor-pointer');
+  // Add cursor-pointer and click handlers to table rows and headers
+  document.querySelectorAll('tr[data-href]').forEach(row => {
+    // Apply the cursor-pointer to all cells except the last one
+    row.querySelectorAll('td:not(:last-child), th:not(:last-child)').forEach(cell => {
+      cell.classList.add('cursor-pointer');
+        cell.addEventListener('click', function(e) {
+          window.location.href = row.getAttribute('data-href');
+      });
+    });
   });
-  document.querySelectorAll('th[onclick]').forEach(row => {
-    row.classList.add('cursor-pointer');
+  document.querySelectorAll('th[data-href]').forEach(th => {
+    th.classList.add('cursor-pointer');
+    th.addEventListener('click', function(e) {
+      window.location.href = th.getAttribute('data-href');
+    });
   });
+
+  function dismissEdit() {
+    document.getElementById('edit-dialog').remove();
+    // Remove 'edit' from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('edit');
+    window.history.replaceState({}, document.title, url.toString());
+  }
 </script>
 {% endblock scripts %}
