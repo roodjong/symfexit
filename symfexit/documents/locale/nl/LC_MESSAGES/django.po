@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 18:33+0000\n"
+"POT-Creation-Date: 2025-08-30 17:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: symfexit/documents/apps.py:8 symfexit/documents/apps.py:14
-#: symfexit/documents/templates/documents/documents.html:6
+#: symfexit/documents/templates/documents/breadcrumbs.html:2
+#: symfexit/documents/templates/documents/documents.html:15
 #: symfexit/documents/templates/documents/image_file.html:5
 #: symfexit/documents/templates/documents/pdf_file.html:5
 msgid "Documents"
@@ -37,43 +38,103 @@ msgstr "map waar die in zit"
 msgid "created at"
 msgstr "gemaakt op"
 
-#: symfexit/documents/models.py:42
+#: symfexit/documents/models.py:49
 msgid "content"
 msgstr "inhoud"
 
-#: symfexit/documents/models.py:43
+#: symfexit/documents/models.py:50
 msgid "size"
 msgstr "grootte"
 
-#: symfexit/documents/models.py:44
+#: symfexit/documents/models.py:51
 msgid "content type"
 msgstr "Inhoudstype"
 
-#: symfexit/documents/models.py:47
+#: symfexit/documents/models.py:54
 msgid "file"
 msgstr "bestand"
 
-#: symfexit/documents/models.py:48
+#: symfexit/documents/models.py:55
 msgid "files"
 msgstr "bestanden"
 
-#: symfexit/documents/models.py:69
+#: symfexit/documents/models.py:76
 msgid "directory"
 msgstr "map"
 
-#: symfexit/documents/models.py:70
+#: symfexit/documents/models.py:77
 msgid "directories"
 msgstr "mappen"
 
 #: symfexit/documents/templates/documents/breadcrumbs.html:2
-msgid "Main directory"
-msgstr "Hoofdmap"
+msgid "Path:"
+msgstr "Pad:"
 
-#: symfexit/documents/templates/documents/documents.html:12
-#: symfexit/documents/templates/documents/documents.html:18
+#: symfexit/documents/templates/documents/documents.html:27
+msgid "New directory"
+msgstr "Nieuwe map"
+
+#: symfexit/documents/templates/documents/documents.html:32
+msgid "Name of the directory"
+msgstr "Naam van de map"
+
+#: symfexit/documents/templates/documents/documents.html:34
+msgid "Create directory"
+msgstr "Maak map"
+
+#: symfexit/documents/templates/documents/documents.html:44
+msgid "Upload"
+msgstr "Upload"
+
+#: symfexit/documents/templates/documents/documents.html:51
+msgid "Add"
+msgstr "Toevoegen"
+
+#: symfexit/documents/templates/documents/documents.html:68
+msgid "Name"
+msgstr "Naam"
+
+#: symfexit/documents/templates/documents/documents.html:78
+msgid "Size"
+msgstr "Grootte"
+
+#: symfexit/documents/templates/documents/documents.html:88
+msgid "Date"
+msgstr "Datum"
+
+#: symfexit/documents/templates/documents/documents.html:104
+#: symfexit/documents/templates/documents/documents.html:113
 msgid ".. (parent directory)"
 msgstr ".. (map hier boven)"
+
+#: symfexit/documents/templates/documents/documents.html:126
+msgid "item"
+msgstr "item"
+
+#: symfexit/documents/templates/documents/documents.html:128
+msgid "items"
+msgstr "items"
 
 #: symfexit/documents/templates/documents/download_button.html:2
 msgid "Download"
 msgstr "Download"
+
+#: symfexit/documents/views.py:198
+msgid ""
+"The following files could not be uploaded because a file or directory with "
+"the same name already exists in this location: "
+msgstr ""
+"De volgende bestanden konden niet worden geüpload omdat er al een bestand of "
+"map met dezelfde naam bestaat: "
+
+#~ msgid "Created at"
+#~ msgstr "Datum"
+
+#~ msgid "Please enter a name for the directory."
+#~ msgstr "Geef een naam voor de map op."
+
+#~ msgid "An error occurred while creating the directory."
+#~ msgstr "Er is een fout opgetreden bij het aanmaken van de map."
+
+#~ msgid "Main directory"
+#~ msgstr "Hoofdmap"

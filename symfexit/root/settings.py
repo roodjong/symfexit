@@ -98,9 +98,10 @@ def setting_from_env(
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+SYMFEXIT_DIR = BASE_DIR / "symfexit"
 
-CONTENT_DIR = Path(setting_from_env("CONTENT_DIR", development=BASE_DIR.parent / "content"))
+CONTENT_DIR = Path(setting_from_env("CONTENT_DIR", development=BASE_DIR / "content"))
 
 SYMFEXIT_ENV = os.getenv("SYMFEXIT_ENV", "development")
 
@@ -182,6 +183,7 @@ TENANT_APPS = [
     "django.contrib.messages",
     "tinymce",
     "constance",
+    "django_drf_filepond",
     # our own apps
     "symfexit.theme",
     # Order of the adminsite apps is important as MyAdminConfig points to the
@@ -311,6 +313,29 @@ MEDIA_URL = setting_from_env("MEDIA_URL", production="media/", development="medi
 MEDIA_ROOT = setting_from_env(
     "MEDIA_ROOT", production=CONTENT_DIR / "media", development=CONTENT_DIR / "media"
 )
+DJANGO_DRF_FILEPOND_UPLOAD_TMP = str(MEDIA_ROOT / "filepond_tmp")
+DJANGO_DRF_FILEPOND_FILE_STORE_PATH = str(MEDIA_ROOT / "filepond")
+
+DJANGO_DRF_FILEPOND_PERMISSION_CLASSES = {
+    "GET_FETCH": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "GET_LOAD": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "POST_PROCESS": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "GET_RESTORE": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DELETE_REVERT": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "PATCH_PATCH": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
 
 DYNAMIC_THEME_URL = setting_from_env(
     "DYNAMIC_THEME_URL", production="theme/", development="static/css/dist/"
@@ -318,11 +343,11 @@ DYNAMIC_THEME_URL = setting_from_env(
 DYNAMIC_THEME_ROOT = setting_from_env(
     "DYNAMIC_THEME_ROOT",
     production=CONTENT_DIR / "theme",
-    development=BASE_DIR / "theme" / "static" / "css" / "dist",
+    development=SYMFEXIT_DIR / "theme" / "static" / "css" / "dist",
 )
 DYNAMIC_THEME_WORKING_DIR = setting_from_env(
     "DYNAMIC_THEME_WORKING_DIR",
-    development=BASE_DIR / "theme" / "static_src",
+    development=SYMFEXIT_DIR / "theme" / "static_src",
 )
 
 # Default primary key field type

@@ -128,7 +128,14 @@ form {
   a {
     @apply text-primary;
   }
-  img {
+}
 
+ul.messages {
+  @apply container mx-auto pt-8 p-2 gap-4;
+  li {
+    @apply p-4 rounded;
+  }
+  li.error {
+    @apply bg-red-100 border border-red-400 text-red-700;
   }
 }
