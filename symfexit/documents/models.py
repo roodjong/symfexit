@@ -18,6 +18,13 @@ class FileNode(models.Model):
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["parent", "name"], name="unique_sibling_names", nulls_distinct=False
+            )
+        ]
+
     def __str__(self) -> str:
         return self.name
 
@@ -30,7 +37,7 @@ class FileNode(models.Model):
 
 
 def file_location(instance, filename):
-    return f"{instance.id}"
+    return f"documents/{instance.id}"
 
 
 ONE_KB = 1024

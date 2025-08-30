@@ -5,5 +5,13 @@
   {% block navbar %}{% endblock navbar %}
 </nav>
 {% endblock header %}
-<main>{% block main %} {% endblock main %}</main>
+<main>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="message {{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% block main %}{% endblock main %}</main>
 {% endblock body %}
