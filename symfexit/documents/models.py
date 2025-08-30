@@ -26,7 +26,10 @@ class FileNode(models.Model):
         ]
 
     def __str__(self) -> str:
-        return self.name
+        name = self.name
+        while p := self.parent:
+            return p.__str__() + "/" + self.name
+        return "/" + name
 
     def save(self, *args, **kwargs):
         if isinstance(self.parent, File):
@@ -54,9 +57,6 @@ class File(FileNode):
         verbose_name = _("file")
         verbose_name_plural = _("files")
 
-    def __str__(self) -> str:
-        return "File: " + self.name
-
     def url(self):
         return self.content.url
 
@@ -75,6 +75,3 @@ class Directory(FileNode):
     class Meta:
         verbose_name = _("directory")
         verbose_name_plural = _("directories")
-
-    def __str__(self) -> str:
-        return "Directory: " + self.name

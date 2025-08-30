@@ -14,15 +14,22 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
 from django_drf_filepond.models import TemporaryUpload
 
-from symfexit.documents.models import Directory, File
+from symfexit.documents.models import Directory, File, FileNode
 from symfexit.members.models import User
 
 
-def directory_url(parent_id):
+def directory_url(parent_id, edit_mode=None, sorting=None):
+    query = {}
+    if edit_mode:
+        query["edit"] = edit_mode
+    if sorting:
+        query["sort"] = sorting
+    if not query:
+        query = None
     if not parent_id:
-        return reverse("documents:documents")
+        return reverse("documents:documents", query=query)
     else:
-        return reverse("documents:documents", kwargs={"slug": parent_id})
+        return reverse("documents:documents", kwargs={"slug": parent_id}, query=query)
 
 
 def get_sorting(request):
@@ -46,6 +53,9 @@ class Documents(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         slug = self.kwargs.get("slug", None)
         sorting, sorting_query = get_sorting(self.request)
+
+        edit_mode = self.request.GET.get("edit", None)
+
         directories = (
             Directory.objects.filter(parent=slug)
             .annotate(size=Count("children"))
@@ -81,6 +91,17 @@ class Documents(LoginRequiredMixin, TemplateView):
                 ),
             }
         )
+        if edit_mode:
+            edit_node = get_object_or_404(FileNode, id=edit_mode)
+            context.update(
+                {
+                    "edit_mode": edit_mode,
+                    "edit_old_name": edit_node.name,
+                    "edit_old_ext": edit_node.name.rsplit(".", 1)[-1]
+                    if "." in edit_node.name
+                    else "",
+                }
+            )
         return context
 
     def dispatch(self, request, *args, **kwargs):
@@ -154,7 +175,7 @@ def new_directory(request):
     name = request.POST.get("name")
     parent_id = request.POST.get("parent_id")
     parent = None
-    if parent_id and parent_id != "null":
+    if parent_id:
         parent = get_object_or_404(Directory, id=parent_id)
     try:
         directory = Directory.objects.create(name=name, parent=parent)
@@ -223,3 +244,31 @@ def upload_files(request):
             + ", ".join(failed_files),
         )
     return redirect(directory_url(parent_id))
+
+
+@permission_required("documents.change_file", raise_exception=True)
+def edit(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    node_id = request.POST.get("node_id")
+    parent_id = request.POST.get("parent_id")
+    newname = request.POST.get("newname", "")
+    newext = request.POST.get("newext", "")
+    sorting, sorting_query = get_sorting(request)
+
+    if not newname.strip():
+        return redirect(directory_url(parent_id, sorting=sorting, edit_mode=node_id))
+
+    node = get_object_or_404(FileNode, id=node_id)
+
+    try:
+        node.name = newname + (f".{newext}" if newext else "")
+        node.save()
+    except IntegrityError:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("A file or directory with the same name already exists in this location."),
+        )
+        return redirect(directory_url(node.parent.id if node.parent else None, sorting=sorting))
+    return redirect(directory_url(node.parent.id if node.parent else None, sorting=sorting))
