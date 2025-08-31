@@ -19,7 +19,7 @@
         <form method="POST" class="flex flex-col gap-4" action="{% url 'documents:edit' %}{{ standard_query }}">
           {% csrf_token %}
           <input type="hidden" name="node_id" value="{{ edit_mode }}">
-          <label for="newname">{% blocktranslate %}New name for "{{ edit_old_name }}"{% endblocktranslate %}</label>
+          <label for="newname">{% blocktranslate %}New name for "{{ edit_old_full_name }}"{% endblocktranslate %}</label>
           <div class="flex flex-row gap-2">
             <input autofocus type="text" id="newname" name="newname" autocomplete="off" id="name" class="border p-2 grow" required value="{{ edit_old_name }}">
             {% if edit_old_ext %}
