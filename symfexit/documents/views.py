@@ -104,7 +104,8 @@ class Documents(LoginRequiredMixin, TemplateView):
             context.update(
                 {
                     "edit_mode": edit_mode,
-                    "edit_old_name": edit_node.name,
+                    "edit_old_full_name": edit_node.name,
+                    "edit_old_name": edit_node.name.rsplit(".", 1)[0],
                     "edit_old_ext": edit_node.name.rsplit(".", 1)[-1]
                     if "." in edit_node.name
                     else "",
