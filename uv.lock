@@ -76,6 +76,15 @@ wheels = [
 ]
 
 [[package]]
+name = "commonmark"
+version = "0.9.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/60/48/a60f593447e8f0894ebb7f6e6c1f25dafc5e89c5879fdc9360ae93ff83f0/commonmark-0.9.1.tar.gz", hash = "sha256:452f9dc859be7f06631ddcb328b6919c67984aca654e5fefb3914d54691aed60", size = 95764 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b1/92/dfd892312d822f36c55366118b95d914e5f16de11044a27cf10a7d71bbbf/commonmark-0.9.1-py2.py3-none-any.whl", hash = "sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9", size = 51068 },
+]
+
+[[package]]
 name = "distlib"
 version = "0.3.9"
 source = { registry = "https://pypi.org/simple" }
@@ -540,6 +549,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "bleach" },
+    { name = "commonmark" },
     { name = "dj-database-url" },
     { name = "django" },
     { name = "django-constance" },
@@ -565,6 +575,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "bleach", specifier = ">=6.2.0" },
+    { name = "commonmark", specifier = ">=0.9.1" },
     { name = "dj-database-url", specifier = "~=2.1" },
     { name = "django", specifier = "~=5.2" },
     { name = "django-constance", specifier = ">=4.3.2" },

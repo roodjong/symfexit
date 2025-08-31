@@ -59,6 +59,16 @@
       </form>
     </div>
   {% endif %}
+  {% if readme_file %}
+  <div class="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow-sm w-full max-w-2xl m-auto mb-8">
+    <div class="px-4 py-5 sm:px-6 bg-gray-100">
+      <h3 class="text-base font-semibold">{{ readme_file.name }}</h3>
+    </div>
+    <div class="px-4 py-5 sm:p-6 prose">
+      {{ readme_rendered|safe }}
+    </div>
+  </div>
+  {% endif %}
   <div class="flex flex-row flex-wrap justify-between items-center mb-4">
     <div class="flex flex-row items-center gap-2">
       {% include "documents/breadcrumbs.html" %}

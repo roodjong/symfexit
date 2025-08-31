@@ -25,6 +25,7 @@ dependencies = [
     "pre-commit>=4.1.0",
     "django-drf-filepond>=0.5.0",
     "python-magic>=0.4.27",
+    "commonmark>=0.9.1",
 ]
 requires-python = ">= 3.12"
 

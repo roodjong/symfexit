@@ -1,12 +1,15 @@
+import re
 from urllib.parse import urlencode
 from uuid import UUID
 
+import commonmark
 import magic
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError, transaction
 from django.db.models import Count
+from django.db.models.functions import Lower
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -18,6 +21,8 @@ from django_drf_filepond.models import TemporaryUpload
 from symfexit.documents.models import Directory, File, FileNode
 from symfexit.members.models import User
 
+README_REGEX = r"(?i)^(leesmij|readme)\.(md|txt)$"
+
 
 def directory_url(parent_id: Directory | str | None, edit_mode=None, move_mode=None, sorting=None):
     if isinstance(parent_id, Directory):
@@ -25,7 +30,7 @@ def directory_url(parent_id: Directory | str | None, edit_mode=None, move_mode=N
     query = {}
     if edit_mode:
         query["edit"] = edit_mode
-    if sorting:
+    if sorting and sorting != ("name",):
         query["sort"] = sorting
     if move_mode:
         query["move"] = move_mode
@@ -50,6 +55,16 @@ def get_sorting(request):
     return sorting, sorting_query
 
 
+def make_case_insensitive(sorting):
+    ci_sorting = []
+    for s in sorting:
+        if "name" in s:
+            ci_sorting.append(Lower(s))
+        else:
+            ci_sorting.append(s)
+    return tuple(ci_sorting)
+
+
 # Create your views here.
 class Documents(LoginRequiredMixin, TemplateView):
     template_name = "documents/documents.html"
@@ -66,13 +81,34 @@ class Documents(LoginRequiredMixin, TemplateView):
         directories = (
             Directory.objects.filter(parent=slug)
             .annotate(size=Count("children"))
-            .order_by(*sorting)
+            .order_by(*make_case_insensitive(sorting))
         )
+        files = list(File.objects.filter(parent=slug).order_by(*make_case_insensitive(sorting)))
+
+        # Search for a LEESMIJ.md, LEESMIJ.txt, README.md or README.txt file (case insensitive) in that order
+        def sort_key(f):
+            s = f.name.lower().rsplit(".", 1)
+            # Just conincidentally l is before r and m is before t
+            return s[0][0], s[1][0]
+
+        readme_files = sorted(
+            filter(
+                lambda f: re.match(README_REGEX, f.name),
+                files,
+            ),
+            key=sort_key,
+        )
+        if readme_files:
+            context["readme_file"] = readme_files[0]
+            context["readme_rendered"] = commonmark.commonmark(
+                readme_files[0].content.read().decode()
+            )
+
         context.update(
             {
                 "parent": parent,
                 "directories": directories,
-                "files": File.objects.filter(parent=slug).order_by(*sorting),
+                "files": files,
                 "breadcrumbs": build_breadcrumbs(Directory.objects.filter(id=slug).first()),
                 "has_add_directory_permission": self.request.user.has_perm(
                     "documents.add_directory"
@@ -158,13 +194,28 @@ def file(request, slug):
         return render(
             request,
             "documents/image_file.html",
-            {"file": file, "breadcrumbs": build_breadcrumbs(file), "sorting_query": sorting_query},
+            {"file": file, "breadcrumbs": build_breadcrumbs(file), "standard_query": sorting_query},
         )
     if file.content_type == "application/pdf":
         return render(
             request,
             "documents/pdf_file.html",
-            {"file": file, "breadcrumbs": build_breadcrumbs(file), "sorting_query": sorting_query},
+            {"file": file, "breadcrumbs": build_breadcrumbs(file), "standard_query": sorting_query},
+        )
+    if file.content_type in {"text/plain", "text/markdown"}:
+        content = file.content.read().decode("utf-8", errors="ignore")
+        if file.content_type == "text/markdown":
+            content = commonmark.commonmark(content)
+        return render(
+            request,
+            "documents/text_file.html",
+            {
+                "file": file,
+                "content": content,
+                "is_markdown": file.content_type == "text/markdown",
+                "breadcrumbs": build_breadcrumbs(file),
+                "standard_query": sorting_query,
+            },
         )
     response = HttpResponse(file.content, content_type=file.content_type)
     response["Content-Disposition"] = f"attachment; filename={file.name}"
@@ -244,6 +295,8 @@ def upload_files(request):
     for f in fp_files:
         tmpfile = get_object_or_404(TemporaryUpload, upload_id=f)
         mimetype = magic.from_file(tmpfile.file.path, mime=True)
+        if mimetype == "text/plain" and tmpfile.upload_name.lower().endswith(".md"):
+            mimetype = "text/markdown"
         try:
             with transaction.atomic():
                 file = File.objects.create(
@@ -260,6 +313,8 @@ def upload_files(request):
             tmpfile.delete()
     for f in request.FILES.getlist("filepond"):
         mimetype = magic.from_buffer(f.read(2048), mime=True)
+        if mimetype == "text/plain" and tmpfile.upload_name.lower().endswith(".md"):
+            mimetype = "text/markdown"
         f.seek(0)
         try:
             with transaction.atomic():
