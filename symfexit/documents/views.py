@@ -114,8 +114,16 @@ class Documents(LoginRequiredMixin, TemplateView):
                     "documents.add_directory"
                 ),
                 "has_add_file_permission": self.request.user.has_perm("documents.add_file"),
+                "has_change_file_permission": self.request.user.has_perm("documents.change_file"),
+                "has_change_directory_permission": self.request.user.has_perm(
+                    "documents.change_directory"
+                ),
                 "standard_query": sorting_query,
-                "show_buttons": not (edit_mode or move_mode),
+                "buttons_active": not (edit_mode or move_mode),
+                "show_buttons": self.request.user.has_perm("documents.change_directory")
+                or self.request.user.has_perm("documents.change_file")
+                or self.request.user.has_perm("documents.delete_directory")
+                or self.request.user.has_perm("documents.delete_file"),
                 "name_url": reverse(
                     "documents:documents",
                     kwargs={"slug": slug} if slug else None,
@@ -181,6 +189,18 @@ class Documents(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and request.user.member_type != User.MemberType.MEMBER:
             return redirect("members:memberdata")
+
+        sorting, sorting_query = get_sorting(request)
+        if request.GET.get("edit") and not (
+            request.user.has_perm("documents.change_file")
+            and request.user.has_perm("documents.change_directory")
+        ):
+            return redirect(directory_url(self.kwargs.get("slug", None), sorting=sorting))
+        if request.GET.get("move") and not (
+            request.user.has_perm("documents.change_file")
+            and request.user.has_perm("documents.change_directory")
+        ):
+            return redirect(directory_url(self.kwargs.get("slug", None), sorting=sorting))
         return super().dispatch(request, args, kwargs)
 
 
@@ -339,6 +359,7 @@ def upload_files(request):
     return redirect(directory_url(parent_id))
 
 
+@permission_required("documents.change_directory", raise_exception=True)
 @permission_required("documents.change_file", raise_exception=True)
 def edit(request):
     if request.method != "POST":
@@ -368,6 +389,7 @@ def edit(request):
 
 
 @permission_required("documents.change_directory", raise_exception=True)
+@permission_required("documents.change_file", raise_exception=True)
 def move(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

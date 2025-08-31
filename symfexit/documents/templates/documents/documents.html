@@ -116,7 +116,7 @@
         <col span="2">
         <col class="w-1/5">
         <col class="w-1/5">
-        <col class="w-[1px]">
+        {% if show_buttons %}<col class="w-[1px]">{% endif %}
       </colgroup>
       <thead>
         <tr class="border-b border-gray-300">
@@ -151,7 +151,7 @@
               {% endif %}
             </div>
           </th>
-          <th></th>
+          {% if show_buttons %}<th></th>{% endif %}
         </tr>
       </thead>
       <tbody>
@@ -161,7 +161,7 @@
             <td class="py-3 px-1"><a href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
               <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
             </td>
-            <td></td>
+            {% if show_buttons %}<td></td>{% endif %}
           </tr>
         {% elif parent %}
           <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" %}{{ standard_query }}">
@@ -169,7 +169,7 @@
             <td class="py-3 px-1"><a href="{% url "documents:documents" %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
               <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
             </td>
-            <td></td>
+            {% if show_buttons %}<td></td>{% endif %}
           </tr>
         {% endif %}
       {% for document in directories %}
@@ -185,16 +185,20 @@
           </td><td class="py-3 pl-3 pr-1 ">
               {{ document.created_at|date:"DATE_FORMAT" }}
           </td>
+          {% if show_buttons %}
           <td>
-            <form class="flex flex-row items-center gap-2 px-3 {% if show_buttons %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
+            <form class="flex flex-row items-center gap-2 px-3 {% if buttons_active %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
               {% csrf_token %}
               <input type="hidden" name="node_id" value="{{ document.id }}">
               <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
-              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
-              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
-              <input {% if not show_buttons %}disabled{% endif %} formaction="" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% if has_change_directory_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              {% endif %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
             </form>
           </td>
+          {% endif %}
         </tr>
       {% endfor %}
       {% for document in files %}
@@ -205,16 +209,20 @@
           </td>
           <td class="py-3 pl-3 pr-1">{{ document.human_size }}</td>
           <td class="py-3 pl-3 pr-1">{{ document.created_at|date:"DATE_FORMAT"}}</td>
+          {% if show_buttons %}
           <td>
-            <form class="flex flex-row items-center gap-2 px-3 {% if show_buttons %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
+            <form class="flex flex-row items-center gap-2 px-3 {% if buttons_active %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
               {% csrf_token %}
               <input type="hidden" name="node_id" value="{{ document.id }}">
               <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
-              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
-              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
-              <input {% if not show_buttons %}disabled{% endif %} formaction="" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% if has_change_file_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              {% endif %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
             </form>
           </td>
+          {% endif %}
         </tr>
       {% endfor %}
       </tbody>
@@ -243,49 +251,50 @@
   const pond = FilePond.create(input);
 
   const $addBtn = document.getElementById('do-upload-btn');
+  if ($addBtn !== null) {
+    // Disable button while FilePond is busy
+    pond.on('processfile', () => {
+      if (pond.getFiles().some(f => f.status !== FilePond.FileStatus.PROCESSING_COMPLETE)) {
+        $addBtn.disabled = true;
+      }
+    });
 
-  // Disable button while FilePond is busy
-  pond.on('processfile', () => {
-    if (pond.getFiles().some(f => f.status !== FilePond.FileStatus.PROCESSING_COMPLETE)) {
+    pond.on('processfilestart', () => {
       $addBtn.disabled = true;
-    }
-  });
+    });
 
-  pond.on('processfilestart', () => {
-    $addBtn.disabled = true;
-  });
-
-  pond.on('processfileprogress', () => {
-    $addBtn.disabled = true;
-  });
-
-  pond.on('processfileabort', () => {
-    $addBtn.disabled = false;
-  });
-
-  pond.on('processfileundo', () => {
-    $addBtn.disabled = false;
-  });
-
-  pond.on('processfiles', () => {
-    $addBtn.disabled = false;
-  });
-
-  pond.on('addfile', () => {
-    // If any file is still processing, disable
-    if (pond.getFiles().some(f => f.status === FilePond.FileStatus.PROCESSING || f.status === FilePond.FileStatus.PROCESSING_QUEUED)) {
+    pond.on('processfileprogress', () => {
       $addBtn.disabled = true;
-    }
-  });
+    });
 
-  pond.on('removefile', () => {
-    // Enable if no files are processing
-    if (!pond.getFiles().some(f => f.status === FilePond.FileStatus.PROCESSING || f.status === FilePond.FileStatus.PROCESSING_QUEUED)) {
+    pond.on('processfileabort', () => {
       $addBtn.disabled = false;
-    }
-  });
+    });
 
-  $addBtn.disabled = false;
+    pond.on('processfileundo', () => {
+      $addBtn.disabled = false;
+    });
+
+    pond.on('processfiles', () => {
+      $addBtn.disabled = false;
+    });
+
+    pond.on('addfile', () => {
+      // If any file is still processing, disable
+      if (pond.getFiles().some(f => f.status === FilePond.FileStatus.PROCESSING || f.status === FilePond.FileStatus.PROCESSING_QUEUED)) {
+        $addBtn.disabled = true;
+      }
+    });
+
+    pond.on('removefile', () => {
+      // Enable if no files are processing
+      if (!pond.getFiles().some(f => f.status === FilePond.FileStatus.PROCESSING || f.status === FilePond.FileStatus.PROCESSING_QUEUED)) {
+        $addBtn.disabled = false;
+      }
+    });
+
+    $addBtn.disabled = false;
+  }
 
   // Add cursor-pointer and click handlers to table rows and headers
   document.querySelectorAll('tr[data-href]').forEach(row => {
