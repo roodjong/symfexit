@@ -36,7 +36,7 @@ class UserForm(forms.ModelForm):
         LocalGroup.objects.all(), label=_("Local group"), required=False
     )
     extra_information = forms.CharField(
-        label=_("Extra information"), widget=forms.Textarea, required=False
+        label=_("Extra information"), widget=forms.Textarea(attrs={"rows": 5}), required=False
     )
 
     class Meta:
