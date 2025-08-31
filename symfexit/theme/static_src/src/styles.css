@@ -19,6 +19,12 @@ form {
     input {
       @apply basis-auto grow;
     }
+    select {
+      @apply basis-auto grow;
+    }
+    textarea {
+      @apply basis-auto grow;
+    }
     input[disabled] {
       @apply bg-gray-100;
     }
