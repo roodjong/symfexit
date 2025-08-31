@@ -68,11 +68,14 @@ def get_sorting(request):
 
 def make_case_insensitive(sorting):
     ci_sorting = []
-    for s in sorting:
-        if "name" in s:
-            ci_sorting.append(Lower(s))
-        else:
-            ci_sorting.append(s)
+    for sort in sorting:
+        match sort:
+            case "name":
+                ci_sorting.append(Lower("name"))
+            case "-name":
+                ci_sorting.append(Lower("name").desc())
+            case _:
+                ci_sorting.append(sort)
     return tuple(ci_sorting)
 
 
