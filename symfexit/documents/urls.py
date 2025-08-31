@@ -6,6 +6,7 @@ from symfexit.documents.views import (
     file,
     file_download,
     file_pdf,
+    move,
     new_directory,
     upload_files,
 )
@@ -21,4 +22,5 @@ urlpatterns = [
     path("documenten/create-directory", new_directory, name="create-directory"),
     path("documenten/upload", upload_files, name="upload"),
     path("documenten/edit", edit, name="edit"),
+    path("documenten/move", move, name="move"),
 ]

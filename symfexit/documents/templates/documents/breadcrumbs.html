@@ -1,10 +1,10 @@
 {% load i18n %}
-<span>{% translate 'Path:' %} </span><a href="{% url "documents:documents" %}{{ sorting_query }}"><span>{% translate 'Documents' %}</span></a>
+<span>{% translate 'Path:' %} </span><a href="{% url "documents:documents" %}{{ standard_query }}"><span>{% translate 'Documents' %}</span></a>
 {% for crumb in breadcrumbs %}
   <span>/</span>
   {% if forloop.last %}
-    <a href="{% url "documents:documents" crumb.id %}{{ sorting_query }}"><span class="text-primary">{{ crumb.name }}</span></a>
+    <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}"><span class="text-primary">{{ crumb.name }}</span></a>
   {% else %}
-    <a href="{% url "documents:documents" crumb.id %}{{ sorting_query }}">{{ crumb.name }}</a>
+    <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}">{{ crumb.name }}</a>
   {% endif %}
 {% endfor %}
