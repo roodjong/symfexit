@@ -17,6 +17,7 @@ class FileNode(models.Model):
     )
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+    trashed_at = models.DateTimeField(_("trashed at"), null=True)
 
     class Meta:
         constraints = [
