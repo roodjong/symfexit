@@ -16,7 +16,7 @@
     <div id="edit-dialog">
       <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-0" onclick="dismissEdit()"></div>
       <dialog open popover class="z-1 backdrop:bg-gray-50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
-        <form method="POST" class="flex flex-col gap-4" action="{% url 'documents:edit' %}{{ sorting_query }}">
+        <form method="POST" class="flex flex-col gap-4" action="{% url 'documents:edit' %}{{ standard_query }}">
           {% csrf_token %}
           <input type="hidden" name="node_id" value="{{ edit_mode }}">
           <label for="newname">{% blocktranslate %}New name for "{{ edit_old_name }}"{% endblocktranslate %}</label>
@@ -31,7 +31,6 @@
             <button type="submit" class="bg-primary text-white p-2 cursor-pointer">{% translate 'Save' %}</button>
           </div>
         </form>
-        {% comment %} Close button {% endcomment %}
         <button onclick="dismissEdit()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 cursor-pointer" title="{% translate 'Dismiss' %}">
           <i class="fa fa-close fa-lg"></i>
         </button>
@@ -39,6 +38,27 @@
     </div>
   {% endif %}
   <h1 class="font-header text-5xl mb-6">{% translate 'Documents' %}</h1>
+  {% if move_mode %}
+    <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 mb-4 flex flex-row flex-wrap justify-between items-center">
+      <div>
+        {% blocktranslate %}Select the target directory to move "{{ move_node_name }}" to.{% endblocktranslate %}
+        {% if parents %}
+          <div class="text-sm text-yellow-700 mt-2">
+            {% blocktranslate %}Note: You cannot move a directory into itself or one of its subdirectories.{% endblocktranslate %}
+          </div>
+        {% endif %}
+      </div>
+      <form method="POST" action="{% url 'documents:move' %}" class="flex flex-row gap-2">
+        {% csrf_token %}
+        <input type="hidden" name="node_id" value="{{ move_mode }}">
+        <input type="hidden" name="newparent_id" value="{% if parent %}{{ parent.id }}{% else %}toplevel{% endif %}">
+        {% if valid_move %}
+        <button type="submit" name="action" value="confirm" class="bg-green-500 text-white p-2 cursor-pointer">{% translate 'Confirm move here' %}</button>
+        {% endif %}
+        <button type="submit" name="action" value="cancel" class="bg-yellow-500 text-white p-2 cursor-pointer">{% translate 'Cancel move' %}</button>
+      </form>
+    </div>
+  {% endif %}
   <div class="flex flex-row flex-wrap justify-between items-center mb-4">
     <div class="flex flex-row items-center gap-2">
       {% include "documents/breadcrumbs.html" %}
@@ -80,114 +100,116 @@
       {% endif %}
     </div>
   </div>
-  <table class="w-full border border-gray-300">
-    <colgroup>
-      <col span="2">
-      <col class="w-1/5">
-      <col class="w-1/5">
-      <col class="w-[1px]">
-    </colgroup>
-    <thead>
-      <tr class="border-b border-gray-300">
-        <th class="border-l border-t border-gray-300" data-href="{{ name_url }}"></th>
-        <th class="py-3 pl-1 pr-4 text-left text-primary border-r border-t border-gray-300" data-href="{{ name_url }}">
-          <div class="flex flex-row items-center gap-1 place-content-between">
-            <a href="{{ name_url }}" class="{% if '-name' in sorting_query or sorting_query == '' %}font-bold{% else %}font-normal{% endif %}">{% translate 'Name' %}</a>
-            {% if '-name' in sorting_query %}
-            <i class="fa fa-chevron-down"></i>
-            {% elif sorting_query == '' %}
-            <i class="fa fa-chevron-up"></i>
-            {% endif %}
-          </div>
-        </th>
-        <th class="py-3 pl-1 pr-4 border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ size_url }}">
-          <div class="flex flex-row items-center gap-1 place-content-between">
-            <a href="{{ size_url }}" class="{% if 'size' in sorting_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Size' %}</a>
-            {% if '-size' in sorting_query %}
-            <i class="fa fa-chevron-down"></i>
-            {% elif 'size' in sorting_query %}
-            <i class="fa fa-chevron-up"></i>
-            {% endif %}
-          </div>
-        </th>
-        <th class="py-3 pl-1 pr-4  border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ created_at_url }}">
-          <div class="flex flex-row items-center gap-1 place-content-between">
-            <a href="{{ created_at_url }}" class="{% if 'created_at' in sorting_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Date' %}</a>
-            {% if '-created_at' in sorting_query %}
-            <i class="fa fa-chevron-down"></i>
-            {% elif 'created_at' in sorting_query %}
-            <i class="fa fa-chevron-up"></i>
-            {% endif %}
-          </div>
-        </th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if parent.parent %}
-        <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" parent.parent.id %}{{ sorting_query }}">
-          <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
-          <td class="py-3 px-1"><a href="{% url "documents:documents" parent.parent.id %}{{ sorting_query }}">{% translate '.. (parent directory)' %}</a>
-            <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
-          </td>
-          <td></td>
+  <div class="overflow-x-auto">
+    <table class="w-full border border-gray-300 max-w-svw">
+      <colgroup>
+        <col span="2">
+        <col class="w-1/5">
+        <col class="w-1/5">
+        <col class="w-[1px]">
+      </colgroup>
+      <thead>
+        <tr class="border-b border-gray-300">
+          <th class="border-l border-t border-gray-300" data-href="{{ name_url }}"></th>
+          <th class="py-3 pl-1 pr-4 text-left text-primary border-r border-t border-gray-300" data-href="{{ name_url }}">
+            <div class="flex flex-row items-center gap-1 place-content-between">
+              <a href="{{ name_url }}" class="{% if '-name' in standard_query or standard_query == '' %}font-bold{% else %}font-normal{% endif %}">{% translate 'Name' %}</a>
+              {% if '-name' in standard_query %}
+              <i class="fa fa-chevron-down"></i>
+              {% elif standard_query == '' %}
+              <i class="fa fa-chevron-up"></i>
+              {% endif %}
+            </div>
+          </th>
+          <th class="py-3 pl-1 pr-4 border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ size_url }}">
+            <div class="flex flex-row items-center gap-1 place-content-between">
+              <a href="{{ size_url }}" class="{% if 'size' in standard_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Size' %}</a>
+              {% if '-size' in standard_query %}
+              <i class="fa fa-chevron-down"></i>
+              {% elif 'size' in standard_query %}
+              <i class="fa fa-chevron-up"></i>
+              {% endif %}
+            </div>
+          </th>
+          <th class="py-3 pl-1 pr-4  border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ created_at_url }}">
+            <div class="flex flex-row items-center gap-1 place-content-between">
+              <a href="{{ created_at_url }}" class="{% if 'created_at' in standard_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Date' %}</a>
+              {% if '-created_at' in standard_query %}
+              <i class="fa fa-chevron-down"></i>
+              {% elif 'created_at' in standard_query %}
+              <i class="fa fa-chevron-up"></i>
+              {% endif %}
+            </div>
+          </th>
+          <th></th>
         </tr>
-      {% elif parent %}
-        <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" %}{{ sorting_query }}">
-          <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
-          <td class="py-3 px-1"><a href="{% url "documents:documents" %}{{ sorting_query }}">{% translate '.. (parent directory)' %}</a>
-            <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
+      </thead>
+      <tbody>
+        {% if parent.parent %}
+          <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">
+            <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
+            <td class="py-3 px-1"><a href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
+              <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
+            </td>
+            <td></td>
+          </tr>
+        {% elif parent %}
+          <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" %}{{ standard_query }}">
+            <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
+            <td class="py-3 px-1"><a href="{% url "documents:documents" %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
+              <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
+            </td>
+            <td></td>
+          </tr>
+        {% endif %}
+      {% for document in directories %}
+        <tr class="even:bg-gray-100 odd:bg-white {% if document.id == move_mode %}text-gray-400{% endif %}" {% if document.id == move_mode %}disabled{% endif %} data-href="{% url "documents:documents" document.id %}{{ standard_query }}">
+          <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-folder-open text-primary"></i></td>
+          <td class="py-3 pl-1 pr-1"><a {% if document.id != move_mode %}href="{% url "documents:documents" document.id %}{{ standard_query }}"{% endif %}>{{ document.name }}</a>
+          <td class="py-3 pl-3 pr-1">
+            {% if document.size == 1 %}
+              {{ document.size }} {% translate 'item' %}
+            {% else %}
+              {{ document.size }} {% translate 'items' %}
+            {% endif %}
+          </td><td class="py-3 pl-3 pr-1 ">
+              {{ document.created_at|date:"DATE_FORMAT" }}
           </td>
-          <td></td>
+          <td>
+            <form class="flex flex-row items-center gap-2 px-3 {% if show_buttons %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="node_id" value="{{ document.id }}">
+              <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              <input {% if not show_buttons %}disabled{% endif %} formaction="" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+            </form>
+          </td>
         </tr>
-      {% endif %}
-    {% for document in directories %}
-      <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" document.id %}{{ sorting_query }}">
-        <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-folder-open text-primary"></i></td>
-        <td class="py-3 pl-1 pr-1 "><a href="{% url "documents:documents" document.id %}{{ sorting_query }}">{{ document.name }}</a>
-        <td class="py-3 pl-3 pr-1">
-          {% if document.size == 1 %}
-            {{ document.size }} {% translate 'item' %}
-          {% else %}
-            {{ document.size }} {% translate 'items' %}
-          {% endif %}
-        </td><td class="py-3 pl-3 pr-1 ">
-            {{ document.created_at|date:"DATE_FORMAT" }}
-        </td>
-        <td>
-          <form class="flex flex-row items-center gap-2 px-3 text-gray-500" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="node_id" value="{{ document.id }}">
-            <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
-            <input formaction="{% url "documents:edit" %}{{ sorting_query }}" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
-            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
-            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
-          </form>
-        </td>
-      </tr>
-    {% endfor %}
-    {% for document in files %}
-      <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:file" document.id %}{{ sorting_query }}">
-        <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-file text-primary"></i></td>
-        <td class="py-3 px-1">
-          <a href="{% url "documents:file" document.id %}{{ sorting_query }}">{{ document.name }}</a>
-        </td>
-        <td class="py-3 pl-3 pr-1">{{ document.human_size }}</td>
-        <td class="py-3 pl-3 pr-1">{{ document.created_at|date:"DATE_FORMAT"}}</td>
-        <td>
-          <form class="flex flex-row items-center gap-2 px-3 text-gray-500" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="node_id" value="{{ document.id }}">
-            <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
-            <input formaction="{% url "documents:edit" %}{{ sorting_query }}" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
-            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
-            <input formaction="" type="submit" class="border rounded p-1 cursor-pointer flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
-          </form>
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+      {% endfor %}
+      {% for document in files %}
+        <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:file" document.id %}{{ standard_query }}">
+          <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-file text-primary"></i></td>
+          <td class="py-3 px-1">
+            <a href="{% url "documents:file" document.id %}{{ standard_query }}">{{ document.name }}</a>
+          </td>
+          <td class="py-3 pl-3 pr-1">{{ document.human_size }}</td>
+          <td class="py-3 pl-3 pr-1">{{ document.created_at|date:"DATE_FORMAT"}}</td>
+          <td>
+            <form class="flex flex-row items-center gap-2 px-3 {% if show_buttons %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="node_id" value="{{ document.id }}">
+              <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+              <input {% if not show_buttons %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              <input {% if not show_buttons %}disabled{% endif %} formaction="" type="submit" class="{% if show_buttons %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock main %}
 {% block scripts %}
@@ -257,6 +279,9 @@
 
   // Add cursor-pointer and click handlers to table rows and headers
   document.querySelectorAll('tr[data-href]').forEach(row => {
+    if (row.hasAttribute('disabled')) {
+      return; // Skip rows that are disabled
+    }
     // Apply the cursor-pointer to all cells except the last one
     row.querySelectorAll('td:not(:last-child), th:not(:last-child)').forEach(cell => {
       cell.classList.add('cursor-pointer');
@@ -277,7 +302,7 @@
     // Remove 'edit' from URL
     const url = new URL(window.location);
     url.searchParams.delete('edit');
-    window.history.replaceState({}, document.title, url.toString());
+    window.location.href = url.toString();
   }
 </script>
 {% endblock scripts %}

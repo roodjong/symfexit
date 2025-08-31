@@ -1,4 +1,5 @@
 from urllib.parse import urlencode
+from uuid import UUID
 
 import magic
 from django.contrib import messages
@@ -18,12 +19,16 @@ from symfexit.documents.models import Directory, File, FileNode
 from symfexit.members.models import User
 
 
-def directory_url(parent_id, edit_mode=None, sorting=None):
+def directory_url(parent_id: Directory | str | None, edit_mode=None, move_mode=None, sorting=None):
+    if isinstance(parent_id, Directory):
+        parent_id = parent_id.id
     query = {}
     if edit_mode:
         query["edit"] = edit_mode
     if sorting:
         query["sort"] = sorting
+    if move_mode:
+        query["move"] = move_mode
     if not query:
         query = None
     if not parent_id:
@@ -55,7 +60,9 @@ class Documents(LoginRequiredMixin, TemplateView):
         sorting, sorting_query = get_sorting(self.request)
 
         edit_mode = self.request.GET.get("edit", None)
+        move_mode = self.request.GET.get("move", None)
 
+        parent = Directory.objects.filter(id=slug).first()
         directories = (
             Directory.objects.filter(parent=slug)
             .annotate(size=Count("children"))
@@ -63,7 +70,7 @@ class Documents(LoginRequiredMixin, TemplateView):
         )
         context.update(
             {
-                "parent": Directory.objects.filter(id=slug).first(),
+                "parent": parent,
                 "directories": directories,
                 "files": File.objects.filter(parent=slug).order_by(*sorting),
                 "breadcrumbs": build_breadcrumbs(Directory.objects.filter(id=slug).first()),
@@ -71,7 +78,8 @@ class Documents(LoginRequiredMixin, TemplateView):
                     "documents.add_directory"
                 ),
                 "has_add_file_permission": self.request.user.has_perm("documents.add_file"),
-                "sorting_query": sorting_query,
+                "standard_query": sorting_query,
+                "show_buttons": not (edit_mode or move_mode),
                 "name_url": reverse(
                     "documents:documents",
                     kwargs={"slug": slug} if slug else None,
@@ -100,6 +108,35 @@ class Documents(LoginRequiredMixin, TemplateView):
                     "edit_old_ext": edit_node.name.rsplit(".", 1)[-1]
                     if "." in edit_node.name
                     else "",
+                }
+            )
+        if move_mode:
+            move_node = get_object_or_404(FileNode, id=move_mode)
+
+            parents = []
+            if parent is not None:
+                current_dir = parent
+                parents.append(current_dir.id)
+                while current_dir := current_dir.parent:
+                    parents.append(current_dir.id)
+            if move_node.id in parents:
+                messages.add_message(
+                    self.request,
+                    messages.ERROR,
+                    _("You cannot move a directory into itself or one of its subdirectories."),
+                )
+
+            move_query = {"move": move_mode}
+            if sorting_query:
+                move_query["sort"] = sorting
+            standard_query = "?" + urlencode(move_query, doseq=True)
+            context.update(
+                {
+                    "standard_query": standard_query,
+                    "valid_move": move_node.id not in parents,
+                    "move_mode": UUID(move_mode),
+                    "move_node_name": move_node.name,
+                    "move_node_old_parent": move_node.parent.id if move_node.parent else None,
                 }
             )
         return context
@@ -272,3 +309,45 @@ def edit(request):
         )
         return redirect(directory_url(node.parent.id if node.parent else None, sorting=sorting))
     return redirect(directory_url(node.parent.id if node.parent else None, sorting=sorting))
+
+
+@permission_required("documents.change_directory", raise_exception=True)
+def move(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    node_id = request.POST.get("node_id")
+    newparent_id = request.POST.get("newparent_id")
+    action = request.POST.get("action")
+    sorting, sorting_query = get_sorting(request)
+
+    node = get_object_or_404(FileNode, id=node_id)
+    if action == "cancel":
+        return redirect(directory_url(node.parent, sorting=sorting))
+
+    if not newparent_id:
+        # Not confirmed the move yet
+        return redirect(directory_url(node.parent, sorting=sorting, move_mode=node_id))
+
+    newparent = None
+    if newparent_id != "toplevel":
+        newparent = get_object_or_404(Directory, id=newparent_id)
+
+    if node.id == newparent_id:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("You cannot move a directory into itself."),
+        )
+        return redirect(directory_url(node.parent, sorting=sorting, move_mode=node_id))
+
+    try:
+        node.parent = newparent
+        node.save()
+    except IntegrityError:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("A file or directory with the same name already exists in this location."),
+        )
+        return redirect(directory_url(node.parent, sorting=sorting, move_mode=node_id))
+    return redirect(directory_url(newparent.id if newparent else None, sorting=sorting))
