@@ -1,20 +1,19 @@
 version: 2
 enable-beta-ecosystems: true
 updates:
-- package-ecosystem: "npm"
-  directory: "src/theme/static_src"
-  schedule:
-    interval: "weekly"
-updates:
-- package-ecosystem: "uv"
-  directory: "/"
-  schedule:
-    interval: "weekly"
-- package-ecosystem: "github-actions"
-  directory: "/"
-  schedule:
-    interval: "weekly"
-- package-ecosystem: "devcontainers"
-  directory: "/"
-  schedule:
-    interval: weekly
+  - package-ecosystem: "npm"
+    directory: "src/theme/static_src"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: weekly
