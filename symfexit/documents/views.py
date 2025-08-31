@@ -13,6 +13,7 @@ from django.db.models.functions import Lower
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
@@ -24,7 +25,13 @@ from symfexit.members.models import User
 README_REGEX = r"(?i)^(leesmij|readme)\.(md|txt)$"
 
 
-def directory_url(parent_id: Directory | str | None, edit_mode=None, move_mode=None, sorting=None):
+def directory_url(
+    parent_id: Directory | str | None,
+    edit_mode=None,
+    move_mode=None,
+    delete_confirm=None,
+    sorting=None,
+):
     if isinstance(parent_id, Directory):
         parent_id = parent_id.id
     query = {}
@@ -34,9 +41,13 @@ def directory_url(parent_id: Directory | str | None, edit_mode=None, move_mode=N
         query["sort"] = sorting
     if move_mode:
         query["move"] = move_mode
+    if delete_confirm:
+        query["delete_confirm"] = delete_confirm
     if not query:
         query = None
-    if not parent_id:
+    if parent_id == "trash":
+        return reverse("documents:trashcan", query=query)
+    elif not parent_id:
         return reverse("documents:documents", query=query)
     else:
         return reverse("documents:documents", kwargs={"slug": parent_id}, query=query)
@@ -69,6 +80,18 @@ def make_case_insensitive(sorting):
 class Documents(LoginRequiredMixin, TemplateView):
     template_name = "documents/documents.html"
 
+    def get_files(self, parent, sorting):
+        return File.objects.filter(parent=parent, trashed_at__isnull=True).order_by(
+            *make_case_insensitive(sorting)
+        )
+
+    def get_directories(self, parent, sorting):
+        return (
+            Directory.objects.filter(parent=parent, trashed_at__isnull=True)
+            .annotate(size=Count("children"))
+            .order_by(*make_case_insensitive(sorting))
+        )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         slug = self.kwargs.get("slug", None)
@@ -78,12 +101,8 @@ class Documents(LoginRequiredMixin, TemplateView):
         move_mode = self.request.GET.get("move", None)
 
         parent = Directory.objects.filter(id=slug).first()
-        directories = (
-            Directory.objects.filter(parent=slug)
-            .annotate(size=Count("children"))
-            .order_by(*make_case_insensitive(sorting))
-        )
-        files = list(File.objects.filter(parent=slug).order_by(*make_case_insensitive(sorting)))
+        directories = self.get_directories(parent, sorting)
+        files = list(self.get_files(parent, sorting))
 
         # Search for a LEESMIJ.md, LEESMIJ.txt, README.md or README.txt file (case insensitive) in that order
         def sort_key(f):
@@ -104,8 +123,12 @@ class Documents(LoginRequiredMixin, TemplateView):
                 readme_files[0].content.read().decode()
             )
 
+        any_trash = FileNode.objects.filter(trashed_at__isnull=False).count() > 0
+
         context.update(
             {
+                "title": _("Documents"),
+                "show_breadcrumbs": True,
                 "parent": parent,
                 "directories": directories,
                 "files": files,
@@ -114,16 +137,20 @@ class Documents(LoginRequiredMixin, TemplateView):
                     "documents.add_directory"
                 ),
                 "has_add_file_permission": self.request.user.has_perm("documents.add_file"),
-                "has_change_file_permission": self.request.user.has_perm("documents.change_file"),
-                "has_change_directory_permission": self.request.user.has_perm(
-                    "documents.change_directory"
-                ),
+                "has_rename_permission": self.request.user.has_perm("documents.change_file")
+                and self.request.user.has_perm("documents.change_directory"),
+                "has_move_permission": self.request.user.has_perm("documents.change_file")
+                and self.request.user.has_perm("documents.change_directory"),
+                "has_delete_permission": self.request.user.has_perm("documents.delete_file")
+                and self.request.user.has_perm("documents.delete_directory"),
+                "show_trashcan": any_trash,
                 "standard_query": sorting_query,
                 "buttons_active": not (edit_mode or move_mode),
                 "show_buttons": self.request.user.has_perm("documents.change_directory")
                 or self.request.user.has_perm("documents.change_file")
                 or self.request.user.has_perm("documents.delete_directory")
                 or self.request.user.has_perm("documents.delete_file"),
+                "show_trashed_at": False,
                 "name_url": reverse(
                     "documents:documents",
                     kwargs={"slug": slug} if slug else None,
@@ -202,6 +229,42 @@ class Documents(LoginRequiredMixin, TemplateView):
         ):
             return redirect(directory_url(self.kwargs.get("slug", None), sorting=sorting))
         return super().dispatch(request, args, kwargs)
+
+
+class Trashcan(Documents):
+    def get_files(self, parent, sorting):
+        return File.objects.filter(trashed_at__isnull=False).order_by(
+            *make_case_insensitive(sorting)
+        )
+
+    def get_directories(self, parent, sorting):
+        return (
+            Directory.objects.filter(trashed_at__isnull=False)
+            .annotate(size=Count("children"))
+            .order_by(*make_case_insensitive(sorting))
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "title": _("Trashcan"),
+                "show_breadcrumbs": False,
+                "has_add_directory_permission": False,
+                "has_add_file_permission": False,
+                "has_rename_permission": False,
+                "show_trashed_at": True,
+                "show_trashcan": False,
+                "readme_file": None,
+            }
+        )
+        delete_confirm_id = self.request.GET.get("delete_confirm")
+        if delete_confirm_id:
+            delete_node = get_object_or_404(FileNode, id=delete_confirm_id)
+            context.update(
+                {"delete_confirm": delete_confirm_id, "delete_confirm_name": delete_node.name}
+            )
+        return context
 
 
 @login_required
@@ -420,6 +483,7 @@ def move(request):
 
     try:
         node.parent = newparent
+        node.trashed_at = None
         node.save()
     except IntegrityError:
         messages.add_message(
@@ -429,3 +493,33 @@ def move(request):
         )
         return redirect(directory_url(node.parent, sorting=sorting, move_mode=node_id))
     return redirect(directory_url(newparent.id if newparent else None, sorting=sorting))
+
+
+@permission_required("documents.delete_directory", raise_exception=True)
+@permission_required("documents.delete_file", raise_exception=True)
+def trash(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    node_id = request.POST.get("node_id")
+    confirm = request.POST.get("confirm", "false")
+    cancel = request.POST.get("cancel")
+    sorting, sorting_query = get_sorting(request)
+    node = get_object_or_404(FileNode, id=node_id)
+
+    if node.trashed_at is None:
+        node.trashed_at = timezone.now()
+        node.save()
+        messages.add_message(
+            request, messages.INFO, _("File or directory has been moved to the trashcan.")
+        )
+        return redirect(directory_url(node.parent, sorting=sorting))
+
+    if cancel:
+        return redirect(directory_url("trash", sorting=sorting))
+
+    if confirm != "true":
+        return redirect(directory_url("trash", delete_confirm=node_id, sorting=sorting))
+    else:
+        node.delete()
+        messages.add_message(request, messages.INFO, _("File or directory deleted succesfully."))
+        return redirect(directory_url("trash", sorting=sorting))

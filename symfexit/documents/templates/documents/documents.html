@@ -37,7 +37,25 @@
       </dialog>
     </div>
   {% endif %}
-  <h1 class="font-header text-5xl mb-6">{% translate 'Documents' %}</h1>
+  {% if delete_confirm %}
+    <div id="delete-confirm-dialog">
+      <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-0" onclick="dismissDeleteConfirm()"></div>
+      <dialog open popover class="z-1 backdrop:bg-gray-50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
+        <form method="POST" class="flex flex-col gap-4" action="{% url 'documents:trash' %}{{ standard_query }}">
+          {% csrf_token %}
+          <input type="hidden" name="node_id" value="{{ delete_confirm }}">
+          <p>Are you sure you want to delete "{{ delete_confirm_name }}"?</p>
+          <p>It will be gone forever! (A really long time!)</p>
+          <button type="submit" name="confirm" value="true" class="bg-primary text-white p-2 cursor-pointer">{% translate 'Actually delete' %}</button>
+          <button type="submit" name="cancel" value="cancel" class="border p-2 cursor-pointer">{% translate 'Cancel' %}</button>
+        </form>
+        <button onclick="dismissDeleteConfirm()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 cursor-pointer" title="{% translate 'Dismiss' %}">
+          <i class="fa fa-close fa-lg"></i>
+        </button>
+      </dialog>
+    </div>
+  {% endif %}
+  <h1 class="font-header text-5xl mb-6">{{ title }}</h1>
   {% if move_mode %}
     <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 mb-4 flex flex-row flex-wrap justify-between items-center">
       <div>
@@ -70,9 +88,11 @@
   </div>
   {% endif %}
   <div class="flex flex-row flex-wrap justify-between items-center mb-4">
+    {% if show_breadcrumbs %}
     <div class="flex flex-row items-center gap-2">
       {% include "documents/breadcrumbs.html" %}
     </div>
+    {% endif %}
     <div class="flex flex-row gap-4">
       {% if has_add_directory_permission %}
       <button
@@ -108,6 +128,11 @@
         </form>
       </dialog>
       {% endif %}
+      {% if has_delete_permission and show_trashcan %}
+      <a class="border text-primary p-3 cursor-pointer flex gap-2 items-center" role="button" href="{% url "documents:trashcan" %}{{ standard_query }}">
+        <i class="fa fa-solid fa-trash"></i>{% translate 'Trashcan' %}
+      </a>
+      {% endif %}
     </div>
   </div>
   <div class="overflow-x-auto">
@@ -116,6 +141,7 @@
         <col span="2">
         <col class="w-1/5">
         <col class="w-1/5">
+        {% if show_trashed_at %}<col class="w-1/5">{% endif %}
         {% if show_buttons %}<col class="w-[1px]">{% endif %}
       </colgroup>
       <thead>
@@ -151,6 +177,7 @@
               {% endif %}
             </div>
           </th>
+          {% if show_trashed_at %}<th class="py-3 pl-1 pr-4  border-t border-r border-gray-300 py-3 pl-3 text-left text-primary font-normal">{% translate 'Trashed at' %}{% endif %}
           {% if show_buttons %}<th></th>{% endif %}
         </tr>
       </thead>
@@ -161,6 +188,7 @@
             <td class="py-3 px-1"><a href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
               <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
             </td>
+            {% if show_trashed_at %}<td></td>{% endif %}
             {% if show_buttons %}<td></td>{% endif %}
           </tr>
         {% elif parent %}
@@ -169,6 +197,7 @@
             <td class="py-3 px-1"><a href="{% url "documents:documents" %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
               <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
             </td>
+            {% if show_trashed_at %}<td></td>{% endif %}
             {% if show_buttons %}<td></td>{% endif %}
           </tr>
         {% endif %}
@@ -185,17 +214,26 @@
           </td><td class="py-3 pl-3 pr-1 ">
               {{ document.created_at|date:"DATE_FORMAT" }}
           </td>
+          {% if show_trashed_at %}
+          <td class="py-3 pl-3 pr-1">
+            {{ document.trashed_at|date:"DATE_FORMAT" }}
+          </td>
+          {% endif %}
           {% if show_buttons %}
           <td>
             <form class="flex flex-row items-center gap-2 px-3 {% if buttons_active %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
               {% csrf_token %}
               <input type="hidden" name="node_id" value="{{ document.id }}">
               <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
-              {% if has_change_directory_permission %}
+              {% if has_rename_permission %}
               <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
-              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
               {% endif %}
-              <input {% if not buttons_active %}disabled{% endif %} formaction="" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% if has_move_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              {% endif %}
+              {% if has_delete_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:trash" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% endif %}
             </form>
           </td>
           {% endif %}
@@ -209,17 +247,26 @@
           </td>
           <td class="py-3 pl-3 pr-1">{{ document.human_size }}</td>
           <td class="py-3 pl-3 pr-1">{{ document.created_at|date:"DATE_FORMAT"}}</td>
+          {% if show_trashed_at %}
+          <td class="py-3 pl-3 pr-1">
+            {{ document.trashed_at|date:"DATE_FORMAT" }}
+          </td>
+          {% endif %}
           {% if show_buttons %}
           <td>
             <form class="flex flex-row items-center gap-2 px-3 {% if buttons_active %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
               {% csrf_token %}
               <input type="hidden" name="node_id" value="{{ document.id }}">
               <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
-              {% if has_change_file_permission %}
+              {% if has_rename_permission %}
               <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
-              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
               {% endif %}
-              <input {% if not buttons_active %}disabled{% endif %} formaction="" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% if has_move_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              {% endif %}
+              {% if has_delete_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:trash" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% endif %}
             </form>
           </td>
           {% endif %}
@@ -321,6 +368,13 @@
     // Remove 'edit' from URL
     const url = new URL(window.location);
     url.searchParams.delete('edit');
+    window.location.href = url.toString();
+  }
+  function dismissDeleteConfirm() {
+    document.getElementById('delete-confirm-dialog').remove();
+    // Remove 'delete_confirm' from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('delete_confirm');
     window.location.href = url.toString();
   }
 </script>

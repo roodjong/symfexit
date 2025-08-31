@@ -138,4 +138,7 @@ ul.messages {
   li.error {
     @apply bg-red-100 border border-red-400 text-red-700;
   }
+  li.info {
+    @apply bg-green-100 border border-green-400 text-green-700;
+  }
 }
