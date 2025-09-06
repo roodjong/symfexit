@@ -18,7 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import HttpResponse
-from django.urls import include, path, re_path
+from django.urls import include, path
 
 # from symfexit.adminsite.admin import admin_site
 from symfexit.root.utils import enable_if
@@ -46,7 +46,7 @@ urlpatterns = (
         path("mollie/", include("symfexit.payments.mollie.urls")),
         path("admin/", admin.site.urls),
         path("accounts/", include("django.contrib.auth.urls")),
-        re_path("^fp/", include("django_drf_filepond.urls")),
+        path("fp/", include("django_drf_filepond.urls")),
     ]
     + enable_if(
         django_browser_reload_enabled,
