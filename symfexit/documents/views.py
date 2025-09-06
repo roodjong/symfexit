@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError, transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import Lower
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -91,7 +91,7 @@ class Documents(LoginRequiredMixin, TemplateView):
     def get_directories(self, parent, sorting):
         return (
             Directory.objects.filter(parent=parent, trashed_at__isnull=True)
-            .annotate(size=Count("children"))
+            .annotate(size=Count("children", filter=Q(children__trashed_at__isnull=True)))
             .order_by(*make_case_insensitive(sorting))
         )
 
