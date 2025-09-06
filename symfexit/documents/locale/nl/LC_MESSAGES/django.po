@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-30 17:04+0200\n"
+"POT-Creation-Date: 2025-09-06 10:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,9 +20,10 @@ msgstr ""
 
 #: symfexit/documents/apps.py:8 symfexit/documents/apps.py:14
 #: symfexit/documents/templates/documents/breadcrumbs.html:2
-#: symfexit/documents/templates/documents/documents.html:15
 #: symfexit/documents/templates/documents/image_file.html:5
 #: symfexit/documents/templates/documents/pdf_file.html:5
+#: symfexit/documents/templates/documents/text_file.html:5
+#: symfexit/documents/views.py:136
 msgid "Documents"
 msgstr "Documenten"
 
@@ -38,31 +39,35 @@ msgstr "map waar die in zit"
 msgid "created at"
 msgstr "gemaakt op"
 
-#: symfexit/documents/models.py:49
+#: symfexit/documents/models.py:20
+msgid "trashed at"
+msgstr "weggegooid op"
+
+#: symfexit/documents/models.py:53
 msgid "content"
 msgstr "inhoud"
 
-#: symfexit/documents/models.py:50
+#: symfexit/documents/models.py:54
 msgid "size"
 msgstr "grootte"
 
-#: symfexit/documents/models.py:51
+#: symfexit/documents/models.py:55
 msgid "content type"
-msgstr "Inhoudstype"
+msgstr "inhoudstype"
 
-#: symfexit/documents/models.py:54
+#: symfexit/documents/models.py:58
 msgid "file"
 msgstr "bestand"
 
-#: symfexit/documents/models.py:55
+#: symfexit/documents/models.py:59
 msgid "files"
 msgstr "bestanden"
 
-#: symfexit/documents/models.py:76
+#: symfexit/documents/models.py:77
 msgid "directory"
 msgstr "map"
 
-#: symfexit/documents/models.py:77
+#: symfexit/documents/models.py:78
 msgid "directories"
 msgstr "mappen"
 
@@ -70,48 +75,97 @@ msgstr "mappen"
 msgid "Path:"
 msgstr "Pad:"
 
-#: symfexit/documents/templates/documents/documents.html:27
+#: symfexit/documents/templates/documents/documents.html:22
+#, python-format
+msgid "New name for \"%(edit_old_full_name)s\""
+msgstr "Nieuwe naam voor \"%(edit_old_full_name)s\""
+
+#: symfexit/documents/templates/documents/documents.html:31
+msgid "Save"
+msgstr "Opslaan"
+
+#: symfexit/documents/templates/documents/documents.html:34
+#: symfexit/documents/templates/documents/documents.html:52
+msgid "Dismiss"
+msgstr "Afsluiten"
+
+#: symfexit/documents/templates/documents/documents.html:49
+msgid "Actually delete"
+msgstr "Echt weggooien"
+
+#: symfexit/documents/templates/documents/documents.html:50
+msgid "Cancel"
+msgstr "Afbreken"
+
+#: symfexit/documents/templates/documents/documents.html:62
+#, python-format
+msgid "Select the target directory to move \"%(move_node_name)s\" to."
+msgstr "Vind de locatie waar je \"%(move_node_name)s\" naartoe wilt verplaatsen."
+
+#: symfexit/documents/templates/documents/documents.html:65
+msgid ""
+"Note: You cannot move a directory into itself or one of its subdirectories."
+msgstr "Het is niet mogelijk een map te plaatsen in zichzelf of een submap van zichzelf."
+
+#: symfexit/documents/templates/documents/documents.html:74
+msgid "Confirm move here"
+msgstr "Hier plaatsen"
+
+#: symfexit/documents/templates/documents/documents.html:76
+msgid "Cancel move"
+msgstr "Stop verplaatsen"
+
+#: symfexit/documents/templates/documents/documents.html:103
 msgid "New directory"
 msgstr "Nieuwe map"
 
-#: symfexit/documents/templates/documents/documents.html:32
+#: symfexit/documents/templates/documents/documents.html:108
 msgid "Name of the directory"
 msgstr "Naam van de map"
 
-#: symfexit/documents/templates/documents/documents.html:34
+#: symfexit/documents/templates/documents/documents.html:110
 msgid "Create directory"
 msgstr "Maak map"
 
-#: symfexit/documents/templates/documents/documents.html:44
+#: symfexit/documents/templates/documents/documents.html:120
 msgid "Upload"
 msgstr "Upload"
 
-#: symfexit/documents/templates/documents/documents.html:51
+#: symfexit/documents/templates/documents/documents.html:127
 msgid "Add"
 msgstr "Toevoegen"
 
-#: symfexit/documents/templates/documents/documents.html:68
+#: symfexit/documents/templates/documents/documents.html:133
+#: symfexit/documents/views.py:258
+msgid "Trashcan"
+msgstr "Prullenbak"
+
+#: symfexit/documents/templates/documents/documents.html:152
 msgid "Name"
 msgstr "Naam"
 
-#: symfexit/documents/templates/documents/documents.html:78
+#: symfexit/documents/templates/documents/documents.html:162
 msgid "Size"
 msgstr "Grootte"
 
-#: symfexit/documents/templates/documents/documents.html:88
+#: symfexit/documents/templates/documents/documents.html:172
 msgid "Date"
 msgstr "Datum"
 
-#: symfexit/documents/templates/documents/documents.html:104
-#: symfexit/documents/templates/documents/documents.html:113
+#: symfexit/documents/templates/documents/documents.html:180
+msgid "Trashed at"
+msgstr "Weggegooid op"
+
+#: symfexit/documents/templates/documents/documents.html:188
+#: symfexit/documents/templates/documents/documents.html:197
 msgid ".. (parent directory)"
 msgstr ".. (map hier boven)"
 
-#: symfexit/documents/templates/documents/documents.html:126
+#: symfexit/documents/templates/documents/documents.html:210
 msgid "item"
 msgstr "item"
 
-#: symfexit/documents/templates/documents/documents.html:128
+#: symfexit/documents/templates/documents/documents.html:212
 msgid "items"
 msgstr "items"
 
@@ -119,13 +173,34 @@ msgstr "items"
 msgid "Download"
 msgstr "Download"
 
-#: symfexit/documents/views.py:198
+#: symfexit/documents/views.py:202
+msgid "You cannot move a directory into itself or one of its subdirectories."
+msgstr "Het is niet mogelijk een map te plaatsen in zichzelf of een submap van zichzelf."
+
+#: symfexit/documents/views.py:365 symfexit/documents/views.py:455
+#: symfexit/documents/views.py:499
+msgid "A file or directory with the same name already exists in this location."
+msgstr "Een bestand of map met dezelfde naam bestaat hier al"
+
+#: symfexit/documents/views.py:425
 msgid ""
 "The following files could not be uploaded because a file or directory with "
 "the same name already exists in this location: "
 msgstr ""
 "De volgende bestanden konden niet worden geüpload omdat er al een bestand of "
 "map met dezelfde naam bestaat: "
+
+#: symfexit/documents/views.py:487
+msgid "You cannot move a directory into itself."
+msgstr "Je kan een map niet in zichzelf plaatsen."
+
+#: symfexit/documents/views.py:520
+msgid "File or directory has been moved to the trashcan."
+msgstr "Bestand of map is verplaatst naar de prullenbak."
+
+#: symfexit/documents/views.py:531
+msgid "File or directory deleted successfully."
+msgstr "Bestand of map is succesvol verwijderd."
 
 #~ msgid "Created at"
 #~ msgstr "Datum"
