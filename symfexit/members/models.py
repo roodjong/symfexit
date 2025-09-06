@@ -153,6 +153,12 @@ class LocalGroup(Group):
         User, related_name="contact_person_for_groups", verbose_name=_("contact people"), blank=True
     )
 
+    selectable = models.BooleanField(
+        _("selectable"),
+        default=True,
+        help_text=_("Whether this group can be selected by new members signing up")
+    )
+
 
 @receiver(m2m_changed, sender=LocalGroup.contact_people.through)
 def local_group_contact_people_changed(sender, instance, action, pk_set, **kwargs):
