@@ -35,6 +35,25 @@ def health_check(request):
     return HttpResponse("OK")
 
 
+def chrome_devtools(request):
+    """Serve devtools information that chrome can pick up
+    See: https://developer.chrome.com/docs/devtools/workspaces#generate-json
+    """
+    import json  # noqa: PLC0415
+
+    return HttpResponse(
+        json.dumps(
+            {
+                "workspace": {
+                    "root": str(settings.BASE_DIR),
+                    "uuid": "df35bb4f-c867-471b-9767-c3c3018bbbf1",
+                }
+            }
+        ),
+        content_type="application/json",
+    )
+
+
 urlpatterns = (
     [
         path("healthz", health_check, name="healthz"),
@@ -55,6 +74,7 @@ urlpatterns = (
         settings.DEBUG,
         lambda: [
             path("dummy/", include("symfexit.payments.dummy.urls")),
+            path(".well-known/appspecific/com.chrome.devtools.json", chrome_devtools),
         ]
         + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
     )
