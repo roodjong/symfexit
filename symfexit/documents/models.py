@@ -31,7 +31,7 @@ class FileNode(models.Model):
 
     def __str__(self) -> str:
         name = self.name
-        while p := self.parent:
+        if p := self.parent:
             return str(p) + "/" + self.name
         return "/" + name
 
