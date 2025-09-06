@@ -410,7 +410,7 @@ class Command(BaseCommand):
         rm = RunMultiple()
         if not options["no_tailwind"]:
             rm.add_command(
-                "tailwind", ["npm", "run", "dev"], settings.BASE_DIR / "theme" / "static_src"
+                "tailwind", ["npm", "run", "dev"], settings.SYMFEXIT_DIR / "theme" / "static_src"
             )
         rm.add_command("startworker", get_manage_py_subcommand(["startworker"]))
         rm.add_command("runserver", get_manage_py_subcommand(["runserver"]), fatal=True)
