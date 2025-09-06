@@ -29,7 +29,7 @@ class FileNode(models.Model):
     def __str__(self) -> str:
         name = self.name
         while p := self.parent:
-            return p.__str__() + "/" + self.name
+            return str(p) + "/" + self.name
         return "/" + name
 
     def save(self, *args, **kwargs):
