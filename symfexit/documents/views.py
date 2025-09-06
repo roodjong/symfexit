@@ -95,6 +95,9 @@ class Documents(LoginRequiredMixin, TemplateView):
             .order_by(*make_case_insensitive(sorting))
         )
 
+    def url_base(self, **kwargs):
+        return self.kwargs.get("slug", None)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         slug = self.kwargs.get("slug", None)
@@ -154,22 +157,20 @@ class Documents(LoginRequiredMixin, TemplateView):
                 or self.request.user.has_perm("documents.delete_directory")
                 or self.request.user.has_perm("documents.delete_file"),
                 "show_trashed_at": False,
-                "name_url": reverse(
-                    "documents:documents",
-                    kwargs={"slug": slug} if slug else None,
-                    query={"sort": "{}name".format("-" if "name" in sorting else "")}
-                    if sorting == ("name",)
-                    else None,
+                "name_url": directory_url(
+                    self.url_base(),
+                    sorting=("name",) if "name" not in sorting else ("-name",),
+                    move_mode=move_mode,
                 ),
-                "size_url": reverse(
-                    "documents:documents",
-                    kwargs={"slug": slug} if slug else None,
-                    query={"sort": "{}size".format("" if "-size" in sorting else "-")},
+                "size_url": directory_url(
+                    self.url_base(),
+                    sorting=("-size",) if "-size" not in sorting else ("size",),
+                    move_mode=move_mode,
                 ),
-                "created_at_url": reverse(
-                    "documents:documents",
-                    kwargs={"slug": slug} if slug else None,
-                    query={"sort": "{}created_at".format("" if "-created_at" in sorting else "-")},
+                "created_at_url": directory_url(
+                    self.url_base(),
+                    sorting=("-created_at",) if "-created_at" not in sorting else ("created_at",),
+                    move_mode=move_mode,
                 ),
             }
         )
@@ -246,6 +247,9 @@ class Trashcan(Documents):
             .annotate(size=Count("children"))
             .order_by(*make_case_insensitive(sorting))
         )
+
+    def url_base(self, **kwargs):
+        return "trash"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
