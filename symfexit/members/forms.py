@@ -33,7 +33,7 @@ class UserForm(forms.ModelForm):
     city = forms.CharField(label=_("City"))
     postal_code = forms.CharField(label=_("Postal code"))
     local_group = forms.ModelChoiceField(
-        LocalGroup.objects.all(), label=_("Local group"), required=False
+        LocalGroup.objects.filter(selectable = True), label=_("Local group"), required=False
     )
     extra_information = forms.CharField(
         label=_("Extra information"), widget=forms.Textarea(attrs={"rows": 5}), required=False

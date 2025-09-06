@@ -50,7 +50,7 @@ class SignupForm(forms.Form):
             required=False,
             empty_label=_("None"),
             label="Bij welke groep wil je je aansluiten",
-            queryset=LocalGroup.objects.all(),
+            queryset=LocalGroup.objects.filter(selectable = True),
         )
     )
 
