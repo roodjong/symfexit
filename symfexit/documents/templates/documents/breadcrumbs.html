@@ -1,10 +1,21 @@
 {% load i18n %}
-<span>{% translate 'Path:' %} </span><a href="{% url "documents:documents" %}{{ standard_query }}"><span>{% translate 'Documents' %}</span></a>
-{% for crumb in breadcrumbs %}
+<span>{% translate 'Path:' %} </span>
+{% if file.trashed_at or parent.trashed_at %}
+  <a href="{% url "documents:trashcan" %}{{ standard_query }}">{% translate 'Trashcan' %}</a>
   <span>/</span>
-  {% if forloop.last %}
-    <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}"><span class="text-primary">{{ crumb.name }}</span></a>
+  {% if file %}
+    <a href="{% url "documents:file" file.id %}{{ standard_query }}"><span class="text-primary">{{ file.name }}</span></a>
   {% else %}
-    <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}">{{ crumb.name }}</a>
+    <a href="{% url "documents:documents" parent.id %}{{ standard_query }}"><span class="text-primary">{{ parent.name }}</span></a>
   {% endif %}
-{% endfor %}
+{% else %}
+  <a href="{% url "documents:documents" %}{{ standard_query }}"><span>{% translate 'Documents' %}</span></a>
+  {% for crumb in breadcrumbs %}
+    <span>/</span>
+    {% if forloop.last %}
+      <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}"><span class="text-primary">{{ crumb.name }}</span></a>
+    {% else %}
+      <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}">{{ crumb.name }}</a>
+    {% endif %}
+  {% endfor %}
+{% endif %}
