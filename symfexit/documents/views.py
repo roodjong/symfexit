@@ -524,5 +524,5 @@ def trash(request):
         return redirect(directory_url("trash", delete_confirm=node_id, sorting=sorting))
     else:
         node.delete()
-        messages.add_message(request, messages.INFO, _("File or directory deleted succesfully."))
+        messages.add_message(request, messages.INFO, _("File or directory deleted successfully."))
         return redirect(directory_url("trash", sorting=sorting))
