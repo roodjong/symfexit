@@ -22,7 +22,10 @@ class FileNode(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["parent", "name"], name="unique_sibling_names", nulls_distinct=False
+                fields=["parent", "name"],
+                name="unique_sibling_names",
+                nulls_distinct=False,
+                condition=models.Q(trashed_at__isnull=True),
             )
         ]
 
