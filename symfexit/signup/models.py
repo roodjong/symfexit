@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
-from symfexit.payments.models import Order
+# from symfexit.payments.models import Order
 
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)
 
@@ -47,12 +47,12 @@ class MembershipApplication(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=_("user"))
 
-    _order = models.ForeignKey(
-        Order,
-        on_delete=models.SET_NULL,
-        null=True,
-        verbose_name=_("subscription order"),
-    )
+    # _order = models.ForeignKey(
+    #     Order,
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     verbose_name=_("subscription order"),
+    # )
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)

@@ -1,45 +1,54 @@
-from django.utils import formats, timezone
-from django.utils.translation import gettext_lazy as _
+from django.db import models
 
 from symfexit.payments.models import Subscription
 
+# from symfexit.payments.models import Subscription
 
-class Membership(Subscription):
-    class Meta:
-        verbose_name = _("membership")
-        verbose_name_plural = _("memberships")
 
-    @classmethod
-    def current_for_user(cls, user):
-        return cls.objects.filter(user=user, active_from_to__contains=timezone.now()).first()
+# class Membership(Subscription):
+#     class Meta:
+#         verbose_name = _("membership")
+#         verbose_name_plural = _("memberships")
 
-    def new_order(self, *, initial, return_url, description=None):
-        from signup.models import ApplicationPayment  # noqa: PLC0415
+#     @classmethod
+#     def current_for_user(cls, user):
+#         return cls.objects.filter(user=user, active_from_to__contains=timezone.now()).first()
 
-        if description is None:
-            description = f"Membership fee for {self.address.name}"
-            if not initial:
-                description += " (initial payment)"
+#     def new_order(self, *, initial, return_url, description=None):
+#         from signup.models import ApplicationPayment  # noqa: PLC0415
 
-        order = super().new_order(initial=initial, return_url=return_url, description=description)
-        appl_pay = ApplicationPayment(order_ptr=order)
-        appl_pay.save_base(raw=True)
-        if initial:
-            from signup.models import MembershipApplication  # noqa: PLC0415
+#         if description is None:
+#             description = f"Membership fee for {self.address.name}"
+#             if not initial:
+#                 description += " (initial payment)"
 
-            appl = MembershipApplication.objects.filter(_subscription=self).first()
-            assert appl is not None
-            appl._order = appl_pay
-            appl.save()
-        return order
+#         order = super().new_order(initial=initial, return_url=return_url, description=description)
+#         appl_pay = ApplicationPayment(order_ptr=order)
+#         appl_pay.save_base(raw=True)
+#         if initial:
+#             from signup.models import MembershipApplication  # noqa: PLC0415
 
-    def __str__(self):
-        text = "{} is a member starting at {}".format(
-            self.user or "Unknown (new?) user",
-            formats.date_format(self.active_from_to.lower),
-        )
-        if self.active_from_to.upper is not None:
-            text += f" stopped at {formats.date_format(self.active_from_to.upper)}"
-        else:
-            text += " (active)"
-        return text
+#             appl = MembershipApplication.objects.filter(_subscription=self).first()
+#             assert appl is not None
+#             appl._order = appl_pay
+#             appl.save()
+#         return order
+
+#     def __str__(self):
+#         text = "{} is a member starting at {}".format(
+#             self.user or "Unknown (new?) user",
+#             formats.date_format(self.active_from_to.lower),
+#         )
+#         if self.active_from_to.upper is not None:
+#             text += f" stopped at {formats.date_format(self.active_from_to.upper)}"
+#         else:
+#             text += " (active)"
+#         return text
+
+
+class MembershipType(models.Model):
+    bought_with = models.ForeignKey(Subscription, null=True, on_delete=models.SET_NULL)
+
+
+class Membership(models.Model):
+    type = models.ForeignKey(MembershipType, on_delete=models.CASCADE)

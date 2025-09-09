@@ -92,7 +92,8 @@ class PermissionGroupFilter(SimpleListFilter):
 
 
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
-class UserAdmin(admin.ModelAdmin):
+@admin.register(User)
+class BaseUserAdmin(admin.ModelAdmin):
     add_form_template = "admin/auth/user/add_form.html"
     change_user_password_template = None
     fieldsets = (
@@ -320,12 +321,26 @@ class UserAdmin(admin.ModelAdmin):
         obj.date_left = timezone.now()
         obj.save()
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class AbstractUserAdmin(BaseUserAdmin):
+    def has_add_permission(self, request):
+        return super(admin.ModelAdmin, self).has_add_permission(request)
+
     def has_delete_permission(self, request, obj: User = None):
         if obj is None:
-            return super().has_delete_permission(request, obj)
+            return super(admin.ModelAdmin, self).has_delete_permission(request, obj)
         if obj.date_left is not None:
             return False
-        return super().has_delete_permission(request, obj)
+        return super(admin.ModelAdmin, self).has_delete_permission(request, obj)
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -336,10 +351,10 @@ class UserAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj: User = None):
         if obj is None:
-            return super().has_change_permission(request, obj)
+            return super(admin.ModelAdmin, self).has_change_permission(request, obj)
         if obj.date_left is not None:
             return False
-        return super().has_change_permission(request, obj)
+        return super(admin.ModelAdmin, self).has_change_permission(request, obj)
 
 
 # Proxy for a separate view with only members on the admin page
@@ -351,7 +366,7 @@ class Member(User):
 
 
 @admin.register(Member)
-class MemberAdmin(UserAdmin):
+class MemberAdmin(AbstractUserAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(member_type=User.MemberType.MEMBER)
 
@@ -365,7 +380,7 @@ class SupportMember(User):
 
 
 @admin.register(SupportMember)
-class SupportMemberAdmin(UserAdmin):
+class SupportMemberAdmin(AbstractUserAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(member_type=User.MemberType.SUPPORT_MEMBER)
 
@@ -394,7 +409,7 @@ class LocalGroupMember(User):
 
 
 @admin.register(LocalGroupMember)
-class LocalGroupMemberAdmin(UserAdmin):
+class LocalGroupMemberAdmin(AbstractUserAdmin):
     list_display = ("first_name", "last_name", "cadre")
     list_filter = (
         LocalGroupFilter,

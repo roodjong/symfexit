@@ -7,8 +7,9 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 
 from symfexit.members.forms import PasswordChangeForm, UserForm
-from symfexit.membership.models import Membership
-from symfexit.payments.models import BillingAddress
+
+# from symfexit.membership.models import Membership
+# from symfexit.payments.models import BillingAddress
 
 
 class MemberData(LoginRequiredMixin, TemplateView):
