@@ -8,7 +8,8 @@ from django.views.generic import FormView
 
 from symfexit.emails._templates.emails.membership_application import MembershipApplicationEmail
 from symfexit.emails._templates.render import send_email
-from symfexit.payments.models import Order
+
+# from symfexit.payments.models import Order
 from symfexit.payments.registry import payments_registry
 from symfexit.signup.forms import SignupForm
 from symfexit.signup.models import MembershipApplication

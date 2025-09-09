@@ -1,7 +1,3 @@
-from django.contrib import admin, messages
-
-from symfexit.signup.models import DuplicateEmailError, MembershipApplication
-
 # class ApplicationPaymentForm(forms.ModelForm):
 #     class Meta:
 #         help_texts = {
@@ -72,25 +68,26 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
         "user",
     )
 
-    def has_add_permission(self, request):
-        return False
 
-    def has_change_permission(self, request, obj=None):
-        if obj is None:
-            return super().has_change_permission(request, obj)
-        return obj.status == MembershipApplication.Status.CREATED
+#     def has_add_permission(self, request):
+#         return False
 
-    def save_model(self, request, obj: MembershipApplication, form, change):
-        if not change:
-            return super().save_model(request, obj, form, change)
-        if obj.status == MembershipApplication.Status.ACCEPTED:
-            try:
-                obj.user = obj.create_user()
-            except DuplicateEmailError:
-                messages.set_level(request, messages.ERROR)
-                messages.error(
-                    request,
-                    "User with this email already exists. You can manually change the email address if you know this is really a new member.",
-                )
-                return
-        return super().save_model(request, obj, form, change)
+#     def has_change_permission(self, request, obj=None):
+#         if obj is None:
+#             return super().has_change_permission(request, obj)
+#         return obj.status == MembershipApplication.Status.CREATED
+
+#     def save_model(self, request, obj: MembershipApplication, form, change):
+#         if not change:
+#             return super().save_model(request, obj, form, change)
+#         if obj.status == MembershipApplication.Status.ACCEPTED:
+#             try:
+#                 obj.user = obj.create_user()
+#             except DuplicateEmailError:
+#                 messages.set_level(request, messages.ERROR)
+#                 messages.error(
+#                     request,
+#                     "User with this email already exists. You can manually change the email address if you know this is really a new member.",
+#                 )
+#                 return
+#         return super().save_model(request, obj, form, change)

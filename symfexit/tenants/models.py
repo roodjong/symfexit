@@ -6,6 +6,7 @@ from django_tenants.utils import tenant_context
 class Client(TenantMixin):
     name = models.CharField(max_length=100)
     created_on = models.DateField(auto_now_add=True)
+    payments_time_zone = models.CharField(max_length=100, default="Europe/Amsterdam")
 
     # default true, schema will be automatically created and synced when it is saved
     auto_create_schema = True
