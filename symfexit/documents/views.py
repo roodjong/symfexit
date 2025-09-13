@@ -425,10 +425,12 @@ def file_download(request, slug):
     return response
 
 
-def build_breadcrumbs(node):
+def build_breadcrumbs(node: FileNode):
     breadcrumbs = []
     while node:
         breadcrumbs.append(node)
+        if node.trashed_at:
+            break
         node = node.parent
     return reversed(breadcrumbs)
 
