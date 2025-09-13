@@ -7,7 +7,7 @@ import magic
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.db.models import Count, Q
 from django.db.models.functions import Lower
 from django.http import HttpResponse, HttpResponseNotAllowed
@@ -79,6 +79,46 @@ def make_case_insensitive(sorting):
     return tuple(ci_sorting)
 
 
+def in_trash(node: FileNode) -> bool:
+    if node is None:
+        return False
+    with connection.cursor() as cursor:
+        # A recursive query can only be done using raw SQL in Django
+        cursor.execute(
+            """
+            WITH RECURSIVE parents (
+                id,
+                trashed_at,
+                parent_id
+            ) AS (
+                SELECT
+                    id,
+                    trashed_at,
+                    parent_id
+                FROM
+                    documents_filenode
+                WHERE
+                    id = %s
+                UNION ALL
+                SELECT
+                    f.id,
+                    f.trashed_at,
+                    f.parent_id
+                FROM
+                    parents AS p
+                    INNER JOIN documents_filenode f ON f.id = p.parent_id
+            )
+            SELECT
+                TRUE
+            FROM
+                parents WHERE trashed_at IS NOT NULL;
+        """,
+            [node.id],
+        )
+        row = cursor.fetchone()
+    return row[0] if row else False
+
+
 # Create your views here.
 class Documents(LoginRequiredMixin, TemplateView):
     template_name = "documents/documents.html"
@@ -139,6 +179,7 @@ class Documents(LoginRequiredMixin, TemplateView):
                 "directories": directories,
                 "files": files,
                 "breadcrumbs": build_breadcrumbs(Directory.objects.filter(id=slug).first()),
+                "in_trash": in_trash(parent),
                 "has_add_directory_permission": self.request.user.has_perm(
                     "documents.add_directory"
                 ),
@@ -280,17 +321,24 @@ def file(request, slug):
         return HttpResponseNotAllowed(["GET"])
     file = get_object_or_404(File, id=slug)
     _, sorting_query = get_sorting(request)
+    context = {
+        "file": file,
+        "breadcrumbs": build_breadcrumbs(file),
+        "standard_query": sorting_query,
+        "in_trash": in_trash(file),
+        "is_markdown": file.content_type == "text/markdown",
+    }
     if is_image(file.content_type):
         return render(
             request,
             "documents/image_file.html",
-            {"file": file, "breadcrumbs": build_breadcrumbs(file), "standard_query": sorting_query},
+            context,
         )
     if file.content_type == "application/pdf":
         return render(
             request,
             "documents/pdf_file.html",
-            {"file": file, "breadcrumbs": build_breadcrumbs(file), "standard_query": sorting_query},
+            context,
         )
     if file.content_type in {"text/plain", "text/markdown"}:
         content = file.content.read().decode("utf-8", errors="ignore")
@@ -299,13 +347,7 @@ def file(request, slug):
         return render(
             request,
             "documents/text_file.html",
-            {
-                "file": file,
-                "content": content,
-                "is_markdown": file.content_type == "text/markdown",
-                "breadcrumbs": build_breadcrumbs(file),
-                "standard_query": sorting_query,
-            },
+            {**context, "content": content},
         )
     response = HttpResponse(file.content, content_type=file.content_type)
     response["Content-Disposition"] = f"attachment; filename={file.name}"

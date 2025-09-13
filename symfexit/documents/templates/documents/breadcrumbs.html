@@ -1,6 +1,6 @@
 {% load i18n %}
 <span>{% translate 'Path:' %} </span>
-{% if file.trashed_at or parent.trashed_at %}
+{% if in_trash %}
   <a href="{% url "documents:trashcan" %}{{ standard_query }}">{% translate 'Trashcan' %}</a>
   <span>/</span>
   {% if file %}
