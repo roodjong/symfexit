@@ -182,7 +182,16 @@
         </tr>
       </thead>
       <tbody>
-        {% if parent.parent %}
+        {% if parent.trashed_at %}
+          <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" %}{{ standard_query }}">
+            <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
+            <td class="py-3 px-1"><a href="{% url "documents:trashcan" %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
+              <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
+            </td>
+            {% if show_trashed_at %}<td></td>{% endif %}
+            {% if show_buttons %}<td></td>{% endif %}
+          </tr>
+        {% elif parent.parent %}
           <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">
             <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
             <td class="py-3 px-1"><a href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>

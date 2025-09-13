@@ -79,7 +79,7 @@ def make_case_insensitive(sorting):
     return tuple(ci_sorting)
 
 
-def in_trash(node: FileNode) -> bool:
+def in_trash(node: FileNode | None) -> bool:
     if node is None:
         return False
     with connection.cursor() as cursor:
@@ -117,6 +117,52 @@ def in_trash(node: FileNode) -> bool:
         )
         row = cursor.fetchone()
     return row[0] if row else False
+
+
+def first_nontrashed_parent(node: FileNode) -> UUID:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+                WITH RECURSIVE parents (
+                    id,
+                    trashed_at,
+                    parent_id,
+                    depth
+                ) AS (
+                    SELECT
+                        id,
+                        trashed_at,
+                        parent_id,
+                        1 AS depth
+                    FROM
+                        documents_filenode
+                    WHERE
+                        id = %s
+                    UNION ALL
+                    SELECT
+                        f.id,
+                        f.trashed_at,
+                        f.parent_id,
+                        p.depth + 1 AS depth
+                    FROM
+                        parents AS p
+                        INNER JOIN documents_filenode f ON f.id = p.parent_id
+                )
+                SELECT
+                    id
+                FROM
+                    parents
+                WHERE
+                    trashed_at IS NULL
+                    AND depth > 1
+                ORDER BY
+                    depth ASC
+                LIMIT 1;
+        """,
+            [node.id],
+        )
+        row = cursor.fetchone()
+    return row[0] if row else None
 
 
 # Create your views here.
@@ -170,6 +216,7 @@ class Documents(LoginRequiredMixin, TemplateView):
             )
 
         any_trash = FileNode.objects.filter(trashed_at__isnull=False).count() > 0
+        parent_in_trash = in_trash(parent)
 
         context.update(
             {
@@ -179,7 +226,7 @@ class Documents(LoginRequiredMixin, TemplateView):
                 "directories": directories,
                 "files": files,
                 "breadcrumbs": build_breadcrumbs(Directory.objects.filter(id=slug).first()),
-                "in_trash": in_trash(parent),
+                "in_trash": parent_in_trash,
                 "has_add_directory_permission": self.request.user.has_perm(
                     "documents.add_directory"
                 ),
@@ -188,7 +235,8 @@ class Documents(LoginRequiredMixin, TemplateView):
                 and self.request.user.has_perm("documents.change_directory"),
                 "has_move_permission": self.request.user.has_perm("documents.change_file")
                 and self.request.user.has_perm("documents.change_directory"),
-                "has_delete_permission": self.request.user.has_perm("documents.delete_file")
+                "has_delete_permission": not parent_in_trash
+                and self.request.user.has_perm("documents.delete_file")
                 and self.request.user.has_perm("documents.delete_directory"),
                 "show_trashcan": any_trash,
                 "standard_query": sorting_query,
@@ -516,6 +564,10 @@ def move(request):
 
     if not newparent_id:
         # Not confirmed the move yet
+        if in_trash(node):
+            return redirect(
+                directory_url(first_nontrashed_parent(node), sorting=sorting, move_mode=node_id)
+            )
         return redirect(directory_url(node.parent, sorting=sorting, move_mode=node_id))
 
     newparent = None
