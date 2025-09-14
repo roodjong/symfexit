@@ -133,7 +133,7 @@ class PaymentTiers:
     _meta = Meta()
 
 
-admin.site.register([PaymentTiers], PaymentTiersAdmin)
+# admin.site.register([PaymentTiers], PaymentTiersAdmin)
 
 
 class OrderInlineForm(forms.ModelForm):

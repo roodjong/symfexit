@@ -17,9 +17,23 @@ class FileNode(models.Model):
     )
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+    trashed_at = models.DateTimeField(_("trashed at"), null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["parent", "name"],
+                name="unique_sibling_names",
+                nulls_distinct=False,
+                condition=models.Q(trashed_at__isnull=True),
+            )
+        ]
 
     def __str__(self) -> str:
-        return self.name
+        name = self.name
+        if p := self.parent:
+            return str(p) + "/" + self.name
+        return "/" + name
 
     def save(self, *args, **kwargs):
         if isinstance(self.parent, File):
@@ -30,7 +44,7 @@ class FileNode(models.Model):
 
 
 def file_location(instance, filename):
-    return f"{instance.id}"
+    return f"documents/{instance.id}"
 
 
 ONE_KB = 1024
@@ -46,9 +60,6 @@ class File(FileNode):
     class Meta:
         verbose_name = _("file")
         verbose_name_plural = _("files")
-
-    def __str__(self) -> str:
-        return "File: " + self.name
 
     def url(self):
         return self.content.url
@@ -68,6 +79,3 @@ class Directory(FileNode):
     class Meta:
         verbose_name = _("directory")
         verbose_name_plural = _("directories")
-
-    def __str__(self) -> str:
-        return "Directory: " + self.name

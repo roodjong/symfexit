@@ -1,0 +1,24 @@
+{% extends "menupage.html" %}{% load i18n %}
+
+{% block main %}
+<div class="container mx-auto pt-8 p-2">
+  <h1 class="font-header text-5xl mb-6">{% translate 'Documents' %}</h1>
+  {% include "documents/breadcrumbs.html" %}
+  <hr class="my-4">
+  {% include "documents/download_button.html" %}
+  <div class="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow-sm w-3xl mx-auto">
+
+    <div class="px-4 py-5 sm:px-6 bg-gray-100">
+      <h3 class="text-base font-semibold">{{ file.name }}</h3>
+    </div>
+    {% if is_markdown %}
+    <div class="px-4 py-5 sm:p-6 prose">
+      {{ content|safe }}
+    </div>
+    {% else %}
+    <div class="px-4 py-5 sm:p-6">
+      <pre class="whitespace-pre-wrap break-words">{{ content }}</pre>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

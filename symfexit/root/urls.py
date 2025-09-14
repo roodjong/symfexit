@@ -65,6 +65,7 @@ urlpatterns = (
         path("mollie/", include("symfexit.payments.mollie.urls")),
         path("admin/", admin.site.urls),
         path("accounts/", include("django.contrib.auth.urls")),
+        path("fp/", include("django_drf_filepond.urls")),
     ]
     + enable_if(
         django_browser_reload_enabled,

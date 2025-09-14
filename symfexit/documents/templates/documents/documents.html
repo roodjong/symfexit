@@ -1,39 +1,390 @@
 {% extends "menupage.html" %}
-{% load i18n l10n %}
+{% load i18n l10n static %}
 
+{% block css %}
+<link href="{% static "css/filepond.css" %}" rel="stylesheet">
+<style>
+  .filepond--root {
+    min-width: 200px;
+    flex: 1 1 0%; /* Take up remaining space in flex container */
+  }
+</style>
+{% endblock css %}
 {% block main %}
 <div class="container mx-auto pt-8 p-2">
-  <h1 class="font-header text-5xl mb-6">{% translate 'Documents' %}</h1>
-  {% include "documents/breadcrumbs.html" %}
-  <hr class="my-4">
-  <ul>
-    {% if parent.parent %}
-      <li class="p-2 even:bg-gray-100 odd:bg-white">
-        <div class="flex flex-row justify-between"><a href="{% url "documents:documents" parent.parent.id %}"><i class="fa-solid fa-folder-minus text-primary pr-2"></i>{% translate '.. (parent directory)' %}</a>
-          <div></div>
-        </div>
-      </li>
-    {% elif parent %}
-      <li class="p-2 even:bg-gray-100 odd:bg-white">
-        <div class="flex flex-row justify-between"><a href="{% url "documents:documents" %}"><i class="fa-solid fa-folder-minus text-primary pr-2"></i>{% translate '.. (parent directory)' %}</a>
-          <div></div>
-        </div>
-      </li>
+  {% if edit_mode %}
+    <div id="edit-dialog">
+      <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-0" onclick="dismissEdit()"></div>
+      <dialog open popover class="z-1 backdrop:bg-gray-50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
+        <form method="POST" class="flex flex-col gap-4" action="{% url 'documents:edit' %}{{ standard_query }}">
+          {% csrf_token %}
+          <input type="hidden" name="node_id" value="{{ edit_mode }}">
+          <label for="newname">{% blocktranslate %}New name for "{{ edit_old_full_name }}"{% endblocktranslate %}</label>
+          <div class="flex flex-row gap-2">
+            <input autofocus type="text" id="newname" name="newname" autocomplete="off" id="name" class="border p-2 grow" required value="{{ edit_old_name }}">
+            {% if edit_old_ext %}
+            <span autofocus type="text" disabled class="border p-2 bg-gray-100 shrink">.{{ edit_old_ext }}</span>
+            {% endif %}
+            <input type="hidden" name="newext" value="{{ edit_old_ext }}">
+          </div>
+          <div class="flex flex-row gap-4">
+            <button type="submit" class="bg-primary text-white p-2 cursor-pointer">{% translate 'Save' %}</button>
+          </div>
+        </form>
+        <button onclick="dismissEdit()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 cursor-pointer" title="{% translate 'Dismiss' %}">
+          <i class="fa fa-close fa-lg"></i>
+        </button>
+      </dialog>
+    </div>
+  {% endif %}
+  {% if delete_confirm %}
+    <div id="delete-confirm-dialog">
+      <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-0" onclick="dismissDeleteConfirm()"></div>
+      <dialog open popover class="z-1 backdrop:bg-gray-50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
+        <form method="POST" class="flex flex-col gap-4" action="{% url 'documents:trash' %}{{ standard_query }}">
+          {% csrf_token %}
+          <input type="hidden" name="node_id" value="{{ delete_confirm }}">
+          <p>Are you sure you want to delete "{{ delete_confirm_name }}"?</p>
+          <p>It will be gone forever! (A really long time!)</p>
+          <button type="submit" name="confirm" value="true" class="bg-primary text-white p-2 cursor-pointer">{% translate 'Actually delete' %}</button>
+          <button type="submit" name="cancel" value="cancel" class="border p-2 cursor-pointer">{% translate 'Cancel' %}</button>
+        </form>
+        <button onclick="dismissDeleteConfirm()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 cursor-pointer" title="{% translate 'Dismiss' %}">
+          <i class="fa fa-close fa-lg"></i>
+        </button>
+      </dialog>
+    </div>
+  {% endif %}
+  <h1 class="font-header text-5xl mb-6">{{ title }}</h1>
+  {% if move_mode %}
+    <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 mb-4 flex flex-row flex-wrap justify-between items-center">
+      <div>
+        {% blocktranslate %}Select the target directory to move "{{ move_node_name }}" to.{% endblocktranslate %}
+        {% if parents %}
+          <div class="text-sm text-yellow-700 mt-2">
+            {% blocktranslate %}Note: You cannot move a directory into itself or one of its subdirectories.{% endblocktranslate %}
+          </div>
+        {% endif %}
+      </div>
+      <form method="POST" action="{% url 'documents:move' %}" class="flex flex-row gap-2">
+        {% csrf_token %}
+        <input type="hidden" name="node_id" value="{{ move_mode }}">
+        <input type="hidden" name="newparent_id" value="{% if parent %}{{ parent.id }}{% else %}toplevel{% endif %}">
+        {% if valid_move %}
+        <button type="submit" name="action" value="confirm" class="bg-green-500 text-white p-2 cursor-pointer">{% translate 'Confirm move here' %}</button>
+        {% endif %}
+        <button type="submit" name="action" value="cancel" class="bg-yellow-500 text-white p-2 cursor-pointer">{% translate 'Cancel move' %}</button>
+      </form>
+    </div>
+  {% endif %}
+  {% if readme_file %}
+  <div class="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow-sm w-full max-w-2xl m-auto mb-8">
+    <div class="px-4 py-5 sm:px-6 bg-gray-100">
+      <h3 class="text-base font-semibold">{{ readme_file.name }}</h3>
+    </div>
+    <div class="px-4 py-5 sm:p-6 prose">
+      {{ readme_rendered|safe }}
+    </div>
+  </div>
+  {% endif %}
+  <div class="flex flex-row flex-wrap justify-between items-center mb-4">
+    {% if show_breadcrumbs %}
+    <div class="flex flex-row items-center gap-2">
+      {% include "documents/breadcrumbs.html" %}
+    </div>
     {% endif %}
-  {% for document in directories %}
-    <li class="p-2 even:bg-gray-100 odd:bg-white">
-      <div class="flex flex-row justify-between"><a href="{% url "documents:documents" document.id %}"><i class="fa-regular fa-folder-open text-primary pr-2"></i>{{ document.name }}</a>
-        <div></div>
-      </div>
-    </li>
-  {% endfor %}
-  {% for file in files %}
-    <li class="p-2 even:bg-gray-100 odd:bg-white">
-      <div class="flex flex-row justify-between"><a href="{% url "documents:file" file.id %}"><i class="fa-regular fa-file text-primary pr-2"></i>{{ file.name }}</a>
-        <div class="flex flex-row gap-8"><span>{{ file.created_at|date:"SHORT_DATETIME_FORMAT"}}</span><span>{{ file.human_size }}</span></div>
-      </div>
-    </li>
-  {% endfor %}
-  </ul>
+    <div class="flex flex-row gap-4">
+      {% if has_add_directory_permission %}
+      <button
+        popovertarget="new-folder-popover"
+        class="border text-primary p-3 cursor-pointer flex gap-2 items-center transition-color duration-200 ease-in"
+        type="button"
+      >
+        <i class="fa-solid fa-folder"></i>{% translate 'New directory' %}
+      </button>
+      <dialog id="new-folder-popover" popover class="backdrop:bg-gray-50/50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
+        <form class="flex md:flex-row md:items-top gap-4 flex-wrap items-start" action="{% url 'documents:create-directory' %}" method="POST">
+          {% csrf_token %}
+          <input type="text" name="name" autocomplete="off" id="new-folder-name" class="border p-2 flex-grow" placeholder="{% translate 'Name of the directory' %}" required>
+          <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+          <button type="submit" id="create-folder-btn" class="bg-primary text-white p-2 cursor-pointer">{% translate 'Create directory' %}</button>
+        </form>
+      </dialog>
+      {% endif %}
+      {% if has_add_file_permission %}
+      <button
+        popovertarget="upload-popover"
+        class="border text-primary p-3 cursor-pointer flex gap-2 items-center"
+        type="button"
+      >
+        <i class="fa-solid fa-upload"></i>{% translate 'Upload' %}
+      </button>
+      <dialog id="upload-popover" popover class="max-h-lvh m-4 backdrop:bg-gray-50/50 m-auto p-4 bg-white border rounded shadow-lg min-w-xs max-w-lg w-full starting:open:opacity-0 open:opacity-100 transition-opacity duration-200 ease-in transition-discrete">
+        <form class="flex md:flex-row md:items-top gap-4 flex-wrap items-start" action="{% url 'documents:upload' %}" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="file" name="filepond" multiple class="filepond">
+          <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+          <input type="submit" id="do-upload-btn" class="bg-primary text-white p-2 cursor-pointer h-fit flex-shrink-0 w-full sm:w-auto disabled:bg-primary/50" value="{% translate 'Add' %}">
+        </form>
+      </dialog>
+      {% endif %}
+      {% if has_delete_permission and show_trashcan %}
+      <a class="border text-primary p-3 cursor-pointer flex gap-2 items-center" role="button" href="{% url "documents:trashcan" %}{{ standard_query }}">
+        <i class="fa fa-solid fa-trash"></i>{% translate 'Trashcan' %}
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="overflow-x-auto min-h-[70vh]">
+    <table class="w-full border border-gray-300 max-w-svw">
+      <colgroup>
+        <col span="2">
+        <col class="w-1/5">
+        <col class="w-1/5">
+        {% if show_trashed_at %}<col class="w-1/5">{% endif %}
+        {% if show_buttons %}<col class="w-[1px]">{% endif %}
+      </colgroup>
+      <thead>
+        <tr class="border-b border-gray-300">
+          <th class="border-l border-t border-gray-300" data-href="{{ name_url }}"></th>
+          <th class="py-3 pl-1 pr-4 text-left text-primary border-r border-t border-gray-300" data-href="{{ name_url }}">
+            <div class="flex flex-row items-center gap-1 place-content-between">
+              <a href="{{ name_url }}" class="{% if '-name' in standard_query or standard_query == '' %}font-bold{% else %}font-normal{% endif %}">{% translate 'Name' %}</a>
+              {% if '-name' in standard_query %}
+              <i class="fa fa-chevron-down"></i>
+              {% elif standard_query == '' %}
+              <i class="fa fa-chevron-up"></i>
+              {% endif %}
+            </div>
+          </th>
+          <th class="py-3 pl-1 pr-4 border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ size_url }}">
+            <div class="flex flex-row items-center gap-1 place-content-between">
+              <a href="{{ size_url }}" class="{% if 'size' in standard_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Size' %}</a>
+              {% if '-size' in standard_query %}
+              <i class="fa fa-chevron-down"></i>
+              {% elif 'size' in standard_query %}
+              <i class="fa fa-chevron-up"></i>
+              {% endif %}
+            </div>
+          </th>
+          <th class="py-3 pl-1 pr-4  border-t border-r border-gray-300 py-3 pl-3 text-left text-primary" data-href="{{ created_at_url }}">
+            <div class="flex flex-row items-center gap-1 place-content-between">
+              <a href="{{ created_at_url }}" class="{% if 'created_at' in standard_query %}font-bold{% else %}font-normal{% endif %}">{% translate 'Date' %}</a>
+              {% if '-created_at' in standard_query %}
+              <i class="fa fa-chevron-down"></i>
+              {% elif 'created_at' in standard_query %}
+              <i class="fa fa-chevron-up"></i>
+              {% endif %}
+            </div>
+          </th>
+          {% if show_trashed_at %}<th class="py-3 pl-1 pr-4  border-t border-r border-gray-300 py-3 pl-3 text-left text-primary font-normal">{% translate 'Trashed at' %}{% endif %}
+          {% if show_buttons %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if parent.trashed_at %}
+          <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" %}{{ standard_query }}">
+            <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
+            <td class="py-3 px-1"><a href="{% url "documents:trashcan" %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
+              <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
+            </td>
+            {% if show_trashed_at %}<td></td>{% endif %}
+            {% if show_buttons %}<td></td>{% endif %}
+          </tr>
+        {% elif parent.parent %}
+          <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">
+            <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
+            <td class="py-3 px-1"><a href="{% url "documents:documents" parent.parent.id %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
+              <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
+            </td>
+            {% if show_trashed_at %}<td></td>{% endif %}
+            {% if show_buttons %}<td></td>{% endif %}
+          </tr>
+        {% elif parent %}
+          <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:documents" %}{{ standard_query }}">
+            <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-solid fa-folder-minus text-primary"></i></td>
+            <td class="py-3 px-1"><a href="{% url "documents:documents" %}{{ standard_query }}">{% translate '.. (parent directory)' %}</a>
+              <td class="py-3 px-1"></td><td class="py-3 px-1"></td>
+            </td>
+            {% if show_trashed_at %}<td></td>{% endif %}
+            {% if show_buttons %}<td></td>{% endif %}
+          </tr>
+        {% endif %}
+      {% for document in directories %}
+        <tr class="even:bg-gray-100 odd:bg-white {% if document.id == move_mode %}text-gray-400{% endif %}" {% if document.id == move_mode %}disabled{% endif %} data-href="{% url "documents:documents" document.id %}{{ standard_query }}">
+          <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-folder-open text-primary"></i></td>
+          <td class="py-3 pl-1 pr-1"><a {% if document.id != move_mode %}href="{% url "documents:documents" document.id %}{{ standard_query }}"{% endif %}>{{ document.name }}</a>
+          <td class="py-3 pl-3 pr-1">
+            {% if document.size == 1 %}
+              {{ document.size }} {% translate 'item' %}
+            {% else %}
+              {{ document.size }} {% translate 'items' %}
+            {% endif %}
+          </td><td class="py-3 pl-3 pr-1 ">
+              {{ document.created_at|date:"DATE_FORMAT" }}
+          </td>
+          {% if show_trashed_at %}
+          <td class="py-3 pl-3 pr-1">
+            {{ document.trashed_at|date:"DATE_FORMAT" }}
+          </td>
+          {% endif %}
+          {% if show_buttons %}
+          <td>
+            <form class="flex flex-row items-center gap-2 px-3 {% if buttons_active %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="node_id" value="{{ document.id }}">
+              <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+              {% if has_rename_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+              {% endif %}
+              {% if has_move_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              {% endif %}
+              {% if has_delete_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:trash" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% endif %}
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      {% for document in files %}
+        <tr class="even:bg-gray-100 odd:bg-white" data-href="{% url "documents:file" document.id %}{{ standard_query }}">
+          <td class="py-3 pl-3 pr-1 w-1 text-center"><i class="text-center flex fa-regular fa-file text-primary"></i></td>
+          <td class="py-3 px-1">
+            <a href="{% url "documents:file" document.id %}{{ standard_query }}">{{ document.name }}</a>
+          </td>
+          <td class="py-3 pl-3 pr-1">{{ document.human_size }}</td>
+          <td class="py-3 pl-3 pr-1">{{ document.created_at|date:"DATE_FORMAT"}}</td>
+          {% if show_trashed_at %}
+          <td class="py-3 pl-3 pr-1">
+            {{ document.trashed_at|date:"DATE_FORMAT" }}
+          </td>
+          {% endif %}
+          {% if show_buttons %}
+          <td>
+            <form class="flex flex-row items-center gap-2 px-3 {% if buttons_active %}text-gray-500{% else %}text-gray-200{% endif %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="node_id" value="{{ document.id }}">
+              <input type="hidden" name="parent_id" value="{% if parent %}{{ parent.id }}{% endif %}">
+              {% if has_rename_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:edit" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf303;">
+              {% endif %}
+              {% if has_move_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:move" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf061;">
+              {% endif %}
+              {% if has_delete_permission %}
+              <input {% if not buttons_active %}disabled{% endif %} formaction="{% url "documents:trash" %}{{ standard_query }}" type="submit" class="{% if buttons_active %}cursor-pointer{% endif %} border rounded p-1 flex justify-center items-center w-7 h-7 fa fa-solid" value="&#xf1f8;">
+              {% endif %}
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock main %}
+{% block scripts %}
+<script src="{% static "js/filepond.js" %}"></script>
+<script>
+  FilePond.setOptions({
+    chunkUploads: true,
+    chunkSize: 500000,
+    dropOnPage: true,
+    credits: false,
+    server: {
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      url: '/fp',
+      process: '/process/',
+      patch: '/patch/',
+      revert: '/revert/',
+      fetch: '/fetch/?target='
+    }
+  });
+  const input = document.querySelector('input[type="file"]');
+  const pond = FilePond.create(input);
+
+  const $addBtn = document.getElementById('do-upload-btn');
+  if ($addBtn !== null) {
+    // Disable button while FilePond is busy
+    pond.on('processfile', () => {
+      if (pond.getFiles().some(f => f.status !== FilePond.FileStatus.PROCESSING_COMPLETE)) {
+        $addBtn.disabled = true;
+      }
+    });
+
+    pond.on('processfilestart', () => {
+      $addBtn.disabled = true;
+    });
+
+    pond.on('processfileprogress', () => {
+      $addBtn.disabled = true;
+    });
+
+    pond.on('processfileabort', () => {
+      $addBtn.disabled = false;
+    });
+
+    pond.on('processfileundo', () => {
+      $addBtn.disabled = false;
+    });
+
+    pond.on('processfiles', () => {
+      $addBtn.disabled = false;
+    });
+
+    pond.on('addfile', () => {
+      // If any file is still processing, disable
+      if (pond.getFiles().some(f => f.status === FilePond.FileStatus.PROCESSING || f.status === FilePond.FileStatus.PROCESSING_QUEUED)) {
+        $addBtn.disabled = true;
+      }
+    });
+
+    pond.on('removefile', () => {
+      // Enable if no files are processing
+      if (!pond.getFiles().some(f => f.status === FilePond.FileStatus.PROCESSING || f.status === FilePond.FileStatus.PROCESSING_QUEUED)) {
+        $addBtn.disabled = false;
+      }
+    });
+
+    $addBtn.disabled = false;
+  }
+
+  // Add cursor-pointer and click handlers to table rows and headers
+  document.querySelectorAll('tr[data-href]').forEach(row => {
+    if (row.hasAttribute('disabled')) {
+      return; // Skip rows that are disabled
+    }
+    // Apply the cursor-pointer to all cells except the last one
+    row.querySelectorAll('td:not(:last-child), th:not(:last-child)').forEach(cell => {
+      cell.classList.add('cursor-pointer');
+        cell.addEventListener('click', function(e) {
+          window.location.href = row.getAttribute('data-href');
+      });
+    });
+  });
+  document.querySelectorAll('th[data-href]').forEach(th => {
+    th.classList.add('cursor-pointer');
+    th.addEventListener('click', function(e) {
+      window.location.href = th.getAttribute('data-href');
+    });
+  });
+
+  function dismissEdit() {
+    document.getElementById('edit-dialog').remove();
+    // Remove 'edit' from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('edit');
+    window.location.href = url.toString();
+  }
+  function dismissDeleteConfirm() {
+    document.getElementById('delete-confirm-dialog').remove();
+    // Remove 'delete_confirm' from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('delete_confirm');
+    window.location.href = url.toString();
+  }
+</script>
+{% endblock scripts %}

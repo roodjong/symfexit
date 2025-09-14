@@ -24,7 +24,7 @@ def write_out_overrides():
 @task_registry.register("rebuild_theme")
 def rebuild_theme(*, tenant: Client):
     logger.log(f"Rebuilding theme for tentant {tenant.name}")
-    input_css = settings.BASE_DIR / "theme" / "static_src" / "src" / "styles.css"
+    input_css = settings.SYMFEXIT_DIR / "theme" / "static_src" / "src" / "styles.css"
     write_out_overrides()
 
     new_env = os.environ.copy()

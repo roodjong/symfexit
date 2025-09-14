@@ -10,9 +10,11 @@
     <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+    {% block css %}{% endblock css %}
   </head>
 
   <body>
     {% block body %}{% endblock body %}
+    {% block scripts %}{% endblock scripts %}
   </body>
 </html>
