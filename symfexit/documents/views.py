@@ -425,14 +425,63 @@ def file_download(request, slug):
     return response
 
 
-def build_breadcrumbs(node: FileNode):
-    breadcrumbs = []
-    while node:
-        breadcrumbs.append(node)
-        if node.trashed_at:
-            break
-        node = node.parent
-    return reversed(breadcrumbs)
+def build_breadcrumbs(node: FileNode | None):
+    if node is None:
+        return []
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            WITH RECURSIVE parents (
+                id,
+                name,
+                trashed_at,
+                parent_id,
+                depth,
+                is_file
+            ) AS (
+                SELECT
+                    id,
+                    name,
+                    trashed_at,
+                    parent_id,
+                    1 AS depth,
+                    f.filenode_ptr_id is not null
+                FROM
+                    documents_filenode n
+                LEFT JOIN documents_file f ON f.filenode_ptr_id = n.id
+                WHERE
+                    id = %s
+                UNION ALL
+                SELECT
+                    n.id,
+                    n.name,
+                    n.trashed_at,
+                    n.parent_id,
+                    p.depth + 1 AS depth,
+                    f.filenode_ptr_id is not null
+                FROM
+                    parents AS p
+                    INNER JOIN documents_filenode n ON n.id = p.parent_id
+                    LEFT JOIN documents_file f ON f.filenode_ptr_id = n.id
+            )
+            SELECT
+                id, name, is_file
+            FROM
+                parents
+            ORDER BY
+                depth DESC;
+        """,
+            [node.id],
+        )
+        rows = cursor.fetchall()
+
+    def crumb(row):
+        if not row[2]:  # is_file
+            return {"name": row[1], "url": directory_url(row[0])}
+        else:
+            return {"name": row[1], "url": reverse("documents:file", args=(row[0],))}
+
+    return map(crumb, rows)
 
 
 def is_image(content_type):

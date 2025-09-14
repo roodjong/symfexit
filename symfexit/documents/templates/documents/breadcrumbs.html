@@ -8,8 +8,8 @@
 {% for crumb in breadcrumbs %}
   <span>/</span>
   {% if forloop.last %}
-    <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}"><span class="text-primary">{{ crumb.name }}</span></a>
+    <a href="{{ crumb.url }}{{ standard_query }}"><span class="text-primary">{{ crumb.name }}</span></a>
   {% else %}
-    <a href="{% url "documents:documents" crumb.id %}{{ standard_query }}">{{ crumb.name }}</a>
+    <a href="{{ crumb.url }}{{ standard_query }}">{{ crumb.name }}</a>
   {% endif %}
 {% endfor %}
