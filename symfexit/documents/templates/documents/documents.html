@@ -361,14 +361,14 @@
     row.querySelectorAll('td:not(:last-child), th:not(:last-child)').forEach(cell => {
       cell.classList.add('cursor-pointer');
         cell.addEventListener('click', function(e) {
-          window.location.href = row.getAttribute('data-href');
+          window.location.href = row.dataset.href;
       });
     });
   });
   document.querySelectorAll('th[data-href]').forEach(th => {
     th.classList.add('cursor-pointer');
     th.addEventListener('click', function(e) {
-      window.location.href = th.getAttribute('data-href');
+      window.location.href = th.dataset.href;
     });
   });
 
