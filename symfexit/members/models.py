@@ -156,7 +156,7 @@ class LocalGroup(Group):
     selectable = models.BooleanField(
         _("selectable"),
         default=True,
-        help_text=_("Whether this group can be selected by new members signing up")
+        help_text=_("Whether this group can be selected by new members signing up"),
     )
 
 
