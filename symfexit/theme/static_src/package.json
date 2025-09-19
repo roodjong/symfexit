@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "npm run dev",
-    "dev": "cross-env NODE_ENV=development tailwindcss -i ./src/styles.css -o ../static/css/dist/styles.css -w",
+    "dev": "cross-env NODE_ENV=development tailwindcss -i ./src/styles.css -o ../static/css/dist/styles-public.css -w",
     "tailwindcss": "tailwindcss"
   },
   "keywords": [],
