@@ -54,9 +54,23 @@ Use your preferred way to install PostgreSQL, only version 17 is currently recom
 
 By default settings.py is configured to connect with your unix user to the database `symfexit`.
 If you want to use this setup, you need to have a PostgreSQL user with the same name as your unix user, and a database named `symfexit` owned by that user.
+
+##### MacOS
+```bash
+brew install postgresql@17
+LC_ALL="C" /opt/homebrew/opt/postgresql@17/bin/postgres -D /opt/homebrew/var/postgresql@17
+```
+
 If you installed PostgreSQL on MacOS using Homebrew, you already have a user with the same name as your unix user.
 In that case you only need to create the database.
 
+You also probably need to install libmagic separately:
+
+```bash
+brew install libmagic
+```
+
+##### Linux
 On Linux, you probably have to prefix the commands with `sudo -u postgres`.
 You may also have to start the PostgreSQL service with `sudo systemctl start postgresql`.
 
