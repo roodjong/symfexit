@@ -60,6 +60,7 @@ urlpatterns = (
         path("tinymce/", include("tinymce.urls")),
         path("", include("symfexit.home.urls")),
         path("", include("symfexit.members.urls")),
+        path("", include("symfexit.events.urls")),
         path("", include("symfexit.documents.urls")),
         path("", include("symfexit.signup.urls")),
         path("mollie/", include("symfexit.payments.mollie.urls")),

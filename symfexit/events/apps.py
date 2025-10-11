@@ -6,3 +6,8 @@ class EventsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "symfexit.events"
     verbose_name = _("Events")
+
+    def menu_items(self, request):
+        return [
+            {"name": _("Events"), "viewname": "events:overview", "order": 2},
+        ]
