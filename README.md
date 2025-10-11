@@ -117,3 +117,24 @@ This will start the webserver, the worker for the background tasks, and the watc
 
 Whenever you make changes to the Python code, the server will automatically reload.
 The watcher for Tailwind will also automatically rebuild the CSS.
+
+## Localization
+
+All strings are currently in English by default, and have localizations to Dutch.
+To translate newly added strings, you need to do the following steps:
+1. Generate the list of strings to be translated by running:
+
+```bash
+python manage.py makemessages -l nl
+```
+
+2. Translate the strings in the `django.po` files.
+Django tries to guess the translations based on previously translated strings.
+These translations are labeled with "fuzzy", and are ignored when compiling.
+So after checking and correcting these translations, the "fuzzy" tag should be removed.
+
+3. Compile the translation files:
+
+```bash
+python manage.py compilemessages
+```
