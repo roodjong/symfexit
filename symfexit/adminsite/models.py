@@ -14,7 +14,7 @@ class WellKnownPermissionGroup(models.Model):
 
     group = models.OneToOneField(
         Group,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="well_known_code",
     )
 
