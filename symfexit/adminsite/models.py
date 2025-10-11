@@ -17,6 +17,7 @@ def get_or_create(code):
         well_known.save()
     return group
 
+
 class WellKnownPermissionGroup(models.Model):
     class WellKnownPermissionGroups(models.TextChoices):
         VIEW_ALL = "view_all", "View all"
