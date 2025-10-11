@@ -1,21 +1,5 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, models
-
-
-def get_or_create(code):
-    try:
-        group = WellKnownPermissionGroup.objects.get(code=code.value)
-    except WellKnownPermissionGroup.DoesNotExist:
-        name = code.label
-        group = None
-        while group is None:
-            try:
-                group = Group.objects.create(name=name)
-            except IntegrityError:
-                name = name + " (well known)"
-        well_known = WellKnownPermissionGroup(code=code.value, group=group)
-        well_known.save()
-    return group
 
 
 class WellKnownPermissionGroup(models.Model):
@@ -36,3 +20,33 @@ class WellKnownPermissionGroup(models.Model):
 
     def __str__(self):
         return self.code
+
+    @classmethod
+    def get_or_create(cls, code):
+        try:
+            group = WellKnownPermissionGroup.objects.get(code=code.value)
+        except WellKnownPermissionGroup.DoesNotExist:
+            name = code.label
+            group = None
+            while group is None:
+                try:
+                    group = Group.objects.create(name=name)
+                except IntegrityError:
+                    name = name + " (well known)"
+            well_known = WellKnownPermissionGroup(code=code.value, group=group)
+            well_known.update_permissions()
+            well_known.save()
+        return group
+
+    def update_permissions(self):
+        match self.code:
+            case WellKnownPermissionGroup.WellKnownPermissionGroups.VIEW_ALL.value:
+                self.group.permissions.set(
+                    [
+                        Permission.objects.get(codename="view_localgroup"),
+                        Permission.objects.get(codename="view_member"),
+                        Permission.objects.get(codename="view_supportmember"),
+                        Permission.objects.get(codename="view_user"),
+                        Permission.objects.get(codename="view_membershipapplication"),
+                    ]
+                )
