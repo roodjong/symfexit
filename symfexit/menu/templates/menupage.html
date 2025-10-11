@@ -6,26 +6,35 @@
     >{{ config.SITE_TITLE }}</span
   >
 </div>
-<details class="block md:hidden">
-  <summary class="list-none">
-    <div class="cursor-pointer">
-      <div class="flex flex-row-reverse">
-        <div
-          class="flex items-center px-3 py-2 border rounded text-primary border-primary hover:text-black hover:border-black"
-        >
-          <svg
-            class="fill-current h-3 w-3"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <title>Menu</title>
-            <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
-          </svg>
-        </div>
-      </div>
+<div class="block md:hidden">
+  <!-- Button that toggles the menu -->
+  <button id="menuToggle" class="list-none focus:outline-none">
+    <div
+      class="flex items-center px-3 py-2 border rounded text-primary border-primary hover:text-black hover:border-black"
+    >
+      <svg
+        class="fill-current h-3 w-3"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <title>Menu</title>
+        <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
+      </svg>
     </div>
-  </summary>
+  </button>
+</div>
+<!-- The menu content, hidden by default -->
+<div id="mainMenu" class="hidden mt-2">
   {% render_main_menu %}
-</details>
+</div>
+
+<script>
+  const btn = document.getElementById('menuToggle');
+  const menu = document.getElementById('mainMenu');
+
+  btn.addEventListener('click', () => {
+    menu.classList.toggle('hidden');
+  });
+</script>
 <div class="hidden md:block">{% render_main_menu_lg %}</div>
 {% endblock navbar %}
