@@ -24,7 +24,7 @@ class WellKnownPermissionGroup(models.Model):
     @classmethod
     def get_or_create(cls, code):
         try:
-            group = WellKnownPermissionGroup.objects.get(code=code.value)
+            well_known = WellKnownPermissionGroup.objects.get(code=code.value)
         except WellKnownPermissionGroup.DoesNotExist:
             name = code.label
             group = None
@@ -36,7 +36,7 @@ class WellKnownPermissionGroup(models.Model):
             well_known = WellKnownPermissionGroup(code=code.value, group=group)
             well_known.update_permissions()
             well_known.save()
-        return group
+        return well_known
 
     def update_permissions(self):
         match self.code:
