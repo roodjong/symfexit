@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-14 22:07+0200\n"
+"POT-Creation-Date: 2025-10-11 17:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,7 +77,7 @@ msgstr "Pad:"
 
 #: symfexit/documents/templates/documents/breadcrumbs.html:4
 #: symfexit/documents/templates/documents/documents.html:133
-#: symfexit/documents/views.py:347
+#: symfexit/documents/views.py:349
 msgid "Trashcan"
 msgstr "Prullenbak"
 
@@ -178,18 +178,27 @@ msgstr "items"
 msgid "Download"
 msgstr "Download"
 
-#: symfexit/documents/views.py:291
+#: symfexit/documents/views.py:293
 msgid "You cannot move a directory into itself or one of its subdirectories."
 msgstr ""
 "Het is niet mogelijk een map te plaatsen in zichzelf of een submap van "
 "zichzelf."
 
-#: symfexit/documents/views.py:506 symfexit/documents/views.py:596
-#: symfexit/documents/views.py:644
+#: symfexit/documents/views.py:506
+msgid "Cannot add a folder to a folder that is in the trashcan"
+msgstr ""
+"Het is niet mogelijk een map te verplaatsen in de prullenbak"
+
+#: symfexit/documents/views.py:515 symfexit/documents/views.py:618
+#: symfexit/documents/views.py:666
 msgid "A file or directory with the same name already exists in this location."
 msgstr "Een bestand of map met dezelfde naam bestaat hier al"
 
-#: symfexit/documents/views.py:566
+#: symfexit/documents/views.py:538
+msgid "Cannot upload a file to a folder that is in the trashcan"
+msgstr "Het is niet mogelijk een bestand te uploaden in de prullenbak"
+
+#: symfexit/documents/views.py:581
 msgid ""
 "The following files could not be uploaded because a file or directory with "
 "the same name already exists in this location: "
@@ -197,15 +206,20 @@ msgstr ""
 "De volgende bestanden konden niet worden geüpload omdat er al een bestand of "
 "map met dezelfde naam bestaat: "
 
-#: symfexit/documents/views.py:632
+#: symfexit/documents/views.py:608
+msgid "Cannot edit a filename of a file in the trashcan"
+msgstr ""
+"Het is niet mogelijk een bestandsnaam van een bestand in de prullenbak te wijzigen"
+
+#: symfexit/documents/views.py:654
 msgid "You cannot move a directory into itself."
 msgstr "Je kan een map niet in zichzelf plaatsen."
 
-#: symfexit/documents/views.py:665
+#: symfexit/documents/views.py:687
 msgid "File or directory has been moved to the trashcan."
 msgstr "Bestand of map is verplaatst naar de prullenbak."
 
-#: symfexit/documents/views.py:676
+#: symfexit/documents/views.py:698
 msgid "File or directory deleted successfully."
 msgstr "Bestand of map is succesvol verwijderd."
 
