@@ -244,11 +244,13 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "symfexit.theme.context.current_theme",
+                "symfexit.theme.context.theme_vars",
             ],
             "string_if_invalid": ("😱 MISSING VARIABLE %s 😱" if DEBUG else ""),
         },
     },
 ]
+CMS_COLOR_SCHEME = "auto"
 
 FORM_RENDERER = "django.forms.renderers.DjangoDivFormRenderer"
 

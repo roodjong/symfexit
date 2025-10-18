@@ -1,0 +1,32 @@
+{% extends 'admin/base.html' %}
+{% block extrastyle %}
+{{ block.super }}
+<style>
+{% with "light auto dark" as list %}
+{% for mode in list.split %}
+  html[data-theme="{{ mode }}"], :root {
+{% if theme.admin_color %}
+    --primary: {{ theme.admin_color }};
+    --secondary: {{ theme.admin_color }};
+{% elif theme.color_primary %}
+    --primary: {{ theme.color_primary }};
+    --secondary: {{ theme.color_primary }};
+{% else %}
+    --primary: #C2000B;
+    --secondary: #C2000B;
+{% endif %}
+
+{% if theme.admin_color_headerbar %}
+    --breadcrumbs-bg: {{ theme.admin_color_headerbar }};
+{% elif theme.admin_color %}
+    --breadcrumbs-bg: lch(from {{ theme.admin_color }} calc(l - 10) c h );
+{% elif theme.color_primary %}
+    --breadcrumbs-bg: lch(from {{ theme.color_primary }} calc(l - 10) c h );
+{% else %}
+    --breadcrumbs-bg: lch(from #C2000B calc(l - 10) c h );
+{% endif %}
+  }
+{% endfor %}
+{% endwith %}
+</style>
+{% endblock %}
