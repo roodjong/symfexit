@@ -59,7 +59,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         SUPPORT_MEMBER = "SUPPORT", _("Support member")
 
     # Previously the primary_key of the User in the old mijnrood project
-    member_identifier = models.TextField(_("member number"), unique=True, null=False, blank=False)
+    member_identifier = models.PositiveIntegerField(
+        _("member number"), unique=True, null=False, blank=False
+    )
     first_name = models.TextField(_("first name"))
     last_name = models.TextField(_("last name"))
     email = models.EmailField(_("email"))
