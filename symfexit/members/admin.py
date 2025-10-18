@@ -61,6 +61,33 @@ class IsActiveFilter(SimpleListFilter):
             }
 
 
+class LocalGroupFilter(SimpleListFilter):
+    title = _("local groups")
+    parameter_name = "local_group"
+
+    def lookups(self, request, model_admin):
+        return [(group.id, group.name) for group in LocalGroup.objects.all()]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(groups=self.value())
+        return queryset
+
+
+class PermissionGroupFilter(SimpleListFilter):
+    title = _("permission groups")
+    parameter_name = "permission_group"
+
+    def lookups(self, request, model_admin):
+        local_group_ids = LocalGroup.objects.values_list("group_ptr", flat=True)
+        return [(group.id, group.name) for group in Group.objects.exclude(id__in=local_group_ids)]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(groups=self.value())
+        return queryset
+
+
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
 class UserAdmin(admin.ModelAdmin):
     add_form_template = "admin/auth/user/add_form.html"
@@ -113,7 +140,14 @@ class UserAdmin(admin.ModelAdmin):
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
     list_display = ("email", "first_name", "last_name", "is_staff")
-    list_filter = ("is_staff", "is_superuser", IsActiveFilter, "groups", "cadre")
+    list_filter = (
+        "is_staff",
+        "is_superuser",
+        IsActiveFilter,
+        LocalGroupFilter,
+        PermissionGroupFilter,
+        "cadre",
+    )
 
     search_fields = ("username", "first_name", "last_name", "email")
     ordering = ("email",)
