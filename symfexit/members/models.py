@@ -168,8 +168,7 @@ class LocalGroup(Group):
 # START Signals for is_staff updating
 
 
-def update_user_staff_rights(user_queryset):
-    users = user_queryset
+def update_user_staff_rights(users):
     for user in users:
         user.set_staff_rights()
     User.objects.bulk_update(users, ["is_staff"])
