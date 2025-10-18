@@ -1,6 +1,5 @@
 from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, models
-from symfexit.members.models import User
 
 
 class WellKnownPermissionGroup(models.Model):
