@@ -6,12 +6,14 @@ from symfexit.theme.utils import get_time_millis
 
 class TailwindKey(models.Model):
     COLOR_KEY_CHOICES = [
+        ("admin-color", "Admin Color"),
+        ("admin-color-headerbar", "Admin Header Bar Color"),
         ("color-primary", "Primary Color"),
         ("font-header", "Font used in the header"),
     ]
     id = models.AutoField(primary_key=True)
     name = models.CharField(
-        _("name"), unique=True, blank=False, max_length=20, choices=COLOR_KEY_CHOICES
+        _("name"), unique=True, blank=False, max_length=80, choices=COLOR_KEY_CHOICES
     )
     value = models.TextField(_("value"))
 
