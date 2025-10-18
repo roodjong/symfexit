@@ -138,3 +138,5 @@ So after checking and correcting these translations, the "fuzzy" tag should be r
 ```bash
 python manage.py compilemessages
 ```
+
+More information can be found on the Django documentation site: https://docs.djangoproject.com/en/dev/topics/i18n/translation/
