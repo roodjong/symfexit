@@ -137,7 +137,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return True
 
         # Staff via group permission
-        staff_via_group = self.groups.filter(permissions__codename="members_become_staff").exists()
+        staff_via_group = self.groups.filter(flags__members_become_staff=True).exists()
 
         # Staff via being contact person
         staff_via_localgroup = self.contact_person_for_groups.count() >= 1

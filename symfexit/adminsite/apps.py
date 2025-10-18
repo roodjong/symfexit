@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class MyAdminConfig(AdminConfig):
-    default_site = "symfexit.adminsite.admin.get_admin_site"
+    default_site = "symfexit.adminsite.adminsite.get_admin_site"
 
 
 # Required for the translations to be loaded
