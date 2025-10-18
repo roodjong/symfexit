@@ -20,7 +20,7 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
 
-from symfexit.members.models import LocalGroup, User
+from symfexit.members.models import LocalGroup, User, generate_member_number
 
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")
@@ -131,11 +131,18 @@ class UserAdmin(admin.ModelAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("password1", "password2"),
+                "fields": (
+                    "password1",
+                    "password2",
+                    "member_identifier",
+                    "first_name",
+                    "last_name",
+                    "email",
+                ),
             },
         ),
     )
-    readonly_fields = ("member_identifier", "last_login", "date_joined", "date_left", "is_active")
+    readonly_fields = ("last_login", "date_joined", "date_left", "is_active")
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
@@ -149,7 +156,7 @@ class UserAdmin(admin.ModelAdmin):
         "cadre",
     )
 
-    search_fields = ("username", "first_name", "last_name", "email")
+    search_fields = ("first_name", "last_name", "email")
     ordering = ("email",)
     filter_horizontal = (
         "groups",
@@ -158,6 +165,14 @@ class UserAdmin(admin.ModelAdmin):
     delete_confirmation_template = "admin/members/membership_cancellation_confirm.html"
 
     # inlines = (MembershipInline,)
+
+    def get_changeform_initial_data(self, request):
+        return {"member_identifier": generate_member_number()}
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None:
+            return self.readonly_fields + ("member_identifier",)
+        return self.readonly_fields
 
     def get_fieldsets(self, request, obj=None):
         if not obj:
