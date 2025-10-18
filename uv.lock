@@ -279,16 +279,16 @@ wheels = [
 
 [[package]]
 name = "mollie-api-python"
-version = "3.8.0"
+version = "3.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
     { name = "requests-oauthlib" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/41/98/1c71d627bc49529c7c689a2d948d0620bac6a739455690d73ad835c9a410/mollie_api_python-3.8.0.tar.gz", hash = "sha256:d509dbab279cda22b44e020b8d2bdf5f97d14ad714bb03b77a7d458feb726544", size = 63311, upload-time = "2025-03-28T12:48:08.323Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/5f/cb4abb276097120c55d4bc58fe5a205e35686f51cda1000360acdb7f4e49/mollie_api_python-3.9.0.tar.gz", hash = "sha256:07762fe25201d20e3e4118b9f3d336eea5d424fe9d35bc088583c30c35ea579b", size = 63985, upload-time = "2025-10-09T14:32:29.438Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/00/66653deaec9fc45ba97c639212506b6d2b210d4ae7161f3589a9303d6822/mollie_api_python-3.8.0-py3-none-any.whl", hash = "sha256:3d0530bf9904b71da8e3b0964db616c271578f14e1e651ac15855d07079ed2fb", size = 52456, upload-time = "2025-03-28T12:48:07.223Z" },
+    { url = "https://files.pythonhosted.org/packages/51/54/5b313522b3ee08b7b21397411613084eca912bb3d431f9c0cfeed38893fe/mollie_api_python-3.9.0-py3-none-any.whl", hash = "sha256:731356726f3b40aa962ce73861d90bfc94bb2cf8543f6d76ac1332adc3f44214", size = 52605, upload-time = "2025-10-09T14:32:28.086Z" },
 ]
 
 [[package]]
