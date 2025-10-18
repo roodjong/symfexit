@@ -229,8 +229,10 @@ class Documents(LoginRequiredMixin, TemplateView):
                 "in_trash": parent_in_trash,
                 "has_add_directory_permission": self.request.user.has_perm(
                     "documents.add_directory"
-                ),
-                "has_add_file_permission": self.request.user.has_perm("documents.add_file"),
+                )
+                and not parent_in_trash,
+                "has_add_file_permission": self.request.user.has_perm("documents.add_file")
+                and not parent_in_trash,
                 "has_rename_permission": self.request.user.has_perm("documents.change_file")
                 and self.request.user.has_perm("documents.change_directory"),
                 "has_move_permission": self.request.user.has_perm("documents.change_file")
@@ -497,6 +499,13 @@ def new_directory(request):
     parent = None
     if parent_id:
         parent = get_object_or_404(Directory, id=parent_id)
+        if in_trash(parent):
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Cannot add a folder to a folder that is in the trashcan"),
+            )
+        return redirect(directory_url(parent_id))
     try:
         directory = Directory.objects.create(name=name, parent=parent)
     except IntegrityError:
@@ -522,6 +531,12 @@ def upload_files(request):
     parent = None
     if parent_id:
         parent = get_object_or_404(Directory, id=parent_id)
+        if in_trash(parent):
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Cannot upload a file to a folder that is in the trashcan"),
+            )
     failed_files = []
     for f in fp_files:
         tmpfile = get_object_or_404(TemporaryUpload, upload_id=f)
@@ -585,6 +600,13 @@ def edit(request):
         return redirect(directory_url(parent_id, sorting=sorting, edit_mode=node_id))
 
     node = get_object_or_404(FileNode, id=node_id)
+
+    if in_trash(node):
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Cannot edit a filename of a file in the trashcan"),
+        )
 
     try:
         node.name = newname + (f".{newext}" if newext else "")
