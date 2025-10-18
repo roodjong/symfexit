@@ -133,14 +133,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     def set_staff_rights(self) -> bool:
-        # TODO: add other reasons to set users staff rights
-        # I am guessing we will create permission groups that are allowed to have some administation rights as well.
         if self.is_superuser:
             # This should already be set to True
             self.is_staff = True
-        else:
-            # make member staff, if member is contactperson of 1 or more groups
-            self.is_staff = self.contact_person_for_groups.count() >= 1
+            return True
+
+        # Staff via group permission
+        staff_via_group = self.groups.filter(flags__members_become_staff=True).exists()
+
+        # Staff via being contact person
+        staff_via_localgroup = self.contact_person_for_groups.count() >= 1
+
+        self.is_staff = staff_via_group or staff_via_localgroup
+        return self.is_staff
 
 
 class LocalGroup(Group):
@@ -162,12 +167,31 @@ class LocalGroup(Group):
     )
 
 
+# START Signals for is_staff updating
+
+
+def update_user_staff_rights(users):
+    for user in users:
+        user.set_staff_rights()
+    User.objects.bulk_update(users, ["is_staff"])
+
+
+@receiver(m2m_changed, sender=User.groups.through)
+def user_groups_changed(sender, instance, action, pk_set, **kwargs):
+    if action not in ["post_add", "post_remove", "post_clear"]:
+        return
+
+    # instance is the user being modified
+    update_user_staff_rights([instance])
+
+
 @receiver(m2m_changed, sender=LocalGroup.contact_people.through)
 def local_group_contact_people_changed(sender, instance, action, pk_set, **kwargs):
     if action not in ["post_add", "post_remove", "post_clear"]:
         return
 
-    # foreach touched user, check if their is_staff should be added or removed
-    for user in User.objects.filter(pk__in=pk_set):
-        user.set_staff_rights()
-        user.save()
+    # pk_set contains the IDs of the affected users
+    update_user_staff_rights(User.objects.filter(pk__in=pk_set))
+
+
+# END Signals for is_staff updating

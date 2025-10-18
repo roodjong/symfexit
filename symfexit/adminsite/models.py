@@ -50,3 +50,17 @@ class WellKnownPermissionGroup(models.Model):
                         Permission.objects.get(codename="view_membershipapplication"),
                     ]
                 )
+
+
+class GroupFlags(models.Model):
+    group = models.OneToOneField(
+        Group,
+        on_delete=models.CASCADE,
+        related_name="flags",
+    )
+    members_become_staff = models.BooleanField(
+        help_text="Designates whether members of this group can log in to the administration"
+    )
+
+    def __str__(self):
+        return f"Flags for group {self.group}"
