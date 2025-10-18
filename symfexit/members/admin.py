@@ -333,6 +333,9 @@ class UserAdmin(admin.ModelAdmin):
         return super().has_change_permission(request, obj)
 
 
+admin.site.disable_action("delete_selected")
+
+
 # Proxy for a separate view with only members on the admin page
 class Member(User):
     class Meta(User.Meta):
