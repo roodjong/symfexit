@@ -325,15 +325,19 @@ class UserAdmin(admin.ModelAdmin):
             return False
         return super().has_delete_permission(request, obj)
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        # Remove the "delete_selected" mass action for Members only
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
+
     def has_change_permission(self, request, obj: User = None):
         if obj is None:
             return super().has_change_permission(request, obj)
         if obj.date_left is not None:
             return False
         return super().has_change_permission(request, obj)
-
-
-admin.site.disable_action("delete_selected")
 
 
 # Proxy for a separate view with only members on the admin page
