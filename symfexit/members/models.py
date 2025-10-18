@@ -169,7 +169,7 @@ class LocalGroup(Group):
 
 
 def update_user_staff_rights(user_queryset):
-    users = list(user_queryset)  # evaluate queryset
+    users = user_queryset
     for user in users:
         user.set_staff_rights()
     User.objects.bulk_update(users, ["is_staff"])
