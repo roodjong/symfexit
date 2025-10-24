@@ -162,6 +162,7 @@ CONSTANCE_CONFIG = {
 # Application definition
 
 SHARED_APPS = [
+    "django_prose_editor",
     "django_tenants",
     "symfexit.tenants.apps.TenantsConfig",
     "symfexit.root.apps.SymfexitConfig",
@@ -190,6 +191,7 @@ TENANT_APPS = [
     # django.contrib.admin, which contains translations which should be
     # overwritten by our own translations in AdminSiteConfig
     "symfexit.adminsite.apps.AdminSiteConfig",
+    "symfexit.emails.apps.EmailTemplateConfig",
     "symfexit.menu.apps.MenuConfig",
     "symfexit.members.apps.MembersConfig",
     "symfexit.payments.apps.PaymentsConfig",
