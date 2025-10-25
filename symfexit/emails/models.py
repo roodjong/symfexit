@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from froala_editor.fields import FroalaField
+from tinymce.models import HTMLField
 
 from symfexit.emails.template_manager import LayoutManager, TemplateManager
 
@@ -15,7 +15,7 @@ class EmailLayout(models.Model):
         choices=LayoutManager.get_template_choices(),
     )
     # we could add language as well and make template + language a unique key
-    body = FroalaField(
+    body = HTMLField(
         _("body"),
     )
 
@@ -45,7 +45,7 @@ class EmailTemplate(models.Model):
     # we could add language as well and make template + langauge a unique key
     from_email = models.EmailField(_("From email"))
     subject = models.TextField(_("subject"))
-    body = FroalaField(
+    body = HTMLField(
         _("body"),
     )
 

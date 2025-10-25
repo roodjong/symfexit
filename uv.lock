@@ -161,12 +161,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-froala-editor"
-version = "4.6.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/78/dc/273c263dd29deb3b65073546e96fd475717a8527db07dd1684e5afd5dada/django-froala-editor-4.6.2.tar.gz", hash = "sha256:74f662de910866ae6904973b03cfc0f3e366dd2221a207a7a0145ec8618f0d64", size = 1260868, upload-time = "2025-09-04T09:10:53.683Z" }
-
-[[package]]
 name = "django-storages"
 version = "1.14.6"
 source = { registry = "https://pypi.org/simple" }
@@ -566,7 +560,6 @@ dependencies = [
     { name = "django" },
     { name = "django-constance" },
     { name = "django-drf-filepond" },
-    { name = "django-froala-editor" },
     { name = "django-tailwind" },
     { name = "django-tenants" },
     { name = "django-tinymce" },
@@ -594,7 +587,6 @@ requires-dist = [
     { name = "django", specifier = "~=5.2" },
     { name = "django-constance", specifier = ">=4.3.2" },
     { name = "django-drf-filepond", specifier = ">=0.5.0" },
-    { name = "django-froala-editor", specifier = ">=4.6.2" },
     { name = "django-tailwind", specifier = "~=3.4" },
     { name = "django-tenants", specifier = "~=3.9.0" },
     { name = "django-tinymce", specifier = "~=4.0" },

@@ -13,7 +13,7 @@ dependencies = [
     "dj-database-url ~= 2.1",
     "django~=5.2",
     "django-tailwind ~= 3.4",
-    "django-tinymce ~= 4.0",
+    "django-tinymce~=4.0",
     "fontawesomefree ~= 6.2",
     "hashids ~= 1.3",
     "mollie-api-python ~= 3.6",
@@ -26,7 +26,6 @@ dependencies = [
     "django-drf-filepond>=0.5.0",
     "python-magic>=0.4.27",
     "commonmark>=0.9.1",
-    "django-froala-editor>=4.6.2",
 ]
 requires-python = ">= 3.13"
 

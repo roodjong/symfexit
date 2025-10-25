@@ -162,7 +162,6 @@ CONSTANCE_CONFIG = {
 # Application definition
 
 SHARED_APPS = [
-    "froala_editor",
     "django_tenants",
     "symfexit.tenants.apps.TenantsConfig",
     "symfexit.root.apps.SymfexitConfig",
@@ -178,6 +177,7 @@ SHARED_APPS = [
 ] + enable_if(django_browser_reload_enabled, ["django_browser_reload"])
 
 TENANT_APPS = [
+    "tinymce",
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
@@ -386,3 +386,17 @@ LOGGING = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-AUTH_USER_MODEL
 
 AUTH_USER_MODEL = "members.User"
+
+TINYMCE_DEFAULT_CONFIG = {
+    "relative_urls": False,
+    "remove_script_host": False,
+    "convert_urls": True,
+    "menubar": "edit view insert format tools table help",
+    "plugins": "advlist autolink lists link charmap print preview anchor searchreplace visualblocks code "
+    "fullscreen insertdatetime media table paste code help wordcount spellchecker",
+    "toolbar": "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft "
+    "aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor "
+    "backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | "
+    "fullscreen  preview save print | insertfile image media pageembed template link anchor codesample | "
+    "code",
+}
