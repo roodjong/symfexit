@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from symfexit.root.settings import SINGLE_SITE_DOMAIN
 
 if TYPE_CHECKING:
-    from symfexit.emails.models import EmailTemplate
+    from symfexit.emails.models import EmailLayout, EmailTemplate
 
 
 class RequiredContext(TypedDict):
@@ -27,8 +27,8 @@ class TemplateContext(RequiredContext, GivenContext):
     pass
 
 
-class BaseTemplate[T: RequiredContext, U: GivenContext]:
-    def __init__(self, identifier, label, context: U | T, required: list[str] = None):
+class BaseLayout[U: GivenContext]:
+    def __init__(self, identifier, label, context: U, required: list[str] = None):
         self.identifier = identifier
         self.label = label
         self.context = {
@@ -38,6 +38,13 @@ class BaseTemplate[T: RequiredContext, U: GivenContext]:
             **context,
         }
         self.required = required or []
+
+    def get_base_context(self) -> U:
+        return {
+            "date": date.today().isoformat(),
+            "org": "Symfexit",
+            "site": SINGLE_SITE_DOMAIN,
+        }
 
     @dataclass
     class TemplateValidation:
@@ -67,16 +74,64 @@ class BaseTemplate[T: RequiredContext, U: GivenContext]:
 
         return BaseTemplate.TemplateValidation(formatted_template, unknown_keys, missing_keys)
 
-    def get_base_context(self) -> U:
-        return {
-            "date": date.today().isoformat(),
-            "org": "Symfexit",
-            "site": SINGLE_SITE_DOMAIN,
-        }
+    def get_layout(self, template: "EmailLayout"):
+        return None
 
+    def render_body(self, template: "EmailLayout", context: U, lang: str = None):
+        ctx = {**self.get_base_context(), **context}
+
+        body = Template(template.body)
+        html = body.render(Context(ctx))
+
+        ctx["content"] = html
+        if layout := self.get_layout(template):
+            from symfexit.emails.models import EmailLayout
+            from symfexit.emails.template_manager import LayoutManager
+
+            layout = EmailLayout.objects.filter(template=layout).first()
+            template = LayoutManager.find(layout.template)
+
+            full_html = template.render_body(layout, ctx, lang)
+        else:
+            outer_template = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <style>
+                @font-face {
+                    font-family: 'HelveticaNeueLTStd';
+
+                    font-weight: 500;
+                    font-style: normal;
+                    font-display: swap;
+                }
+                body {
+                    font-family: 'HelveticaNeueLTStd';
+                }
+            </style>
+            </head>
+            <body>
+                {{ content }}
+            </body>
+            </html>
+            """
+
+            body = Template(outer_template)
+            full_html = body.render(Context(ctx))
+        return full_html
+
+    def render_text_body(self, template: "EmailLayout", context: U, lang: str = None):
+        ctx = {**self.get_base_context(), **context}
+
+        subject = Template(template.text_body)
+        html = subject.render(Context(ctx))
+        return html
+
+
+class BaseTemplate[T: RequiredContext, U: GivenContext](BaseLayout[U]):
     def send_mail(  # noqa: PLR0913
         self,
-        context: T,  # partially allowed
+        context: T,  # Partial<T>
         recipient_list: list[str] | str,
         lang: str | None = None,
         subject: str | None = None,
@@ -92,10 +147,10 @@ class BaseTemplate[T: RequiredContext, U: GivenContext]:
 
         template = EmailTemplate.objects.filter(template=self.identifier).first()
         # in case we add lang, to send mails into base language.
-        if lang:
-            template = (
-                EmailTemplate.objects.filter(template=self.identifier).filter(lang=lang).first()
-            )
+        # if lang:
+        #     template = (
+        #         EmailTemplate.objects.filter(template=self.identifier).filter(lang=lang).first()
+        #     )
         if not template:
             raise Exception("No template found to send mail to, please add")
 
@@ -118,16 +173,11 @@ class BaseTemplate[T: RequiredContext, U: GivenContext]:
             self.render_body(template, context, lang),
         )
 
-    def render_body(self, template: "EmailTemplate", context: T, lang: str = None):
-        ctx = {**self.get_base_context(), **context}
+    def render_body(self, template: "EmailTemplate", context: T | U, lang=None):
+        return super().render_body(template, context, lang)
 
-        body = Template(template.body)
-        html = body.render(Context(ctx))
-
-        # if template.
-        ctx["content"] = html
-
-        return html
+    def render_text_body(self, template: "EmailTemplate", context: T | U, lang=None):
+        return super().render_text_body(template, context, lang)
 
     def render_subject(self, template: "EmailTemplate", context: T, lang: str = None):
         ctx = {**self.get_base_context(), **context}
@@ -136,9 +186,5 @@ class BaseTemplate[T: RequiredContext, U: GivenContext]:
         html = subject.render(Context(ctx))
         return html
 
-    def render_text_body(self, template: "EmailTemplate", context: T, lang: str = None):
-        ctx = {**self.get_base_context(), **context}
-
-        subject = Template(template.text_body)
-        html = subject.render(Context(ctx))
-        return html
+    def get_layout(self, template: "EmailTemplate"):
+        return template.layout
