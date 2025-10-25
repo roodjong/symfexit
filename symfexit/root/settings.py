@@ -162,7 +162,7 @@ CONSTANCE_CONFIG = {
 # Application definition
 
 SHARED_APPS = [
-    "django_prose_editor",
+    "froala_editor",
     "django_tenants",
     "symfexit.tenants.apps.TenantsConfig",
     "symfexit.root.apps.SymfexitConfig",

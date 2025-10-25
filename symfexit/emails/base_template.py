@@ -1,4 +1,5 @@
 import re
+import urllib.parse
 from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING, TypedDict
@@ -56,6 +57,7 @@ class BaseLayout[U: GivenContext]:
         # Check if used keys are correctly spelled, if not return list of all possible and also return wrongly spelled/missing keys
         unknown_keys = []
         missing_keys = [*self.required]  # copy list
+        template_text = urllib.parse.unquote(template_text)
 
         # Replace function
         def replace_keys(match):
@@ -80,10 +82,10 @@ class BaseLayout[U: GivenContext]:
     def render_body(self, template: "EmailLayout", context: U, lang: str = None):
         ctx = {**self.get_base_context(), **context}
 
-        body = Template(template.body)
-        html = body.render(Context(ctx))
+        body = Template(urllib.parse.unquote(template.body))
+        rendered_body = body.render(Context(ctx))
 
-        ctx["content"] = html
+        ctx["content"] = rendered_body
         if layout := self.get_layout(template):
             from symfexit.emails.models import EmailLayout
             from symfexit.emails.template_manager import LayoutManager
@@ -93,7 +95,21 @@ class BaseLayout[U: GivenContext]:
 
             full_html = template.render_body(layout, ctx, lang)
         else:
-            outer_template = """
+            outer_template = self.get_full_html_template()
+
+            body = Template(urllib.parse.unquote(outer_template))
+            full_html = body.render(Context(ctx))
+        return full_html
+
+    def render_text_body(self, template: "EmailLayout", context: U, lang: str = None):
+        ctx = {**self.get_base_context(), **context}
+
+        subject = Template(template.text_body)
+        html = subject.render(Context(ctx))
+        return html
+
+    def get_full_html_template(self):
+        return """
             <!DOCTYPE html>
             <html>
             <head>
@@ -115,17 +131,6 @@ class BaseLayout[U: GivenContext]:
             </body>
             </html>
             """
-
-            body = Template(outer_template)
-            full_html = body.render(Context(ctx))
-        return full_html
-
-    def render_text_body(self, template: "EmailLayout", context: U, lang: str = None):
-        ctx = {**self.get_base_context(), **context}
-
-        subject = Template(template.text_body)
-        html = subject.render(Context(ctx))
-        return html
 
 
 class BaseTemplate[T: RequiredContext, U: GivenContext](BaseLayout[U]):
