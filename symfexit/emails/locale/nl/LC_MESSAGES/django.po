@@ -1,0 +1,138 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-25 23:15+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: symfexit/emails/admin.py:48 symfexit/emails/admin.py:105
+#, python-format
+msgid "Key %s is required, but could not be found"
+msgstr "Sleutel %s is vereist, maar kon niet worden gevonden"
+
+#: symfexit/emails/admin.py:52 symfexit/emails/admin.py:109
+#, python-format
+msgid "Key %s could not be found"
+msgstr "Sleutel %s kan niet worden gevonden"
+
+#: symfexit/emails/admin.py:55 symfexit/emails/admin.py:112
+msgid "Allowed keys:"
+msgstr "Toegestane sleutels"
+
+#: symfexit/emails/apps.py:8
+msgid "Email templates"
+msgstr "E-mail sjablonen"
+
+#: symfexit/emails/base_template.py:36
+msgid "Main title of this site"
+msgstr "Hoofdtitel van deze site"
+
+#: symfexit/emails/base_template.py:37
+msgid "Main site of the organisation"
+msgstr "Hoofdsite van de organisatie"
+
+#: symfexit/emails/base_template.py:38
+msgid "Organisation logo"
+msgstr "Logo van de organisatie"
+
+#: symfexit/emails/emaillayouts/layout_template.py:16
+msgid "Layout template"
+msgstr "Lay-out sjabloon"
+
+#: symfexit/emails/emaillayouts/layout_template.py:16
+msgid "Main of the email"
+msgstr "Hoofd van de e-mail"
+
+#: symfexit/emails/emailtemplates/apply_template.py:18
+msgid "Apply template"
+msgstr "Aanmelden sjabloon"
+
+#: symfexit/emails/emailtemplates/apply_template.py:19
+#: symfexit/emails/emailtemplates/contact_new_member_template.py:22
+#: symfexit/emails/emailtemplates/request_new_password_template.py:21
+#: symfexit/emails/emailtemplates/welcome_support_template.py:22
+#: symfexit/emails/emailtemplates/welcome_template.py:26
+msgid "First name of the member"
+msgstr "Voornaam van het lid"
+
+#: symfexit/emails/emailtemplates/contact_new_member_template.py:20
+msgid "Contact a new member template"
+msgstr "Contact met een nieuw lid sjabloon"
+
+#: symfexit/emails/emailtemplates/contact_new_member_template.py:23
+#: symfexit/emails/emailtemplates/welcome_support_template.py:21
+#: symfexit/emails/emailtemplates/welcome_template.py:25
+msgid "Full name of the member"
+msgstr "Volledige naam van het lid"
+
+#: symfexit/emails/emailtemplates/contact_new_member_template.py:24
+msgid "Name of the division"
+msgstr "Naam van de afdeling"
+
+#: symfexit/emails/emailtemplates/request_new_password_template.py:19
+msgid "Request new password template"
+msgstr "Nieuw wachtwoord aanvragen sjabloon"
+
+#: symfexit/emails/emailtemplates/request_new_password_template.py:22
+msgid "Url of the reset password link"
+msgstr "URL van de link voor het opnieuw instellen van het wachtwoord"
+
+#: symfexit/emails/emailtemplates/welcome_support_template.py:19
+msgid "Welcome support member template"
+msgstr "Welkom ondersteunend lid sjabloon"
+
+#: symfexit/emails/emailtemplates/welcome_template.py:23
+msgid "Welcome template"
+msgstr "Welkoms email sjabloon"
+
+#: symfexit/emails/emailtemplates/welcome_template.py:27
+msgid "Login member id"
+msgstr "Inloggen lid ID"
+
+#: symfexit/emails/emailtemplates/welcome_template.py:28
+msgid "Group member is in"
+msgstr "Groep van het lid"
+
+#: symfexit/emails/emailtemplates/welcome_template.py:29
+msgid "Password reset url"
+msgstr "URL voor het opnieuw instellen van het wachtwoord"
+
+#: symfexit/emails/models.py:11 symfexit/emails/models.py:42
+msgid "template"
+msgstr "sjabloon"
+
+#: symfexit/emails/models.py:20 symfexit/emails/models.py:53
+msgid "body"
+msgstr "inhoud"
+
+#: symfexit/emails/models.py:23 symfexit/emails/models.py:56
+msgid "text body"
+msgstr "tekstinhoud"
+
+#: symfexit/emails/models.py:24 symfexit/emails/models.py:57
+msgid "Text body is used for people who don't allow html in their emails."
+msgstr "Tekstinhoud wordt gebruikt voor mensen die geen HTML in hun e-mails toestaan."
+
+#: symfexit/emails/models.py:39
+msgid "email layout"
+msgstr "e-mail lay-out"
+
+#: symfexit/emails/models.py:50
+msgid "from email"
+msgstr "afzender"
+
+#: symfexit/emails/models.py:51
+msgid "subject"
+msgstr "onderwerp"
