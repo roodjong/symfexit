@@ -2,11 +2,12 @@ from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, models, transaction
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
 
 
 class WellKnownPermissionGroup(models.Model):
     class WellKnownPermissionGroups(models.TextChoices):
-        VIEW_ALL = "view_all", "View all"
+        VIEW_ALL = "view_all", _("View all")
         CONTACT_PERSON = "contact_person", "Contact person"
 
     code = models.CharField(
@@ -20,6 +21,10 @@ class WellKnownPermissionGroup(models.Model):
         on_delete=models.CASCADE,
         related_name="well_known_code",
     )
+
+    class Meta:
+        verbose_name = _("well known permission group")
+        verbose_name_plural = _("well known permission groups")
 
     def __str__(self):
         return self.code
@@ -85,9 +90,14 @@ class GroupFlags(models.Model):
         on_delete=models.CASCADE,
         related_name="flags",
     )
+
     members_become_staff = models.BooleanField(
-        help_text="Designates whether members of this group can log in to the administration"
+        _("Members become staff"),
+        help_text=_("Designates whether members of this group can log in to the administration"),
     )
+
+    class Meta:
+        verbose_name = _("group flags")
 
     def __str__(self):
         return f"Flags for group {self.group}"

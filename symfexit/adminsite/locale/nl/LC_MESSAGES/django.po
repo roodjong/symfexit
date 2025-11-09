@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 15:02+0000\n"
+"POT-Creation-Date: 2025-11-09 16:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +18,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/adminsite/admin.py:18
+#: symfexit/adminsite/adminsite.py:18
 #, python-brace-format
 msgid "{site_title} Administration"
 msgstr "{site_title} Administratie"
 
-#: symfexit/adminsite/admin.py:23
+#: symfexit/adminsite/adminsite.py:23
 #, python-brace-format
 msgid "{site_title} site admin"
 msgstr "{site_title} sitebeheer"
 
-#: symfexit/adminsite/admin.py:28
+#: symfexit/adminsite/adminsite.py:28
 #, python-brace-format
 msgid "{site_title} administration"
 msgstr "{site_title} administratie"
@@ -61,3 +61,33 @@ msgstr "Bekijk een %s"
 #: symfexit/adminsite/django_overrides.py:6
 msgid "Homepage"
 msgstr "Homepagina"
+
+#: symfexit/adminsite/models.py:8
+#, fuzzy
+#| msgid "View %s"
+msgid "View all"
+msgstr "Bekijk alles"
+
+#: symfexit/adminsite/models.py:23
+msgid "well known permission group"
+msgstr "bekende rechtengroep"
+
+#: symfexit/adminsite/models.py:24
+msgid "well known permission groups"
+msgstr "bekende rechtengroepen"
+
+#: symfexit/adminsite/models.py:68
+msgid "Members become staff"
+msgstr "Leden worden staf"
+
+#: symfexit/adminsite/models.py:69
+msgid ""
+"Designates whether members of this group can log in to the administration"
+msgstr ""
+"Geeft aan of leden van deze groep kunnen inloggen op dit administratie paneel"
+
+#: symfexit/adminsite/models.py:73
+msgid "group flags"
+msgstr "groep markeringen"
+#~ msgid "group flag"
+#~ msgstr "groep markering"
