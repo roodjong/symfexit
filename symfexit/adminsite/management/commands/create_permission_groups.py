@@ -11,3 +11,7 @@ class Command(BaseCommand):
             code=WellKnownPermissionGroup.WellKnownPermissionGroups.VIEW_ALL
         )
         group_ref.update_permissions()
+        group_ref = WellKnownPermissionGroup.get_or_create(
+            code=WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON
+        )
+        group_ref.update_permissions()
