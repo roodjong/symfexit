@@ -7,11 +7,11 @@ class Command(BaseCommand):
     help = "Creates and updates default permission groups"
 
     def handle(self, *args, **options):
-        group_ref = WellKnownPermissionGroup.get_or_create(
-            code=WellKnownPermissionGroup.WellKnownPermissionGroups.VIEW_ALL
-        )
-        group_ref.update_permissions()
-        group_ref = WellKnownPermissionGroup.get_or_create(
-            code=WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON
-        )
-        group_ref.update_permissions()
+        groups = [
+            WellKnownPermissionGroup.WellKnownPermissionGroups.VIEW_ALL,
+            WellKnownPermissionGroup.WellKnownPermissionGroups.BOARD,
+            WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON,
+        ]
+        for code in groups:
+            group_ref = WellKnownPermissionGroup.get_or_create(code=code)
+            group_ref.update_permissions()

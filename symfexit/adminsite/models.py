@@ -9,6 +9,7 @@ class WellKnownPermissionGroup(models.Model):
     class WellKnownPermissionGroups(models.TextChoices):
         VIEW_ALL = "view_all", _("View all")
         CONTACT_PERSON = "contact_person", "Contact person"
+        BOARD = "board", _("Board")
 
     code = models.CharField(
         unique=True,
@@ -69,7 +70,30 @@ class WellKnownPermissionGroup(models.Model):
                     ]
                 )
                 flags.members_become_staff = True
-
+            case WellKnownPermissionGroup.WellKnownPermissionGroups.BOARD:
+                self.group.permissions.set(
+                    [
+                        Permission.objects.get(codename="add_membership"),
+                        Permission.objects.get(codename="view_membership"),
+                        Permission.objects.get(codename="add_localgroup"),
+                        Permission.objects.get(codename="change_localgroup"),
+                        Permission.objects.get(codename="delete_localgroup"),
+                        Permission.objects.get(codename="view_localgroup"),
+                        Permission.objects.get(codename="add_member"),
+                        Permission.objects.get(codename="change_member"),
+                        Permission.objects.get(codename="delete_member"),
+                        Permission.objects.get(codename="view_member"),
+                        Permission.objects.get(codename="add_supportmember"),
+                        Permission.objects.get(codename="change_supportmember"),
+                        Permission.objects.get(codename="delete_supportmember"),
+                        Permission.objects.get(codename="view_supportmember"),
+                        Permission.objects.get(codename="add_membershipapplication"),
+                        Permission.objects.get(codename="change_membershipapplication"),
+                        Permission.objects.get(codename="delete_membershipapplication"),
+                        Permission.objects.get(codename="view_membershipapplication"),
+                    ]
+                )
+                flags.members_become_staff = True
             case WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON:
                 self.group.permissions.set(
                     [
@@ -79,7 +103,6 @@ class WellKnownPermissionGroup(models.Model):
                     ]
                 )
                 flags.members_become_staff = True
-
         # save the flags
         flags.save()
 
