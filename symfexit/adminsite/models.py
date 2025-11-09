@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 class WellKnownPermissionGroup(models.Model):
     class WellKnownPermissionGroups(models.TextChoices):
         VIEW_ALL = "view_all", _("View all")
+        BOARD = "board", _("Board")
 
     code = models.CharField(
         unique=True,
@@ -52,6 +53,29 @@ class WellKnownPermissionGroup(models.Model):
                         Permission.objects.get(codename="view_member"),
                         Permission.objects.get(codename="view_supportmember"),
                         Permission.objects.get(codename="view_user"),
+                        Permission.objects.get(codename="view_membershipapplication"),
+                    ]
+                )
+            case WellKnownPermissionGroup.WellKnownPermissionGroups.BOARD:
+                self.group.permissions.set(
+                    [
+                        Permission.objects.get(codename="add_membership"),
+                        Permission.objects.get(codename="view_membership"),
+                        Permission.objects.get(codename="add_localgroup"),
+                        Permission.objects.get(codename="change_localgroup"),
+                        Permission.objects.get(codename="delete_localgroup"),
+                        Permission.objects.get(codename="view_localgroup"),
+                        Permission.objects.get(codename="add_member"),
+                        Permission.objects.get(codename="change_member"),
+                        Permission.objects.get(codename="delete_member"),
+                        Permission.objects.get(codename="view_member"),
+                        Permission.objects.get(codename="add_supportmember"),
+                        Permission.objects.get(codename="change_supportmember"),
+                        Permission.objects.get(codename="delete_supportmember"),
+                        Permission.objects.get(codename="view_supportmember"),
+                        Permission.objects.get(codename="add_membershipapplication"),
+                        Permission.objects.get(codename="change_membershipapplication"),
+                        Permission.objects.get(codename="delete_membershipapplication"),
                         Permission.objects.get(codename="view_membershipapplication"),
                     ]
                 )
