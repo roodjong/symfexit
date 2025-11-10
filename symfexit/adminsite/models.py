@@ -1,10 +1,13 @@
 from django.contrib.auth.models import Group, Permission
-from django.db import IntegrityError, models
+from django.db import IntegrityError, models, transaction
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 
 
 class WellKnownPermissionGroup(models.Model):
     class WellKnownPermissionGroups(models.TextChoices):
         VIEW_ALL = "view_all", "View all"
+        CONTACT_PERSON = "contact_person", "Contact person"
 
     code = models.CharField(
         unique=True,
@@ -50,6 +53,24 @@ class WellKnownPermissionGroup(models.Model):
                         Permission.objects.get(codename="view_membershipapplication"),
                     ]
                 )
+                try:
+                    flags = self.group.flags
+                except GroupFlags.DoesNotExist:
+                    flags = GroupFlags(group=self.group)
+                flags.members_become_staff = True
+
+            case WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON:
+                self.group.permissions.set(
+                    [
+                        Permission.objects.get(codename="view_localgroupmember"),
+                        Permission.objects.get(codename="change_localgroupmember"),
+                    ]
+                )
+                try:
+                    flags = self.group.flags
+                except GroupFlags.DoesNotExist:
+                    flags = GroupFlags(group=self.group)
+                flags.members_become_staff = True
 
 
 class GroupFlags(models.Model):
@@ -64,3 +85,15 @@ class GroupFlags(models.Model):
 
     def __str__(self):
         return f"Flags for group {self.group}"
+
+
+def reset_user_staff(group: Group):
+    for user in group.user_set.all():
+        user.set_staff_rights()
+        user.save()
+
+
+@receiver(post_save, sender=GroupFlags)
+@receiver(post_delete, sender=GroupFlags)
+def on_group_change(sender, instance: GroupFlags, **kwargs):
+    transaction.on_commit(lambda: reset_user_staff(instance.group))

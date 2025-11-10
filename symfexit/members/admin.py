@@ -372,3 +372,64 @@ class SupportMemberAdmin(UserAdmin):
 class LocalGroupAdmin(admin.ModelAdmin):
     exclude = ("permissions",)
     filter_horizontal = ("contact_people",)
+
+
+# Proxy for a distinct view that lists only the members of the groups for which you are the contact person on the admin page
+class LocalGroupMember(User):
+    class Meta(User.Meta):
+        verbose_name = _("local group member")
+        verbose_name_plural = _("local group members")
+        proxy = True
+
+
+@admin.register(LocalGroupMember)
+class LocalGroupMemberAdmin(UserAdmin):
+    list_display = ("first_name", "last_name", "cadre")
+    list_filter = (
+        LocalGroupFilter,
+        "cadre",
+    )
+    readonly_fields = [
+        "member_identifier",
+        "first_name",
+        "last_name",
+        "email",
+        "phone_number",
+        "address",
+        "postal_code",
+        "city",
+        "extra_information",
+    ]
+
+    fieldsets = (
+        (
+            _("Personal info"),
+            {
+                "fields": (
+                    "member_identifier",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "phone_number",
+                    "address",
+                    "postal_code",
+                    "city",
+                    "cadre",
+                )
+            },
+        ),
+    )
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .filter(member_type=User.MemberType.MEMBER)
+            .filter(groups__in=request.user.contact_person_for_groups.all())
+        )
+
+    def get_fieldsets(self, request, obj=None):
+        return self.fieldsets
+
+    def get_readonly_fields(self, request, obj=None):
+        return self.readonly_fields
