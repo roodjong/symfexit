@@ -97,9 +97,8 @@ class WellKnownPermissionGroup(models.Model):
             case WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON:
                 self.group.permissions.set(
                     [
-                        Permission.objects.get(codename="view_membership"),
-                        Permission.objects.get(codename="view_member"),
-                        Permission.objects.get(codename="change_member"),
+                        Permission.objects.get(codename="view_localgroupmember"),
+                        Permission.objects.get(codename="change_localgroupmember"),
                     ]
                 )
                 flags.members_become_staff = True
