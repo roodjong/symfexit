@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-15 15:33+0100\n"
+"POT-Creation-Date: 2025-11-15 15:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,6 +35,29 @@ msgstr "Logo van de organisatie"
 #| msgid "Email templates"
 msgid "Email template outlet"
 msgstr "E-mail sjablonen"
+
+#: symfexit/emails/_templates/emails/apply.py:14
+msgid "Apply template"
+msgstr "Aanmelden sjabloon"
+
+#: symfexit/emails/_templates/emails/apply.py:24
+#: symfexit/emails/_templates/emails/password_request.py:46
+msgid "First name of the member"
+msgstr "Voornaam van het lid"
+
+#: symfexit/emails/_templates/emails/password_request.py:16
+msgid "Request new password template"
+msgstr "Nieuw wachtwoord aanvragen sjabloon"
+
+#: symfexit/emails/_templates/emails/password_request.py:47
+#, fuzzy
+#| msgid "Full name of the member"
+msgid "Email address of the member"
+msgstr "Volledige naam van het lid"
+
+#: symfexit/emails/_templates/emails/password_request.py:48
+msgid "Url of the reset password link"
+msgstr "URL van de link voor het opnieuw instellen van het wachtwoord"
 
 #: symfexit/emails/_templates/layouts/base.py:7
 #, fuzzy
