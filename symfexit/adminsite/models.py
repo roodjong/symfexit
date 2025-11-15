@@ -1,10 +1,12 @@
 from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, models
+from django.utils.translation import gettext_lazy as _
 
 
 class WellKnownPermissionGroup(models.Model):
     class WellKnownPermissionGroups(models.TextChoices):
-        VIEW_ALL = "view_all", "View all"
+        VIEW_ALL = "view_all", _("View all")
+        BOARD = "board", _("Board")
 
     code = models.CharField(
         unique=True,
@@ -17,6 +19,10 @@ class WellKnownPermissionGroup(models.Model):
         on_delete=models.CASCADE,
         related_name="well_known_code",
     )
+
+    class Meta:
+        verbose_name = _("well known permission group")
+        verbose_name_plural = _("well known permission groups")
 
     def __str__(self):
         return self.code
@@ -50,6 +56,29 @@ class WellKnownPermissionGroup(models.Model):
                         Permission.objects.get(codename="view_membershipapplication"),
                     ]
                 )
+            case WellKnownPermissionGroup.WellKnownPermissionGroups.BOARD:
+                self.group.permissions.set(
+                    [
+                        Permission.objects.get(codename="add_membership"),
+                        Permission.objects.get(codename="view_membership"),
+                        Permission.objects.get(codename="add_localgroup"),
+                        Permission.objects.get(codename="change_localgroup"),
+                        Permission.objects.get(codename="delete_localgroup"),
+                        Permission.objects.get(codename="view_localgroup"),
+                        Permission.objects.get(codename="add_member"),
+                        Permission.objects.get(codename="change_member"),
+                        Permission.objects.get(codename="delete_member"),
+                        Permission.objects.get(codename="view_member"),
+                        Permission.objects.get(codename="add_supportmember"),
+                        Permission.objects.get(codename="change_supportmember"),
+                        Permission.objects.get(codename="delete_supportmember"),
+                        Permission.objects.get(codename="view_supportmember"),
+                        Permission.objects.get(codename="add_membershipapplication"),
+                        Permission.objects.get(codename="change_membershipapplication"),
+                        Permission.objects.get(codename="delete_membershipapplication"),
+                        Permission.objects.get(codename="view_membershipapplication"),
+                    ]
+                )
 
 
 class GroupFlags(models.Model):
@@ -58,9 +87,14 @@ class GroupFlags(models.Model):
         on_delete=models.CASCADE,
         related_name="flags",
     )
+
     members_become_staff = models.BooleanField(
-        help_text="Designates whether members of this group can log in to the administration"
+        _("Members become staff"),
+        help_text=_("Designates whether members of this group can log in to the administration"),
     )
+
+    class Meta:
+        verbose_name = _("group flags")
 
     def __str__(self):
         return f"Flags for group {self.group}"
