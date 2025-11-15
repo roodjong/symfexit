@@ -118,6 +118,20 @@ This will start the webserver, the worker for the background tasks, and the watc
 Whenever you make changes to the Python code, the server will automatically reload.
 The watcher for Tailwind will also automatically rebuild the CSS.
 
+## Email
+
+To test emails and how they look, you can also use mailhog.
+Run mailhog in a docker and approach it on localhost:8025
+```bash
+docker run -p 8025:8025 -p 1025:1025 mailhog/mailhog
+```
+And add these config in settings.py
+```python
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_URL = "127.0.0.1"
+EMAIL_PORT = 1025
+```
+
 ## Localization
 
 All strings are currently in English by default, and have localizations to Dutch.
