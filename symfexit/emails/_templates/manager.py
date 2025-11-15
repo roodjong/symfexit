@@ -3,6 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from symfexit.emails._templates.base import BaseEmailComponent, WrapperLayout
+from symfexit.emails._templates.emails.membership_application import MembershipApplicationEmail
+from symfexit.emails._templates.emails.password_request import PasswordResetEmail
+from symfexit.emails._templates.layouts.base import BaseLayout
 
 if TYPE_CHECKING:
     from .base import BodyTemplate
@@ -24,8 +27,8 @@ class BaseManager:
 
 
 class EmailTemplateManager(BaseManager):
-    _registry: list[type[BodyTemplate]] = []
+    _registry: list[type[BodyTemplate]] = [MembershipApplicationEmail, PasswordResetEmail]
 
 
 class EmailLayoutManager(BaseManager):
-    _registry: list[type[WrapperLayout]] = []
+    _registry: list[type[WrapperLayout]] = [BaseLayout]

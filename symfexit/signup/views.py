@@ -6,6 +6,8 @@ from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import FormView
 
+from symfexit.emails._templates.emails.membership_application import MembershipApplicationEmail
+from symfexit.emails._templates.render import send_email
 from symfexit.payments.models import Order
 from symfexit.payments.registry import payments_registry
 from symfexit.signup.forms import SignupForm
@@ -22,6 +24,9 @@ class MemberSignup(FormView):
     def form_valid(self, form):
         logout(self.request)
         application = form.save()
+        send_email(
+            MembershipApplicationEmail({"firstname": application.first_name}), application.email
+        )
         return HttpResponseRedirect(reverse("signup:payment", args=[application.eid]))
 
 
