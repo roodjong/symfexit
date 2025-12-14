@@ -139,11 +139,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         contact_person_group = WellKnownPermissionGroup.get_or_create(
             WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON
         )
-        is_contact_person = self.contact_person_for_groups.count() >= 1
-        if is_contact_person:
-            contact_person_group.group.user_set.add(self)
-        else:
-            contact_person_group.group.user_set.remove(self)
+        try:
+            is_contact_person = self.contact_person_for_groups.count() >= 1
+            if is_contact_person:
+                contact_person_group.group.user_set.add(self)
+            else:
+                contact_person_group.group.user_set.remove(self)
+        except ValueError:
+            self.is_staff = self.is_superuser
+            return self.is_staff
 
         # set user as staff, if any group requires it
         for group in self.groups.all():
@@ -154,8 +158,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             except GroupFlags.DoesNotExist:
                 pass
         else:
-            self.is_staff = False
+            self.is_staff = self.is_superuser
         return self.is_staff
+
+    def save(self, *args, **kwargs):
+        self.set_staff_rights()
+        super().save(*args, **kwargs)
 
 
 class LocalGroup(Group):
