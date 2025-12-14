@@ -1,12 +1,12 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect, render, get_object_or_404, redirect
-from django.views.generic import ListView
-from django.utils.timezone import now
-from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.utils.timezone import now
+from django.views.generic import ListView
 
-from symfexit.members.models import User
 from symfexit.events.models import Event
+from symfexit.members.models import User
 
 # Create your views here.
 

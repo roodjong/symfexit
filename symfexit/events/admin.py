@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+
 from symfexit.events.models import Event
 
 # Register your models here.
