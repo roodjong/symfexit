@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-14 18:16+0100\n"
+"POT-Creation-Date: 2025-12-14 18:48+0100\n"
 "PO-Revision-Date: 2025-08-25 20:02+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr "Rechtengroep"
 msgid "Permission Groups"
 msgstr "Rechtengroepen"
 
-#: symfexit/members/admin.py:37 symfexit/members/models.py:86
+#: symfexit/members/admin.py:37 symfexit/members/models.py:88
 msgid "is registered"
 msgstr "is ingeschreven"
 
@@ -41,7 +41,7 @@ msgstr "Nee"
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:65 symfexit/members/models.py:154
+#: symfexit/members/admin.py:65 symfexit/members/models.py:164
 msgid "local groups"
 msgstr "groepen"
 
@@ -51,7 +51,7 @@ msgstr "groepen"
 msgid "permission groups"
 msgstr "Rechtengroepen"
 
-#: symfexit/members/admin.py:98
+#: symfexit/members/admin.py:98 symfexit/members/admin.py:408
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
@@ -79,11 +79,11 @@ msgstr "steunlid"
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:380
+#: symfexit/members/admin.py:382
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:381
+#: symfexit/members/admin.py:383
 msgid "local group members"
 msgstr "groepsleden"
 

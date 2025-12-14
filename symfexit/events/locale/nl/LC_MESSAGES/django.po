@@ -28,7 +28,7 @@ msgstr "naam"
 
 #: symfexit/events/models.py:9
 msgid "organiser"
-msgstr "organiseerder"
+msgstr "organisator"
 
 #: symfexit/events/models.py:10
 msgid "start date"
@@ -68,7 +68,7 @@ msgstr "Aanmelden"
 
 #: symfexit/events/templates/events/events.html:5
 msgid "These are the upcoming events."
-msgstr "Dit zijn de aankomenden evenementen."
+msgstr "Dit zijn de aankomende evenementen."
 
 #: symfexit/events/templates/events/events.html:11
 msgid "Currently, there are no planned events."
