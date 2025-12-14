@@ -61,3 +61,38 @@ msgstr "Bekijk een %s"
 #: symfexit/adminsite/django_overrides.py:6
 msgid "Homepage"
 msgstr "Homepagina"
+
+#: symfexit/adminsite/models.py:8
+#, fuzzy
+#| msgid "View %s"
+msgid "View all"
+msgstr "Bekijk alles"
+
+#: symfexit/adminsite/models.py:9
+msgid "Board"
+msgstr "Bestuur"
+
+#: symfexit/adminsite/models.py:24
+msgid "well known permission group"
+msgstr "bekende rechtengroep"
+
+#: symfexit/adminsite/models.py:25
+msgid "well known permission groups"
+msgstr "bekende rechtengroepen"
+
+#: symfexit/adminsite/models.py:92
+msgid "Members become staff"
+msgstr "Leden worden staf"
+
+#: symfexit/adminsite/models.py:93
+msgid ""
+"Designates whether members of this group can log in to the administration"
+msgstr ""
+"Geeft aan of leden van deze groep kunnen inloggen op dit administratie paneel"
+
+#: symfexit/adminsite/models.py:97
+msgid "group flags"
+msgstr "groep markeringen"
+
+#~ msgid "group flag"
+#~ msgstr "groep markering"

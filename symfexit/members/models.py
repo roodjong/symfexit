@@ -8,6 +8,8 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from symfexit.adminsite.models import GroupFlags, WellKnownPermissionGroup
+
 
 def generate_member_number():
     largest_member_number = User.objects.all().order_by("-member_identifier").first()
@@ -133,18 +135,26 @@ class User(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     def set_staff_rights(self) -> bool:
-        if self.is_superuser:
-            # This should already be set to True
-            self.is_staff = True
-            return True
+        # Add/remove user to contact person permission group
+        contact_person_group = WellKnownPermissionGroup.get_or_create(
+            WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON
+        )
+        is_contact_person = self.contact_person_for_groups.count() >= 1
+        if is_contact_person:
+            contact_person_group.group.user_set.add(self)
+        else:
+            contact_person_group.group.user_set.remove(self)
 
-        # Staff via group permission
-        staff_via_group = self.groups.filter(flags__members_become_staff=True).exists()
-
-        # Staff via being contact person
-        staff_via_localgroup = self.contact_person_for_groups.count() >= 1
-
-        self.is_staff = staff_via_group or staff_via_localgroup
+        # set user as staff, if any group requires it
+        for group in self.groups.all():
+            try:
+                if group.flags.members_become_staff:
+                    self.is_staff = True
+                    break
+            except GroupFlags.DoesNotExist:
+                pass
+        else:
+            self.is_staff = False
         return self.is_staff
 
 
@@ -170,7 +180,7 @@ class LocalGroup(Group):
 # START Signals for is_staff updating
 
 
-def update_user_staff_rights(users):
+def update_user_staff_rights(users: list[User]):
     for user in users:
         user.set_staff_rights()
     User.objects.bulk_update(users, ["is_staff"])
@@ -181,8 +191,10 @@ def user_groups_changed(sender, instance, action, pk_set, **kwargs):
     if action not in ["post_add", "post_remove", "post_clear"]:
         return
 
-    # instance is the user being modified
-    update_user_staff_rights([instance])
+    # Ensure instance is a User object and not a group
+    if isinstance(instance, User):
+        # Call your function to update user rights
+        update_user_staff_rights([instance])
 
 
 @receiver(m2m_changed, sender=LocalGroup.contact_people.through)

@@ -1,0 +1,113 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-14 14:39+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: symfexit/emails/_templates/base.py:36
+msgid "Main title of this site"
+msgstr "Hoofdtitel van deze site"
+
+#: symfexit/emails/_templates/base.py:37
+msgid "Main site of the organisation"
+msgstr "Hoofdsite van de organisatie"
+
+#: symfexit/emails/_templates/base.py:40
+msgid "Organisation logo"
+msgstr "Logo van de organisatie"
+
+#: symfexit/emails/_templates/base.py:125
+#, fuzzy
+#| msgid "Email templates"
+msgid "Email template outlet"
+msgstr "E-mail sjablonen"
+
+#: symfexit/emails/_templates/emails/membership_application.py:14
+msgid "Membership application template"
+msgstr "Lidmaatschapsverzoek sjabloon"
+
+#: symfexit/emails/_templates/emails/membership_application.py:24
+#: symfexit/emails/_templates/emails/password_request.py:46
+msgid "First name of the member"
+msgstr "Voornaam van het lid"
+
+#: symfexit/emails/_templates/emails/password_request.py:16
+msgid "Request new password template"
+msgstr "Nieuw wachtwoord aanvragen sjabloon"
+
+#: symfexit/emails/_templates/emails/password_request.py:47
+#, fuzzy
+#| msgid "Full name of the member"
+msgid "Email address of the member"
+msgstr "Volledige naam van het lid"
+
+#: symfexit/emails/_templates/emails/password_request.py:48
+msgid "Url of the reset password link"
+msgstr "URL van de link voor het opnieuw instellen van het wachtwoord"
+
+#: symfexit/emails/_templates/layouts/base.py:7
+#, fuzzy
+#| msgid "email layout"
+msgid "layout"
+msgstr "e-mail lay-out"
+
+#: symfexit/emails/admin.py:73
+#, python-format
+msgid "The following required keys are missing: %s"
+msgstr ""
+
+#: symfexit/emails/admin.py:78
+#, python-format
+msgid "The following keys are not recognised: %s"
+msgstr ""
+
+#: symfexit/emails/admin.py:81
+msgid "Allowed keys:"
+msgstr "Toegestane sleutels"
+
+#: symfexit/emails/apps.py:8
+msgid "Email templates"
+msgstr "E-mail sjablonen"
+
+#: symfexit/emails/models.py:12 symfexit/emails/models.py:43
+msgid "template"
+msgstr "sjabloon"
+
+#: symfexit/emails/models.py:21 symfexit/emails/models.py:54
+msgid "body"
+msgstr "inhoud"
+
+#: symfexit/emails/models.py:24 symfexit/emails/models.py:57
+msgid "text body"
+msgstr "tekstinhoud"
+
+#: symfexit/emails/models.py:25 symfexit/emails/models.py:58
+msgid "Text body is used for people who don't allow html in their emails."
+msgstr ""
+"Tekstinhoud wordt gebruikt voor mensen die geen HTML in hun e-mails toestaan."
+
+#: symfexit/emails/models.py:40
+msgid "email layout"
+msgstr "e-mail lay-out"
+
+#: symfexit/emails/models.py:51
+msgid "from email"
+msgstr "afzender"
+
+#: symfexit/emails/models.py:52
+msgid "subject"
+msgstr "onderwerp"

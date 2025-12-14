@@ -22,6 +22,7 @@ from django.urls import include, path
 
 # from symfexit.adminsite.admin import admin_site
 from symfexit.root.utils import enable_if
+from symfexit.root.views import CustomPasswordResetView
 
 try:
     import django_browser_reload  # noqa
@@ -81,3 +82,8 @@ urlpatterns = (
         + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
     )
 )
+
+# Prepend the custom view to override the default password_reset URL
+urlpatterns = [
+    path("accounts/password_reset/", CustomPasswordResetView.as_view(), name="password_reset"),
+] + list(urlpatterns)  # keep the rest of the original list intact
