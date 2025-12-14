@@ -1,7 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404, redirect
 from django.views.generic import ListView
 from django.utils.timezone import now
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 
 from symfexit.members.models import User
 from symfexit.events.models import Event
@@ -21,3 +23,27 @@ class Events(LoginRequiredMixin, ListView):
         if request.user.is_authenticated and request.user.member_type != User.MemberType.MEMBER:
             return redirect("members:memberdata")
         return super().dispatch(request, args, kwargs)
+
+
+@login_required
+def signup_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    # Only members can sign up
+    if request.user.member_type != request.user.MemberType.MEMBER:
+        return redirect("members:memberdata")
+
+    event.attendees.add(request.user)
+    return redirect(reverse("events:events"))
+
+
+@login_required
+def unsign_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    # Only members can remove themselves
+    if request.user.member_type != request.user.MemberType.MEMBER:
+        return redirect("members:memberdata")
+
+    event.attendees.remove(request.user)
+    return redirect(reverse("events:events"))

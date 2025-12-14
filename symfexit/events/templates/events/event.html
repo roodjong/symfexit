@@ -1,6 +1,21 @@
 {% load i18n %}
+<style>
+    h2 { font-weight: bold; text-transform: uppercase; }
+    button {
+        background: var(--color-primary);
+        padding: 10px;
+        margin-bottom: calc(var(--spacing)*6);
+        color: var(--color-white);
+        transform: skewX(-7deg) scale(1);
+        transition: transform 0.3s ease-in-out;
+    }
+    button:hover {
+        transform: skewX(0deg) scale(1.2);
+        cursor: pointer;
+    }
+</style>
 <div>
-    <h2 style="font-weight: bold; text-transform: uppercase; margin: unset;">
+    <h2 style="margin: unset;">
         {{ event.event_name }}</h2>
     <p style="font-size: smaller; margin: unset;">
         {{ event.event_date|date:"j F Y, H:i" }}
@@ -9,4 +24,17 @@
         {% translate "Organised by " %}{{ event.event_organiser }}
     </p>
     {{ event.event_desc|linebreaks }}
+    {% if user.is_authenticated and user.member_type == user.MemberType.MEMBER %}
+        {% if user in event.attendees.all %}
+            <form method="post" action="{% url 'events:unsign_event' event.id %}">
+                {% csrf_token %}
+                <button type="submit" style="">{% translate "Cancel attendance"%}</button>
+            </form>
+        {% else %}
+            <form method="post" action="{% url 'events:signup_event' event.id %}">
+                {% csrf_token %}
+                <button type="submit">{% translate "Sign up"%}</button>
+            </form>
+        {% endif %}
+    {% endif %}
 </div>
