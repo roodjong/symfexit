@@ -1,0 +1,12 @@
+{% load i18n %}
+<div>
+    <h2 style="font-weight: bold; text-transform: uppercase; margin: unset;">
+        {{ event.event_name }}</h2>
+    <p style="font-size: smaller; margin: unset;">
+        {{ event.event_date|date:"j F Y, H:i" }}
+    </p>
+    <p style="color: var(--color-primary); margin-bottom: var(--spacing);">
+        {% translate "Organised by " %}{{ event.event_organiser }}
+    </p>
+    {{ event.event_desc|linebreaks }}
+</div>

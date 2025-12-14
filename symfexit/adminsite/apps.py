@@ -15,6 +15,6 @@ class AdminSiteConfig(AppConfig):
 
     def menu_items(self, request):
         if request.user.is_staff:
-            return [{"name": _("Administration"), "viewname": "admin:index", "order": 3}]
+            return [{"name": _("Administration"), "viewname": "admin:index", "order": 98}]
         else:
             return []
