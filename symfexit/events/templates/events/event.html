@@ -19,6 +19,9 @@
         {{ event.event_name }}</h2>
     <p style="font-size: smaller; margin: unset;">
         {{ event.event_date|date:"j F Y, H:i" }}
+        {% if event.event_end %}
+            until {{ event.event_end|date:"j F Y, H:i" }}
+        {% endif %}
     </p>
     <p style="color: var(--color-primary); margin-bottom: var(--spacing);">
         {% translate "Organised by " %}{{ event.event_organiser }}

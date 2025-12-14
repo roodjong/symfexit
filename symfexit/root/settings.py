@@ -186,7 +186,6 @@ TENANT_APPS = [
     "django_drf_filepond",
     # our own apps
     "symfexit.theme",
-    "symfexit.events",
     # Order of the adminsite apps is important as MyAdminConfig points to the
     # django.contrib.admin, which contains translations which should be
     # overwritten by our own translations in AdminSiteConfig
@@ -201,6 +200,7 @@ TENANT_APPS = [
     "symfexit.signup.apps.SignupConfig",
     "symfexit.membership.apps.MembershipConfig",
     "symfexit.adminsite.apps.MyAdminConfig",
+    "symfexit.events.apps.EventsConfig",
 ]
 
 if SINGLE_SITE:

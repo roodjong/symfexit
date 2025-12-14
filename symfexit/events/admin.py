@@ -3,13 +3,11 @@ from django.utils.html import format_html
 
 from symfexit.events.models import Event
 
-# Register your models here.
-
 
 @admin.register(Event)
 class EventsAdmin(admin.ModelAdmin):
     readonly_fields = ("attendees_display",)
-    list_display = ("event_name", "event_date", "event_organiser")
+    list_display = ("event_name", "event_date", "event_end", "event_organiser")
 
     def attendees_display(self, obj):
         attendees = obj.attendees.all().order_by("email")
