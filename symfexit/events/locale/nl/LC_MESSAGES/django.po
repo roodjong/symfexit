@@ -20,7 +20,7 @@ msgstr ""
 #: symfexit/events/apps.py:8 symfexit/events/apps.py:14
 #: symfexit/events/templates/events/events.html:3
 msgid "Events"
-msgstr "Evenement"
+msgstr "Evenementen"
 
 #: symfexit/events/models.py:8
 msgid "name"
