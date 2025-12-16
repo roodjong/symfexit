@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-09 16:39+0100\n"
+"POT-Creation-Date: 2025-12-14 18:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,3 @@ msgstr "taak"
 #: symfexit/worker/models.py:36
 msgid "tasks"
 msgstr "taken"
-
-#: symfexit/worker/models.py:41
-msgid "(done)"
-msgstr ""

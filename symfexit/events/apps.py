@@ -2,15 +2,15 @@ from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
 
 
-class DocumentsConfig(AppConfig):
+class EventsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "symfexit.documents"
-    verbose_name = _("Documents")
+    name = "symfexit.events"
+    verbose_name = _("Events")
 
     def menu_items(self, request):
         from symfexit.members.models import User  # noqa:PLC0415
 
         if request.user.member_type == User.MemberType.MEMBER:
-            return [{"name": _("Documents"), "viewname": "documents:documents", "order": 3}]
+            return [{"name": _("Events"), "viewname": "events:events", "order": 2}]
         else:
             return []

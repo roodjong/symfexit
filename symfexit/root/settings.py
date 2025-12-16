@@ -202,6 +202,7 @@ TENANT_APPS = [
     "symfexit.signup.apps.SignupConfig",
     "symfexit.membership.apps.MembershipConfig",
     "symfexit.adminsite.apps.MyAdminConfig",
+    "symfexit.events.apps.EventsConfig",
 ]
 
 if SINGLE_SITE:

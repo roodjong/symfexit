@@ -1,0 +1,75 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-14 18:16+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: symfexit/events/apps.py:8 symfexit/events/apps.py:14
+#: symfexit/events/templates/events/events.html:3
+msgid "Events"
+msgstr "Evenementen"
+
+#: symfexit/events/models.py:8
+msgid "name"
+msgstr "naam"
+
+#: symfexit/events/models.py:9
+msgid "organiser"
+msgstr "organisator"
+
+#: symfexit/events/models.py:10
+msgid "start date"
+msgstr "begindatum"
+
+#: symfexit/events/models.py:11
+msgid "end date"
+msgstr "einddatum"
+
+#: symfexit/events/models.py:12
+msgid "description"
+msgstr "beschrijving"
+
+#: symfexit/events/models.py:17
+msgid "attendees"
+msgstr "aanwezigen"
+
+#: symfexit/events/models.py:22
+msgid "event"
+msgstr "evenement"
+
+#: symfexit/events/models.py:23
+msgid "events"
+msgstr "evenementen"
+
+#: symfexit/events/templates/events/event.html:27
+msgid "Organised by "
+msgstr "Georganiseerd door "
+
+#: symfexit/events/templates/events/event.html:34
+msgid "Cancel attendance"
+msgstr "Aanmelding annuleren"
+
+#: symfexit/events/templates/events/event.html:39
+msgid "Sign up"
+msgstr "Aanmelden"
+
+#: symfexit/events/templates/events/events.html:5
+msgid "These are the upcoming events."
+msgstr "Dit zijn de aankomende evenementen."
+
+#: symfexit/events/templates/events/events.html:11
+msgid "Currently, there are no planned events."
+msgstr "Op dit moment zijn er geen evenementen gepland."
