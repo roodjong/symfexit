@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-09 16:57+0100\n"
+"POT-Creation-Date: 2025-12-14 18:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,35 +62,35 @@ msgstr "Bekijk een %s"
 msgid "Homepage"
 msgstr "Homepagina"
 
-#: symfexit/adminsite/models.py:8
+#: symfexit/adminsite/models.py:10
 #, fuzzy
 #| msgid "View %s"
 msgid "View all"
 msgstr "Bekijk alles"
 
-#: symfexit/adminsite/models.py:9
+#: symfexit/adminsite/models.py:12
 msgid "Board"
 msgstr "Bestuur"
 
-#: symfexit/adminsite/models.py:24
+#: symfexit/adminsite/models.py:27
 msgid "well known permission group"
 msgstr "bekende rechtengroep"
 
-#: symfexit/adminsite/models.py:25
+#: symfexit/adminsite/models.py:28
 msgid "well known permission groups"
 msgstr "bekende rechtengroepen"
 
-#: symfexit/adminsite/models.py:92
+#: symfexit/adminsite/models.py:117
 msgid "Members become staff"
 msgstr "Leden worden staf"
 
-#: symfexit/adminsite/models.py:93
+#: symfexit/adminsite/models.py:118
 msgid ""
 "Designates whether members of this group can log in to the administration"
 msgstr ""
 "Geeft aan of leden van deze groep kunnen inloggen op dit administratie paneel"
 
-#: symfexit/adminsite/models.py:97
+#: symfexit/adminsite/models.py:122
 msgid "group flags"
 msgstr "groep markeringen"
 

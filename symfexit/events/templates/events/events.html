@@ -1,0 +1,13 @@
+{% extends "menupage.html" %}{% load i18n %} {% block main %}
+<div class="homepage">
+<h1>{% translate 'Events' %}</h1>
+{% if events %}
+    <p>{% translate "These are the upcoming events." %}</p>
+
+    {% for event in events %}
+        {% include "events/event.html" with event=event %}
+    {% endfor %}
+{% else %}
+    <p>{% translate "Currently, there are no planned events." %}</p>
+{% endif %}
+{% endblock main %}
