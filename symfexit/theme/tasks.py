@@ -38,7 +38,7 @@ def rebuild_theme(*, tenant: Client):
             "--no-install",
             "@tailwindcss/cli",
             "-i",
-            input_css,
+            str(input_css),
             "-o",
             str(settings.DYNAMIC_THEME_ROOT / output_name),
             "--minify",
