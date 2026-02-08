@@ -37,7 +37,7 @@ def rebuild_theme(*, tenant: Client):
             [
                 NPX_COMMAND,
                 "--no-install",
-                "tailwindcss",
+                "@tailwindcss/cli",
                 "--",
                 "--minify",
                 "-i",
