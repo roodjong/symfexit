@@ -7,6 +7,7 @@ import magic
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, connection, transaction
 from django.db.models import Count, Q
 from django.db.models.functions import Lower
@@ -331,14 +332,28 @@ class Documents(LoginRequiredMixin, TemplateView):
             return redirect("members:memberdata")
 
         sorting, sorting_query = get_sorting(request)
-        if request.GET.get("edit") and not (
-            request.user.has_perm("documents.change_file")
-            and request.user.has_perm("documents.change_directory")
+        if (
+            request.GET.get("edit")
+            and not (
+                request.user.has_perm("documents.change_file")
+                and request.user.has_perm("documents.change_directory")
+                or is_contact_person_of_folder(  # We look at the parent on purpose, because we do not want the groups to edit the name of their assigned folder
+                    Directory.objects.filter(id=self.kwargs.get("slug", None)).first(),
+                    self.request.user,
+                )
+            )
         ):
             return redirect(directory_url(self.kwargs.get("slug", None), sorting=sorting))
-        if request.GET.get("move") and not (
-            request.user.has_perm("documents.change_file")
-            and request.user.has_perm("documents.change_directory")
+        if (
+            request.GET.get("move")
+            and not (
+                request.user.has_perm("documents.change_file")
+                and request.user.has_perm("documents.change_directory")
+                or is_contact_person_of_folder(  # We look at the parent on purpose, because we do not want the groups to move their assigned folder
+                    Directory.objects.filter(id=self.kwargs.get("slug", None)).first(),
+                    self.request.user,
+                )
+            )
         ):
             return redirect(directory_url(self.kwargs.get("slug", None), sorting=sorting))
         return super().dispatch(request, args, kwargs)
@@ -648,7 +663,7 @@ def edit(request):
 
 @documents_permission_required(
     ("documents.change_directory", "documents.change_directory"),
-    directory_parameter=("node_id", "newparent_id"),
+    directory_parameter="node_id",
     raise_exception=True,
 )
 def move(request):
@@ -682,6 +697,9 @@ def move(request):
             _("You cannot move a directory into itself."),
         )
         return redirect(directory_url(node.parent, sorting=sorting, move_mode=node_id))
+
+    if not is_contact_person_of_folder(newparent, request.user):
+        raise PermissionDenied
 
     try:
         node.parent = newparent
