@@ -5,7 +5,7 @@ from uuid import UUID
 import commonmark
 import magic
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError, connection, transaction
 from django.db.models import Count, Q
@@ -19,6 +19,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
 from django_drf_filepond.models import TemporaryUpload
 
+from symfexit.documents.decorators import documents_permission_required, is_contact_person_of_folder
 from symfexit.documents.models import Directory, File, FileNode
 from symfexit.members.models import User
 
@@ -217,6 +218,7 @@ class Documents(LoginRequiredMixin, TemplateView):
 
         any_trash = FileNode.objects.filter(trashed_at__isnull=False).count() > 0
         parent_in_trash = in_trash(parent)
+        b_is_contact_person_of_folder = is_contact_person_of_folder(parent, self.request.user)
 
         context.update(
             {
@@ -227,26 +229,42 @@ class Documents(LoginRequiredMixin, TemplateView):
                 "files": files,
                 "breadcrumbs": build_breadcrumbs(Directory.objects.filter(id=slug).first()),
                 "in_trash": parent_in_trash,
-                "has_add_directory_permission": self.request.user.has_perm(
-                    "documents.add_directory"
+                "has_add_directory_permission": (
+                    self.request.user.has_perm("documents.add_directory")
+                    or b_is_contact_person_of_folder
                 )
                 and not parent_in_trash,
-                "has_add_file_permission": self.request.user.has_perm("documents.add_file")
+                "has_add_file_permission": (
+                    self.request.user.has_perm("documents.add_file")
+                    or b_is_contact_person_of_folder
+                )
                 and not parent_in_trash,
-                "has_rename_permission": self.request.user.has_perm("documents.change_file")
-                and self.request.user.has_perm("documents.change_directory"),
-                "has_move_permission": self.request.user.has_perm("documents.change_file")
-                and self.request.user.has_perm("documents.change_directory"),
+                "has_rename_permission": (
+                    self.request.user.has_perm("documents.change_file")
+                    and self.request.user.has_perm("documents.change_directory")
+                )
+                or b_is_contact_person_of_folder,
+                "has_move_permission": (
+                    self.request.user.has_perm("documents.change_file")
+                    and self.request.user.has_perm("documents.change_directory")
+                )
+                or b_is_contact_person_of_folder,
                 "has_delete_permission": not parent_in_trash
-                and self.request.user.has_perm("documents.delete_file")
-                and self.request.user.has_perm("documents.delete_directory"),
+                and (
+                    (
+                        self.request.user.has_perm("documents.delete_file")
+                        and self.request.user.has_perm("documents.delete_directory")
+                    )
+                    or b_is_contact_person_of_folder
+                ),
                 "show_trashcan": any_trash,
                 "standard_query": sorting_query,
                 "buttons_active": not (edit_mode or move_mode),
                 "show_buttons": self.request.user.has_perm("documents.change_directory")
                 or self.request.user.has_perm("documents.change_file")
                 or self.request.user.has_perm("documents.delete_directory")
-                or self.request.user.has_perm("documents.delete_file"),
+                or self.request.user.has_perm("documents.delete_file")
+                or b_is_contact_person_of_folder,
                 "show_trashed_at": False,
                 "name_url": directory_url(
                     self.url_base(),
@@ -490,7 +508,9 @@ def is_image(content_type):
     return content_type.startswith("image/")
 
 
-@permission_required("documents.add_directory", raise_exception=True)
+@documents_permission_required(
+    "documents.add_directory", directory_parameter="parent_id", raise_exception=True
+)
 def new_directory(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -505,7 +525,7 @@ def new_directory(request):
                 messages.ERROR,
                 _("Cannot add a folder to a folder that is in the trashcan"),
             )
-        return redirect(directory_url(parent_id))
+            return redirect(directory_url(parent_id))
     try:
         directory = Directory.objects.create(name=name, parent=parent)
     except IntegrityError:
@@ -518,7 +538,9 @@ def new_directory(request):
     return redirect(directory_url(directory.id))
 
 
-@permission_required("documents.add_file", raise_exception=True)
+@documents_permission_required(
+    "documents.add_file", directory_parameter="parent_id", raise_exception=True
+)
 def upload_files(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -585,8 +607,11 @@ def upload_files(request):
     return redirect(directory_url(parent_id))
 
 
-@permission_required("documents.change_directory", raise_exception=True)
-@permission_required("documents.change_file", raise_exception=True)
+@documents_permission_required(
+    ("documents.change_directory", "documents.change_file"),
+    directory_parameter="node_id",
+    raise_exception=True,
+)
 def edit(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -621,8 +646,11 @@ def edit(request):
     return redirect(directory_url(node.parent.id if node.parent else None, sorting=sorting))
 
 
-@permission_required("documents.change_directory", raise_exception=True)
-@permission_required("documents.change_file", raise_exception=True)
+@documents_permission_required(
+    ("documents.change_directory", "documents.change_directory"),
+    directory_parameter=("node_id", "newparent_id"),
+    raise_exception=True,
+)
 def move(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -669,8 +697,11 @@ def move(request):
     return redirect(directory_url(newparent.id if newparent else None, sorting=sorting))
 
 
-@permission_required("documents.delete_directory", raise_exception=True)
-@permission_required("documents.delete_file", raise_exception=True)
+@documents_permission_required(
+    ("documents.delete_directory", "documents.delete_file"),
+    directory_parameter="node_id",
+    raise_exception=True,
+)
 def trash(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

@@ -1,3 +1,4 @@
+from tabnanny import verbose
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.filters import SimpleListFilter
@@ -20,7 +21,9 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
 
-from symfexit.members.models import LocalGroup, User, generate_member_number
+from symfexit.members.models import LocalGroup, WorkGroup, User, generate_member_number
+from symfexit.adminsite.admin import GroupFlagsInline
+
 
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")
@@ -372,6 +375,13 @@ class SupportMemberAdmin(UserAdmin):
 class LocalGroupAdmin(admin.ModelAdmin):
     exclude = ("permissions",)
     filter_horizontal = ("contact_people",)
+
+
+@admin.register(WorkGroup)
+class WorkGroupAdmin(admin.ModelAdmin):
+    exclude = ("permissions",)
+    inlines = [GroupFlagsInline]
+    filter_horizontal = ("wg_contact_people",)
 
 
 # Proxy for a distinct view that lists only the members of the groups for which you are the contact person on the admin page

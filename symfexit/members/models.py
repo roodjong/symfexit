@@ -184,6 +184,22 @@ class LocalGroup(Group):
     )
 
 
+class WorkGroup(Group):
+    class Meta:
+        verbose_name = _("work group")
+        verbose_name_plural = _("work groups")
+
+    def __str__(self):
+        return self.name
+
+    wg_contact_people = models.ManyToManyField(
+        User,
+        related_name="contact_person_for_working_groups",
+        verbose_name=_("contact people"),
+        blank=True,
+    )
+
+
 # START Signals for is_staff updating
 
 
