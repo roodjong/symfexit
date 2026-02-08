@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='WorkGroup',
             fields=[
                 ('group_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='auth.group')),
-                ('wg_contact_people', models.ManyToManyField(blank=True, related_name='contact_person_for_working_groups', to=settings.AUTH_USER_MODEL, verbose_name='contact people')),
+                ('workgroup_contact_people', models.ManyToManyField(blank=True, related_name='contact_person_for_working_groups', to=settings.AUTH_USER_MODEL, verbose_name='contact people')),
             ],
             options={
                 'verbose_name': 'work group',

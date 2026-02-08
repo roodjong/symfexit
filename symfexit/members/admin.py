@@ -381,7 +381,7 @@ class LocalGroupAdmin(admin.ModelAdmin):
 class WorkGroupAdmin(admin.ModelAdmin):
     exclude = ("permissions",)
     inlines = [GroupFlagsInline]
-    filter_horizontal = ("wg_contact_people",)
+    filter_horizontal = ("workgroup_contact_people",)
 
 
 # Proxy for a distinct view that lists only the members of the groups for which you are the contact person on the admin page

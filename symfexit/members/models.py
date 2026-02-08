@@ -192,7 +192,7 @@ class WorkGroup(Group):
     def __str__(self):
         return self.name
 
-    wg_contact_people = models.ManyToManyField(
+    workgroup_contact_people = models.ManyToManyField(
         User,
         related_name="contact_person_for_working_groups",
         verbose_name=_("contact people"),
