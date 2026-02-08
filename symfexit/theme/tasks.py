@@ -33,18 +33,21 @@ def rebuild_theme(*, tenant: Client):
     version = get_time_millis()
     output_name = get_theme_filename(tenant, version)
     try:
+        command = [
+            NPX_COMMAND,
+            "--no-install",
+            "@tailwindcss/cli",
+            "-i",
+            input_css,
+            "-o",
+            settings.DYNAMIC_THEME_ROOT / output_name,
+            "--minify",
+        ]
+        working_dir = settings.DYNAMIC_THEME_WORKING_DIR
+        logger.log(f"Running command: {' '.join(command)} in {working_dir}")
         stdout = subprocess.check_output(
-            [
-                NPX_COMMAND,
-                "--no-install",
-                "@tailwindcss/cli",
-                "-i",
-                input_css,
-                "-o",
-                settings.DYNAMIC_THEME_ROOT / output_name,
-                "--minify",
-            ],
-            cwd=settings.DYNAMIC_THEME_WORKING_DIR,
+            command,
+            cwd=working_dir,
             stderr=subprocess.STDOUT,
             env=new_env,
         )
