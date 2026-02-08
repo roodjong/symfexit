@@ -98,6 +98,44 @@ npm install
 ```
 
 
+
+### Loading fixtures
+
+To load sample data for development or testing, use the custom management command:
+
+```sh
+python manage.py load_fixtures
+```
+
+This will create demo data for all major models, including users, groups, events, documents, and permissions. Fixtures are only loaded in DEBUG mode.
+
+#### Sample login details and member types
+
+- **admin**: Superuser
+	- Email: admin@example.com
+	- Password: Revolution
+
+- **Board members**: board1, board2, board3
+	- Email: board1@example.com (etc.)
+	- Password: Revolution
+
+- **Local group members** (for each of 5 groups: Local Group 1 to Local Group 5):
+	- member1_1@example.com: Contact person, cadre
+	- member1_2@example.com: Contact person, cadre
+	- member1_3@example.com: Cadre
+	- member1_4@example.com: Cadre
+	- member1_5@example.com: Non-cadre
+	- member1_6@example.com: Support member
+	- member1_7@example.com: Deleted (inactive)
+	- member1_8@example.com: Deleted (inactive)
+	- member1_9@example.com: Application (not yet accepted)
+	- member1_10@example.com: Application (not yet accepted)
+
+All users have password: Revolution
+
+You can use these accounts to test permissions and roles in the application.
+
+
 ## Starting the server
 
 To start the server, run:
