@@ -10,7 +10,7 @@ classifiers = [
     "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
 ]
 dependencies = [
-    "dj-database-url ~= 2.1",
+    "dj-database-url~=3.0",
     "django~=5.2",
     "django-tailwind ~= 3.4",
     "django-tinymce ~= 4.0",
