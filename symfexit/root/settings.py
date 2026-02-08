@@ -343,16 +343,19 @@ DJANGO_DRF_FILEPOND_PERMISSION_CLASSES = {
 DYNAMIC_THEME_URL = setting_from_env(
     "DYNAMIC_THEME_URL", production="theme/", development="static/css/dist/"
 )
-DYNAMIC_THEME_ROOT = setting_from_env(
-    "DYNAMIC_THEME_ROOT",
-    production=CONTENT_DIR / "theme",
-    development=SYMFEXIT_DIR / "theme" / "static" / "css" / "dist",
+DYNAMIC_THEME_ROOT = Path(
+    setting_from_env(
+        "DYNAMIC_THEME_ROOT",
+        production=CONTENT_DIR / "theme",
+        development=SYMFEXIT_DIR / "theme" / "static" / "css" / "dist",
+    )
 )
-DYNAMIC_THEME_WORKING_DIR = setting_from_env(
-    "DYNAMIC_THEME_WORKING_DIR",
-    development=SYMFEXIT_DIR / "theme" / "static_src",
+DYNAMIC_THEME_WORKING_DIR = Path(
+    setting_from_env(
+        "DYNAMIC_THEME_WORKING_DIR",
+        development=SYMFEXIT_DIR / "theme" / "static_src",
+    )
 )
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
