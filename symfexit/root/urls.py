@@ -75,11 +75,13 @@ urlpatterns = (
     )
     + enable_if(
         settings.DEBUG,
-        lambda: [
-            path("dummy/", include("symfexit.payments.dummy.urls")),
-            path(".well-known/appspecific/com.chrome.devtools.json", chrome_devtools),
-        ]
-        + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+        lambda: (
+            [
+                path("dummy/", include("symfexit.payments.dummy.urls")),
+                path(".well-known/appspecific/com.chrome.devtools.json", chrome_devtools),
+            ]
+            + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+        ),
     )
 )
 

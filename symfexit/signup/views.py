@@ -21,6 +21,16 @@ class MemberSignup(FormView):
     success_url = reverse_lazy("signup:payment")
     form_class = SignupForm
 
+    def dispatch(self, *args, initialgroup: str | None = None, **kwargs):
+        self.initialgroup = initialgroup
+        return super().dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.initialgroup:
+            kwargs["initialgroup"] = self.initialgroup
+        return kwargs
+
     def form_valid(self, form):
         logout(self.request)
         application = form.save()
