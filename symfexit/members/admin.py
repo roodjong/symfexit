@@ -1,10 +1,9 @@
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.filters import SimpleListFilter
-from django.contrib.admin.options import IS_POPUP_VAR, csrf_protect_m
+from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.admin import sensitive_post_parameters_m
 from django.contrib.auth.forms import (
     AdminPasswordChangeForm,
     UserChangeForm,
@@ -17,8 +16,11 @@ from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 
 from symfexit.members.models import LocalGroup, User, generate_member_number
 
@@ -202,8 +204,7 @@ class UserAdmin(admin.ModelAdmin):
         # Don't allow lookups involving passwords.
         return not lookup.startswith("password") and super().lookup_allowed(lookup, value)
 
-    @sensitive_post_parameters_m
-    @csrf_protect_m
+    @method_decorator([sensitive_post_parameters(), csrf_protect])
     def add_view(self, request, form_url="", extra_context=None):
         with transaction.atomic(using=router.db_for_write(self.model)):
             return self._add_view(request, form_url, extra_context)
@@ -236,7 +237,7 @@ class UserAdmin(admin.ModelAdmin):
         extra_context.update(defaults)
         return super().add_view(request, form_url, extra_context)
 
-    @sensitive_post_parameters_m
+    @method_decorator(sensitive_post_parameters())
     def user_change_password(self, request, id, form_url=""):
         user = self.get_object(request, unquote(id))
         if not self.has_change_permission(request, user):
