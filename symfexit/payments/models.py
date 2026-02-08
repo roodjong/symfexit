@@ -422,3 +422,10 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for order {self.order.id} made at {self.paid_at}"
+
+
+class PaymentProvider(models.Model):
+    type = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.type

@@ -46,9 +46,9 @@ from symfexit.payments.models import Subscription
 #         return text
 
 
-class MembershipType(models.Model):
-    bought_with = models.ForeignKey(Subscription, null=True, on_delete=models.SET_NULL)
+# class MembershipType(models.Model):
+#     bought_with = models.ForeignKey(Subscription, null=True, on_delete=models.SET_NULL)
 
 
-class Membership(models.Model):
-    type = models.ForeignKey(MembershipType, on_delete=models.CASCADE)
+# class Membership(models.Model):
+#     type = models.ForeignKey(MembershipType, on_delete=models.CASCADE)

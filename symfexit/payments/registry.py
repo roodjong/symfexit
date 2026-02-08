@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["payments_registry", "PaymentsRegistry"]
+__all__ = ["payments_registry", "PaymentsRegistry", "PaymentProcessor"]
 
 
 class PaymentsRegistry:
@@ -43,7 +43,7 @@ class PaymentsRegistry:
             processor.initialize()
 
     def __iter__(self):
-        return (processor for _, processor in reversed(self._registry))
+        return reversed(self._registry)
 
 
 payments_registry = PaymentsRegistry()
@@ -54,12 +54,19 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
     def initialize(self):
         pass
 
+    def description(self):
+        return self.__class__.__name__
+
     @abc.abstractmethod
     def is_available(self) -> bool:
         """Returns whether this payment processor is available."""
         pass
 
-    @abc.abstractmethod
-    def start_subscription_flow(self, request, subscription, return_url):
-        """Redirects to the payment implementation subscription flow start page."""
-        pass
+    # @abc.abstractmethod
+    # def start_subscription_flow(self, request, subscription, return_url):
+    #     """Redirects to the payment implementation subscription flow start page."""
+    #     pass
+
+    def get_settings_inline(self) -> type | None:
+        """Returns an optional admin inline for the settings of this payment processor."""
+        return None
