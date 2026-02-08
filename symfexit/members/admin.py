@@ -1,4 +1,3 @@
-from tabnanny import verbose
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.filters import SimpleListFilter
@@ -21,9 +20,8 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
 
-from symfexit.members.models import LocalGroup, WorkGroup, User, generate_member_number
 from symfexit.adminsite.admin import GroupFlagsInline
-
+from symfexit.members.models import LocalGroup, User, WorkGroup, generate_member_number
 
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")

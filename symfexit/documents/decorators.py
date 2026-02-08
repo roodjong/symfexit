@@ -6,7 +6,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import resolve_url
 
-from symfexit.documents.models import FileNode, Directory, File
+from symfexit.documents.models import Directory, File, FileNode
 from symfexit.members.models import User
 
 
