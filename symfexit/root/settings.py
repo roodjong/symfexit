@@ -255,8 +255,6 @@ TEMPLATES = [
 ]
 CMS_COLOR_SCHEME = "auto"
 
-FORM_RENDERER = "django.forms.renderers.DjangoDivFormRenderer"
-
 WSGI_APPLICATION = "symfexit.root.wsgi.application"
 
 
