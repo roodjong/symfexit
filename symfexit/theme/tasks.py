@@ -9,7 +9,7 @@ from symfexit.theme.utils import get_theme_filename, get_time_millis
 from symfexit.worker import logger
 from symfexit.worker.registry import task_registry
 
-NPM_COMMAND = os.getenv("NPM_COMMAND", "npm")
+NPX_COMMAND = os.getenv("NPX_COMMAND", "npx")
 
 
 def write_out_overrides():
@@ -35,8 +35,7 @@ def rebuild_theme(*, tenant: Client):
     try:
         stdout = subprocess.check_output(
             [
-                NPM_COMMAND,
-                "run",
+                NPX_COMMAND,
                 "tailwindcss",
                 "--",
                 "--minify",
