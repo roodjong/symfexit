@@ -70,7 +70,7 @@
               {
                 paths.projectRoot = ./.;
                 paths.projectRootFile = "flake.nix";
-                paths.package = ./src/theme/static_src;
+                paths.package = ./symfexit/theme/static_src;
                 paths.lockFile = "lock.${system}.json";
               }
             ];
@@ -100,7 +100,7 @@
                 mkdir -p $out
                 cp -r $pythonSrc/* $out
                 chmod -R u+w $out
-                cp -r $node_modules $out/src/theme/static_src/node_modules
+                cp -r $node_modules $out/symfexit/theme/static_src/node_modules
               '';
           symfexit-base-theme =
             pkgs.runCommand "symfexit-base-theme"
@@ -110,8 +110,8 @@
               ''
                 mkdir -p $out/staticfiles/css/dist
                 export PATH=${pkgs.nodejs}/bin:$PATH
-                cd $src/src/theme/static_src
-                NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
+                cd $src/symfexit/theme/static_src
+                NODE_ENV=production ${pkgs.nodejs}/bin/node node_modules/@tailwindcss/cli/dist/index.mjs -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
               '';
           symfexit-python = self.packages.${system}.symfexit-package.config.deps.python.withPackages (
             ps: with ps; [
@@ -197,7 +197,7 @@
               ];
               Cmd = [
                 "uvicorn"
-                "symfexit.asgi:application"
+                "symfexit.root.asgi:application"
               ];
               ExposedPorts = {
                 "8000/tcp" = { };
@@ -205,7 +205,7 @@
               Env = [
                 "PATH=${pkgs-linux.nodejs}/bin:/bin"
                 "NPM_COMMAND=${pkgs-linux.nodejs}/bin/npm"
-                "THEME_SRC_DIR=${theme-sources}/src/theme/static_src"
+                "THEME_SRC_DIR=${theme-sources}/symfexit/theme/static_src"
                 "DJANGO_ADMIN_COMMAND=${linux-symfexit-python}/bin/django-admin"
               ];
             };

@@ -17,7 +17,7 @@
 
   mkDerivation = {
     src = lib.cleanSourceWith {
-      src = lib.cleanSource ./src/theme/static_src;
+      src = lib.cleanSource ./symfexit/theme/static_src;
       filter = name: type:
         !(builtins.any (x: x) [
           (lib.hasSuffix ".nix" name)

@@ -2,7 +2,7 @@ version: 2
 enable-beta-ecosystems: true
 updates:
   - package-ecosystem: "npm"
-    directory: "src/theme/static_src"
+    directory: "symfxit/theme/static_src"
     schedule:
       interval: "weekly"
   - package-ecosystem: "uv"
