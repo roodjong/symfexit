@@ -40,7 +40,7 @@ def rebuild_theme(*, tenant: Client):
             "-i",
             input_css,
             "-o",
-            settings.DYNAMIC_THEME_ROOT / output_name,
+            str(settings.DYNAMIC_THEME_ROOT / output_name),
             "--minify",
         ]
         working_dir = settings.DYNAMIC_THEME_WORKING_DIR
