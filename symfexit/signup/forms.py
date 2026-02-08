@@ -94,7 +94,7 @@ class SignupForm(forms.Form):
         ["checkmark"],
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, initialgroup: str = '', **kwargs):
         super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if hasattr(field, "extra_css_classes"):
@@ -106,7 +106,12 @@ class SignupForm(forms.Form):
         )
         self.fields["birth_date"].initial = initial_birth_date
         self.fields["payment_tier"].initial = "750"
-
+        
+        
+        initialgroup = LocalGroup.objects.filter(selectable=True, name__iexact=initialgroup).first()
+        if initialgroup:
+            self.fields["preferred_group"].initial = initialgroup.id
+      
     def clean(self) -> dict[str, Any]:
         cleaned_data = super().clean()
         payment_tier = cleaned_data.get("payment_tier")
