@@ -22,7 +22,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
-from symfexit.members.models import LocalGroup, User, generate_member_number
+from symfexit.adminsite.admin import GroupFlagsInline
+from symfexit.members.models import LocalGroup, User, WorkGroup, generate_member_number
 
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")
@@ -373,6 +374,13 @@ class SupportMemberAdmin(UserAdmin):
 class LocalGroupAdmin(admin.ModelAdmin):
     exclude = ("permissions",)
     filter_horizontal = ("contact_people",)
+
+
+@admin.register(WorkGroup)
+class WorkGroupAdmin(admin.ModelAdmin):
+    exclude = ("permissions",)
+    inlines = [GroupFlagsInline]
+    filter_horizontal = ("workgroup_contact_people",)
 
 
 # Proxy for a distinct view that lists only the members of the groups for which you are the contact person on the admin page

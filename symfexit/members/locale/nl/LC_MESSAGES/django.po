@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-14 18:48+0100\n"
+"POT-Creation-Date: 2026-02-08 16:24+0100\n"
 "PO-Revision-Date: 2025-08-25 20:02+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,73 +17,71 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/members/admin.py:25
+#: symfexit/members/admin.py:26
 msgid "Permission Group"
 msgstr "Rechtengroep"
 
-#: symfexit/members/admin.py:26
+#: symfexit/members/admin.py:27
 msgid "Permission Groups"
 msgstr "Rechtengroepen"
 
-#: symfexit/members/admin.py:37 symfexit/members/models.py:88
+#: symfexit/members/admin.py:38 symfexit/members/models.py:88
 msgid "is registered"
 msgstr "is ingeschreven"
 
-#: symfexit/members/admin.py:41
+#: symfexit/members/admin.py:42
 msgid "Yes"
 msgstr "Ja"
 
-#: symfexit/members/admin.py:41
+#: symfexit/members/admin.py:42
 msgid "No"
 msgstr "Nee"
 
-#: symfexit/members/admin.py:41
+#: symfexit/members/admin.py:42
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:65 symfexit/members/models.py:164
+#: symfexit/members/admin.py:66 symfexit/members/models.py:171
 msgid "local groups"
 msgstr "groepen"
 
-#: symfexit/members/admin.py:78
-#, fuzzy
-#| msgid "Permission Groups"
+#: symfexit/members/admin.py:79
 msgid "permission groups"
-msgstr "Rechtengroepen"
+msgstr "rechtengroepen"
 
-#: symfexit/members/admin.py:98 symfexit/members/admin.py:408
+#: symfexit/members/admin.py:99 symfexit/members/admin.py:416
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
-#: symfexit/members/admin.py:116
+#: symfexit/members/admin.py:117
 msgid "Permissions"
 msgstr "Rechten"
 
-#: symfexit/members/admin.py:126
+#: symfexit/members/admin.py:127
 msgid "Important dates"
 msgstr "Belangrijke data"
 
-#: symfexit/members/admin.py:346
+#: symfexit/members/admin.py:347
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:347
+#: symfexit/members/admin.py:348
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:360
+#: symfexit/members/admin.py:361
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:361
+#: symfexit/members/admin.py:362
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:382
+#: symfexit/members/admin.py:390
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:383
+#: symfexit/members/admin.py:391
 msgid "local group members"
 msgstr "groepsleden"
 
@@ -251,22 +249,30 @@ msgstr "gebruiker"
 msgid "users"
 msgstr "gebruikers"
 
-#: symfexit/members/models.py:163
+#: symfexit/members/models.py:170
 msgid "local group"
 msgstr "groep"
 
-#: symfexit/members/models.py:170
+#: symfexit/members/models.py:177 symfexit/members/models.py:198
 msgid "contact people"
 msgstr "contactpersonen"
 
-#: symfexit/members/models.py:174
+#: symfexit/members/models.py:181
 msgid "selectable"
 msgstr "selecteerbaar"
 
-#: symfexit/members/models.py:176
+#: symfexit/members/models.py:183
 msgid "Whether this group can be selected by new members signing up"
 msgstr ""
 "Of deze groep geselecteerd kan worder door nieuwe leden die zich inschrijven"
+
+#: symfexit/members/models.py:189
+msgid "work group"
+msgstr "werkgroep"
+
+#: symfexit/members/models.py:190
+msgid "work groups"
+msgstr "werkgroepen"
 
 #: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:14
 msgid "Home"

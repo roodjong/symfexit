@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from symfexit.members.models import Group
+
 
 class FileNode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -17,7 +19,7 @@ class FileNode(models.Model):
     )
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
-    trashed_at = models.DateTimeField(_("trashed at"), null=True)
+    trashed_at = models.DateTimeField(_("trashed at"), null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -76,6 +78,14 @@ class File(FileNode):
 
 
 class Directory(FileNode):
+    owner = models.OneToOneField(
+        Group,
+        related_name="folder_owner",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+
     class Meta:
         verbose_name = _("directory")
         verbose_name_plural = _("directories")
