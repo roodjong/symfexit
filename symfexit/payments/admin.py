@@ -47,14 +47,6 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class GeneralLedgerForm(forms.ModelForm):
-    class Meta:
-        model = GeneralLedger
-        fields = (
-            "name",
-            "description",
-            "credit_balance",
-        )
-
     account_set = forms.ModelMultipleChoiceField(
         queryset=Account.objects.all(),
         required=False,
@@ -65,10 +57,24 @@ class GeneralLedgerForm(forms.ModelForm):
         ),
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.fields["account_set"].initial = self.instance.account_set.all()
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        instance.account_set.set(self.cleaned_data["account_set"])
+        return instance
+
 
 @admin.register(GeneralLedger)
 class GeneralLedgerAdmin(admin.ModelAdmin):
     form = GeneralLedgerForm
+    readonly_fields = ("balance_cents",)
+    list_display = ("__str__", "balance_cents")
 
 
 @admin.register(Account)

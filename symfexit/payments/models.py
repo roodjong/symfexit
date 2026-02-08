@@ -118,6 +118,7 @@ class Transaction(models.Model):
 
 class GeneralLedger(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    code = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     credit_balance = models.BooleanField(
@@ -133,12 +134,12 @@ class GeneralLedger(models.Model):
         return self.name
 
     def balance_cents(self):
-        credit_balances = self.account_set.aggregate(models.Sum("credit_balance_cents", default=0))[
-            "credit_balance_cents__sum"
-        ]
-        debit_balances = self.account_set.aggregate(models.Sum("debit_balance_cents", default=0))[
-            "debit_balance_cents__sum"
-        ]
+        credit_balances = Transaction.objects.filter(credit_account__general_ledger=self).aggregate(
+            models.Sum("amount_cents", default=0)
+        )["amount_cents__sum"]
+        debit_balances = Transaction.objects.filter(debit_account__general_ledger=self).aggregate(
+            models.Sum("amount_cents", default=0)
+        )["amount_cents__sum"]
         if self.credit_balance:
             return credit_balances - debit_balances
         else:
