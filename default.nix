@@ -16,7 +16,7 @@ in
   deps =
     { nixpkgs, ... }:
     {
-      python = nixpkgs.python312;
+      python = nixpkgs.python313;
       inherit (nixpkgs) postgresql;
     };
 
@@ -31,6 +31,11 @@ in
           (lib.hasSuffix "flake.lock" name)
         ]);
     };
+    # During the lockfile generation, we need tools from postgresql for the psycopg-c dependency of psycopg
+    nativeBuildInputs = [
+      config.deps.postgresql
+      config.deps.python.pkgs.setuptools
+    ];
   };
 
   buildPythonPackage = {
@@ -49,10 +54,9 @@ in
     overrides.django.buildPythonPackage.makeWrapperArgs = [
       "--set-default"
       "DJANGO_SETTINGS_MODULE"
-      "symfexit.settings"
+      "symfexit.root.settings"
     ];
-    # During the lockfile generation, we need tools from postgresql for the psycopg-c dependency of psycopg
-    nativeBuildInputs = [ config.deps.postgresql ];
+
     overrides.psycopg-c = {
       imports = [ dream2nix.modules.dream2nix.nixpkgs-overrides ];
       nixpkgs-overrides.enable = true;

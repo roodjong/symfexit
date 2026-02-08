@@ -6,9 +6,7 @@ authors = [
     {name = "Jelle Besseling", email = "jelle@pingiun.com"}
 ]
 readme = "README.md"
-classifiers = [
-    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
-]
+license = "EUPL-1.2"
 dependencies = [
     "dj-database-url~=3.0",
     "django~=6.0",
@@ -27,16 +25,6 @@ dependencies = [
     "commonmark>=0.9.1",
 ]
 requires-python = ">= 3.13"
-
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.package-data]
-"*" = ["*"]
-
-[tool.setuptools.packages.find]
-namespaces = true
-include = ["symfexit"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
