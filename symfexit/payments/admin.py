@@ -13,10 +13,12 @@ from symfexit.payments.models import (
     Order,
     Payment,
     PaymentObligation,
+    PaymentProvider,
     Product,
     Subscription,
     Transaction,
 )
+from symfexit.payments.registry import payments_registry
 
 User = get_user_model()
 
@@ -196,3 +198,30 @@ def get_or_create_billing_address(request, user_id):
     if not address:
         return JsonResponse({"message": _("User has not setup full address yet")})
     return JsonResponse({"billing_address_id": address.id, "full_name": str(address)})
+
+
+class PaymentProviderAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.fields["type"].widget = forms.Select(
+                choices=[
+                    ("", "---"),
+                    *((name, provider.description()) for name, provider in payments_registry),
+                ]
+            )
+
+
+@admin.register(PaymentProvider)
+class PaymentProviderAdmin(admin.ModelAdmin):
+    form = PaymentProviderAdminForm
+    list_display = ("type",)
+
+    def get_inlines(self, request, obj):
+        inlines = []
+        for _, provider in payments_registry:
+            inline = provider.get_settings_inline()
+            if inline is not None:
+                inlines.append(inline)
+
+        return inlines
