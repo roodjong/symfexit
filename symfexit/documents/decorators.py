@@ -6,11 +6,11 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import resolve_url
 
-from symfexit.documents.models import Directory, File, FileNode
+from symfexit.documents.models import Directory, File
 from symfexit.members.models import User
 
 
-def is_contact_person_of_folder(parent: FileNode | None, user: User):
+def is_contact_person_of_folder(parent: File | Directory | None, user: User):
     if parent is None:
         return False
 
