@@ -97,7 +97,7 @@ class MembershipApplication(models.Model):
         self.user = user
         if self.preferred_group:
             user.groups.add(self.preferred_group)
-        self._subscription.user = user
-        self._subscription.save()
+        # self._subscription.user = user
+        # self._subscription.save()
         self.save()
         return user

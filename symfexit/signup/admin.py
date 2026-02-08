@@ -60,7 +60,7 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
         "preferred_group",
         "payment_amount",
         "_order",
-        "_subscription",
+        # "_subscription",
         "status",
         "user",
     )
