@@ -6,33 +6,61 @@
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/*.tar.gz";
   };
 
-  outputs = inputs @ { self, nixpkgs, dream2nix, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      dream2nix,
+      ...
+    }:
 
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
       forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: (forSystem system f));
 
-      forSystem = system: f: f rec {
-        inherit system;
-        linux-system = pkgs.lib.replaceStrings [ "darwin" ] [ "linux" ] system;
-        pkgs = import nixpkgs { inherit system; overlays = [ ]; };
-        pkgs-linux = import nixpkgs { system = linux-system; overlays = [ ]; };
-        lib = pkgs.lib;
-      };
+      forSystem =
+        system: f:
+        f rec {
+          inherit system;
+          linux-system = pkgs.lib.replaceStrings [ "darwin" ] [ "linux" ] system;
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ ];
+          };
+          pkgs-linux = import nixpkgs {
+            system = linux-system;
+            overlays = [ ];
+          };
+          lib = pkgs.lib;
+        };
     in
     {
-      apps = forAllSystems ({ system, pkgs, ... }: {
-        symfexit-docker = {
-          type = "app";
-          program = "${self.packages.${system}.symfexit-docker}";
-        };
-        symfexit-nginx = {
-          type = "app";
-          program = "${self.packages.${system}.symfexit-nginx}";
-        };
-      });
+      apps = forAllSystems (
+        { system, pkgs, ... }:
+        {
+          symfexit-docker = {
+            type = "app";
+            program = "${self.packages.${system}.symfexit-docker}";
+          };
+          symfexit-nginx = {
+            type = "app";
+            program = "${self.packages.${system}.symfexit-nginx}";
+          };
+        }
+      );
 
-      packages = forAllSystems ({ system, linux-system, pkgs, pkgs-linux, ... }:
+      packages = forAllSystems (
+        {
+          system,
+          linux-system,
+          pkgs,
+          pkgs-linux,
+          ...
+        }:
         let
           lib = pkgs.lib;
           symfexit-npm-deps = dream2nix.lib.evalModules {
@@ -47,43 +75,58 @@
               }
             ];
           };
-          theme-sources = pkgs.runCommand "theme-sources"
-            {
-              pythonSrc = lib.cleanSourceWith {
-                src = lib.cleanSource ./.;
-                filter = name: type:
-                  !(builtins.any (x: x) [
-                    (lib.hasSuffix ".nix" name)
-                    (lib.hasPrefix "lock." (builtins.baseNameOf name))
-                    (builtins.elem (builtins.baseNameOf name) [ "requirements.txt" "manifests" "pip-snapshot-date.txt" ])
-                    (lib.hasPrefix "." (builtins.baseNameOf name))
-                    (lib.hasSuffix "flake.lock" name)
-                  ]);
-              };
-              node_modules = "${symfexit-npm-deps.config.package-func.result}/lib/node_modules/symfexit-base-theme/node_modules";
-            } ''
-            mkdir -p $out
-            cp -r $pythonSrc/* $out
-            chmod -R u+w $out
-            cp -r $node_modules $out/src/theme/static_src/node_modules
-          '';
-          symfexit-base-theme = pkgs.runCommand "symfexit-base-theme"
-            {
-              src = theme-sources;
-            } ''
-            mkdir -p $out/staticfiles/css/dist
-            export PATH=${pkgs.nodejs}/bin:$PATH
-            cd $src/src/theme/static_src
-            NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
-          '';
-          symfexit-python = self.packages.${system}.symfexit-package.config.deps.python.withPackages (ps: with ps; [
-            self.packages.${system}.symfexit-package.config.package-func.result
-            uvicorn
-          ]);
-          linux-symfexit-python = self.packages.${linux-system}.symfexit-package.config.deps.python.withPackages (ps: with ps; [
-            self.packages.${linux-system}.symfexit-package.config.package-func.result
-            uvicorn
-          ]);
+          theme-sources =
+            pkgs.runCommand "theme-sources"
+              {
+                pythonSrc = lib.cleanSourceWith {
+                  src = lib.cleanSource ./.;
+                  filter =
+                    name: type:
+                    !(builtins.any (x: x) [
+                      (lib.hasSuffix ".nix" name)
+                      (lib.hasPrefix "lock." (builtins.baseNameOf name))
+                      (builtins.elem (builtins.baseNameOf name) [
+                        "requirements.txt"
+                        "manifests"
+                        "pip-snapshot-date.txt"
+                      ])
+                      (lib.hasPrefix "." (builtins.baseNameOf name))
+                      (lib.hasSuffix "flake.lock" name)
+                    ]);
+                };
+                node_modules = "${symfexit-npm-deps.config.package-func.result}/lib/node_modules/symfexit-base-theme/node_modules";
+              }
+              ''
+                mkdir -p $out
+                cp -r $pythonSrc/* $out
+                chmod -R u+w $out
+                cp -r $node_modules $out/src/theme/static_src/node_modules
+              '';
+          symfexit-base-theme =
+            pkgs.runCommand "symfexit-base-theme"
+              {
+                src = theme-sources;
+              }
+              ''
+                mkdir -p $out/staticfiles/css/dist
+                export PATH=${pkgs.nodejs}/bin:$PATH
+                cd $src/src/theme/static_src
+                NODE_ENV=production ${pkgs.nodejs}/bin/npm run tailwindcss -- -i ./src/styles.css -o $out/staticfiles/css/dist/styles.css --minify
+              '';
+          symfexit-python = self.packages.${system}.symfexit-package.config.deps.python.withPackages (
+            ps: with ps; [
+              self.packages.${system}.symfexit-package.config.package-func.result
+              uvicorn
+            ]
+          );
+          linux-symfexit-python =
+            self.packages.${linux-system}.symfexit-package.config.deps.python.withPackages
+              (
+                ps: with ps; [
+                  self.packages.${linux-system}.symfexit-package.config.package-func.result
+                  uvicorn
+                ]
+              );
           collectstatic = pkgs.runCommand "symfexit-staticfiles" { } ''
             # dummy secret key to be able to generate static files in production mode
             DJANGO_ENV=production SYMFEXIT_SECRET_KEY=dummy CONTENT_DIR=$(pwd) STATIC_ROOT=$out/staticfiles ${symfexit-python}/bin/django-admin collectstatic --noinput
@@ -104,7 +147,10 @@
           };
           symfexit-staticfiles = pkgs.symlinkJoin {
             name = "symfexit-staticfiles";
-            paths = [ symfexit-base-theme collectstatic ];
+            paths = [
+              symfexit-base-theme
+              collectstatic
+            ];
           };
           symfexit-docker = pkgs.dockerTools.streamLayeredImage {
             name = "symfexit";
@@ -120,7 +166,12 @@
                 binSh
                 pkgs-linux.coreutils
               ];
-              pathsToLink = [ "/staticfiles" "/etc" "/bin" "/var" ];
+              pathsToLink = [
+                "/staticfiles"
+                "/etc"
+                "/bin"
+                "/var"
+              ];
             };
 
             config = {
@@ -144,8 +195,13 @@
                   exec "$@"
                 '')
               ];
-              Cmd = [ "uvicorn" "symfexit.asgi:application" ];
-              ExposedPorts = { "8000/tcp" = { }; };
+              Cmd = [
+                "uvicorn"
+                "symfexit.asgi:application"
+              ];
+              ExposedPorts = {
+                "8000/tcp" = { };
+              };
               Env = [
                 "PATH=${pkgs-linux.nodejs}/bin:/bin"
                 "NPM_COMMAND=${pkgs-linux.nodejs}/bin/npm"
@@ -159,6 +215,7 @@
             reporoot=$(git rev-parse --show-toplevel)
             cd $reporoot
             ${pkgs.coreutils}/bin/date "+%Y-%m-%d" > ./pip-snapshot-date.txt
+            git add ./pip-snapshot-date.txt
             nix run .#symfexit-package.lock
             if [[ $(git diff --numstat | ${pkgs.gawk}/bin/awk '/lock\..*\.json$/ { print ($1 == $2 && $1 == 1) }') -eq 1 ]]; then
               # Only one line changed in lock.json, it's the invalidation hash which changed because of the date file
@@ -166,7 +223,8 @@
               echo "Reset lock files and date file because only the invalidation hash changed"
             fi
           '';
-        });
+        }
+      );
 
     };
 }
