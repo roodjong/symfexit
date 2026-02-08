@@ -36,6 +36,7 @@ def rebuild_theme(*, tenant: Client):
         stdout = subprocess.check_output(
             [
                 NPX_COMMAND,
+                "--no-install",
                 "tailwindcss",
                 "--",
                 "--minify",
