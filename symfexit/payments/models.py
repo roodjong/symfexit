@@ -290,7 +290,11 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Order for product {self.product_name} for user {self.ordered_for.get_full_name()}"
+        if self.ordered_for:
+            return (
+                f"Order for product {self.product_name} for user {self.ordered_for.get_full_name()}"
+            )
+        return f"Order for product {self.product_name}"
 
     def product_price_cents(self):
         return int(self.product_price_euros * 100)

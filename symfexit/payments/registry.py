@@ -62,10 +62,12 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
         """Returns whether this payment processor is available."""
         pass
 
-    # @abc.abstractmethod
-    # def start_subscription_flow(self, request, subscription, return_url):
-    #     """Redirects to the payment implementation subscription flow start page."""
-    #     pass
+    def start_payment_flow(self, request, order, return_url):
+        """Starts the payment flow for the given order.
+
+        Should return an HttpResponse (either a redirect or a rendered template).
+        """
+        raise NotImplementedError
 
     def get_settings_inline(self) -> type | None:
         """Returns an optional admin inline for the settings of this payment processor."""
