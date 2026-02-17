@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, models
@@ -6,7 +8,14 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
-# from symfexit.payments.models import Order
+from symfexit.payments.models import (
+    BillingAddress,
+    Order,
+    PeriodUnit,
+    Product,
+    ProductType,
+    Subscription,
+)
 
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)
 
@@ -47,12 +56,13 @@ class MembershipApplication(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=_("user"))
 
-    # _order = models.ForeignKey(
-    #     Order,
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     verbose_name=_("subscription order"),
-    # )
+    _order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("subscription order"),
+    )
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
@@ -77,6 +87,53 @@ class MembershipApplication(models.Model):
     def get_or_404(cls, eid):
         id = hashids.decode(eid)[0]
         return get_object_or_404(MembershipApplication, id=id)
+
+    MEMBERSHIP_PRODUCT_SKU = "membership-quarterly"
+
+    def get_or_create_order(self):
+        if self._order is not None:
+            return self._order
+
+        product, created = Product.objects.get_or_create(
+            sku=self.MEMBERSHIP_PRODUCT_SKU,
+            defaults={
+                "enabled": True,
+                "name": "Lidmaatschap",
+                "price_euros": Decimal(self.payment_amount) / 100,
+                "type": ProductType.SUBSCRIPTION,
+            },
+        )
+        if created:
+            Subscription.objects.create(
+                product=product,
+                period_unit=PeriodUnit.MONTH,
+                period=3,
+            )
+
+        billing_address = BillingAddress.objects.create(
+            user=None,
+            name=f"{self.first_name} {self.last_name}",
+            address=self.address,
+            city=self.city,
+            postal_code=self.postal_code,
+        )
+
+        price_euros = Decimal(self.payment_amount) / 100
+        order = Order.objects.create(
+            product=product,
+            product_sku=product.sku,
+            product_name=product.name,
+            product_price_euros=price_euros,
+            subscription=product.subscription,
+            subscription_period_unit=product.subscription.period_unit,
+            subscription_period=product.subscription.period,
+            ordered_for=None,
+            ordered_for_billing_address=billing_address,
+        )
+
+        self._order = order
+        self.save()
+        return order
 
     def create_user(self):
         try:

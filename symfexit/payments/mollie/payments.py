@@ -1,7 +1,5 @@
-# from symfexit.payments.dummy.forms import FakePayForm
-# from symfexit.payments.models import Subscription
-
 from symfexit.payments.mollie.admin import MollieSettingsInline
+from symfexit.payments.mollie.models import MollieSettings
 from symfexit.payments.registry import PaymentProcessor, payments_registry
 
 MOLLIE_NAME = "mollie"
@@ -16,7 +14,7 @@ class MollieProcessor(PaymentProcessor):
         return "Mollie"
 
     def is_available(self):
-        return True
+        return MollieSettings.objects.filter(api_key__gt="").exists()
 
     def get_settings_inline(self):
         return MollieSettingsInline
