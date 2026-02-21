@@ -130,7 +130,7 @@ class PaymentObligationForm(forms.ModelForm):
 
 class PaymentObligationInline(admin.TabularInline):
     model = PaymentObligation
-    readonly_fields = ("pay_before",)
+    readonly_fields = ("pay_before", "transaction")
     extra = 0
     form = PaymentObligationForm
 
@@ -153,7 +153,7 @@ class PaymentObligationInline(admin.TabularInline):
 
 class PaymentInline(admin.TabularInline):
     model = Payment
-    readonly_fields = ("paid_at",)
+    readonly_fields = ("paid_at", "transaction")
     extra = 0
 
 
@@ -176,6 +176,30 @@ class OrderAdmin(admin.ModelAdmin):
                 "ordered_for",
             )
         return super().get_readonly_fields(request, obj)
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, PaymentObligation) and not instance.pk:
+                ar_account, _ = Account.get_accounts_receivable_account()
+                revenue_account, _ = Account.get_revenue_account()
+                transaction = Transaction.objects.create(
+                    credit_account=revenue_account,
+                    debit_account=ar_account,
+                    amount_cents=int(instance.order.product_price_euros * 100),
+                )
+                instance.transaction = transaction
+            elif isinstance(instance, Payment) and not instance.pk:
+                ar_account, _ = Account.get_accounts_receivable_account()
+                bank_account, _ = Account.get_bank_account()
+                transaction = Transaction.objects.create(
+                    credit_account=ar_account,
+                    debit_account=bank_account,
+                    amount_cents=int(instance.order.product_price_euros * 100),
+                )
+                instance.transaction = transaction
+            instance.save()
+        formset.save_m2m()
 
 
 def load_product_info(request, product_id=None):

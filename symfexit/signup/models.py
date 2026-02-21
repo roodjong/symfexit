@@ -119,16 +119,10 @@ class MembershipApplication(models.Model):
         )
 
         price_euros = Decimal(self.payment_amount) / 100
-        order = Order.objects.create(
+        order = Order.objects.create_with_obligation(
             product=product,
-            product_sku=product.sku,
-            product_name=product.name,
-            product_price_euros=price_euros,
-            subscription=product.subscription,
-            subscription_period_unit=product.subscription.period_unit,
-            subscription_period=product.subscription.period,
-            ordered_for=None,
-            ordered_for_billing_address=billing_address,
+            billing_address=billing_address,
+            price_euros=price_euros,
         )
 
         self._order = order

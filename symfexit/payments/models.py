@@ -21,6 +21,7 @@ User = get_user_model()
 
 ACCOUNT_ACCOUNTS_RECEIVABLE = 13011
 ACCOUNT_REVENUE = 82811
+ACCOUNT_BANK = 10201
 
 
 def tigerbeetle_id():
@@ -197,6 +198,23 @@ class Account(models.Model):
             },
         )
 
+    @classmethod
+    def get_bank_account(cls):
+        """Bank account (rekening-courant).
+
+        In RGS this is mapped to BLimBanRba (10201).
+        """
+        return cls.objects.get_or_create(
+            code=ACCOUNT_BANK,
+            defaults={
+                "name": _("Bank"),
+                "description": _(
+                    "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba (10201)."
+                ),
+                "credit_balance": False,
+            },
+        )
+
     def credit_balance_cents(self):
         return self.credit_transactions.aggregate(models.Sum("amount_cents", default=0))[
             "amount_cents__sum"
@@ -272,6 +290,25 @@ def _weeks_for_year(year):
     return last_week.isocalendar().week
 
 
+class OrderManager(models.Manager):
+    def create_with_obligation(
+        self, *, product, billing_address, for_user=None, price_euros=None, timezone="UTC"
+    ):
+        order = self.create(
+            product=product,
+            product_sku=product.sku,
+            product_name=product.name,
+            product_price_euros=price_euros if price_euros is not None else product.price_euros,
+            subscription=product.subscription,
+            subscription_period_unit=product.subscription.period_unit,
+            subscription_period=product.subscription.period,
+            ordered_for=for_user,
+            ordered_for_billing_address=billing_address,
+        )
+        order.get_or_create_next_payment_obligation(timezone=timezone)
+        return order
+
+
 class Order(models.Model):
     # For now only one order item per order is possible
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
@@ -288,6 +325,8 @@ class Order(models.Model):
     ordered_for_billing_address = models.ForeignKey(BillingAddress, on_delete=models.PROTECT)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = OrderManager()
 
     def __str__(self):
         if self.ordered_for:
@@ -383,18 +422,29 @@ class Order(models.Model):
             timezone=timezone,
         ) - timedelta(seconds=1)
 
-        obligation, _ = PaymentObligation.objects.get_or_create(
-            order=self,
-            year=next_year,
-            period=next_period,
-            pay_before=pay_before,
-            defaults={"ordered_for_billing_address": self.ordered_for_billing_address},
-        )
+        obligation = self.paymentobligation_set.filter(year=next_year, period=next_period).first()
+        if obligation is None:
+            ar_account, _ = Account.get_accounts_receivable_account()
+            revenue_account, _ = Account.get_revenue_account()
+            transaction = Transaction.objects.create(
+                credit_account=revenue_account,
+                debit_account=ar_account,
+                amount_cents=int(self.product_price_euros * 100),
+            )
+            obligation = PaymentObligation.objects.create(
+                order=self,
+                year=next_year,
+                period=next_period,
+                pay_before=pay_before,
+                ordered_for_billing_address=self.ordered_for_billing_address,
+                transaction=transaction,
+            )
         return obligation
 
 
 class PaymentObligation(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     year = models.IntegerField(null=True, blank=True)
     period = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -420,6 +470,7 @@ class PaymentObligation(models.Model):
 class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     obligation = models.ForeignKey(PaymentObligation, on_delete=models.SET_NULL, null=True)
+    transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     # When this payment was made according to the payer
     paid_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
