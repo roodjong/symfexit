@@ -72,6 +72,9 @@ form {
     div {
       @apply mb-0;
     }
+    #id_payment_tier {
+      @apply flex flex-col items-start;
+    }
   }
   .checkmark {
     @apply col-span-2 flex-row-reverse;
@@ -89,6 +92,10 @@ form {
     @apply -mt-4;
     label {
       @apply hidden;
+    }
+    &::before {
+      content: "€";
+      @apply mr-2 text-lg;
     }
   }
 }

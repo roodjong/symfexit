@@ -1,6 +1,9 @@
+import json
 import logging
 
+from django.conf import settings
 from django.contrib.auth import logout
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
@@ -8,8 +11,9 @@ from django.views.generic import FormView
 
 from symfexit.emails._templates.emails.membership_application import MembershipApplicationEmail
 from symfexit.emails._templates.render import send_email
+from symfexit.membership.models import MembershipTier, MembershipType
 from symfexit.payments.registry import payments_registry
-from symfexit.signup.forms import SignupForm
+from symfexit.signup.forms import CUSTOM_TIER_VALUE, SignupForm
 from symfexit.signup.models import MembershipApplication
 
 logger = logging.getLogger(__name__)

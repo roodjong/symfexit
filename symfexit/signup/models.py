@@ -11,9 +11,7 @@ from hashids import Hashids
 from symfexit.payments.models import (
     BillingAddress,
     Order,
-    PeriodUnit,
     Product,
-    ProductType,
     Subscription,
 )
 
@@ -49,7 +47,22 @@ class MembershipApplication(models.Model):
         null=True,
         blank=True,
     )
-    payment_amount = models.IntegerField(_("payment amount in cents"))  # in cents
+    payment_amount_euros = models.DecimalField(_("payment amount"), max_digits=8, decimal_places=2)
+
+    membership_type = models.ForeignKey(
+        "membership.MembershipType",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership type"),
+    )
+    membership_tier = models.ForeignKey(
+        "membership.MembershipTier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership tier"),
+    )
 
     status = models.CharField(
         _("status"), max_length=10, choices=Status.choices, default=Status.CREATED
@@ -88,27 +101,20 @@ class MembershipApplication(models.Model):
         id = hashids.decode(eid)[0]
         return get_object_or_404(MembershipApplication, id=id)
 
-    MEMBERSHIP_PRODUCT_SKU = "membership-quarterly"
-
     def get_or_create_order(self):
         if self._order is not None:
             return self._order
 
-        product, created = Product.objects.get_or_create(
-            sku=self.MEMBERSHIP_PRODUCT_SKU,
-            defaults={
-                "enabled": True,
-                "name": "Lidmaatschap",
-                "price_euros": Decimal(self.payment_amount) / 100,
-                "type": ProductType.SUBSCRIPTION,
-            },
-        )
-        if created:
-            Subscription.objects.create(
-                product=product,
-                period_unit=PeriodUnit.MONTH,
-                period=3,
-            )
+        if self.membership_tier is not None:
+            product = self.membership_tier.product
+            price_euros = product.price_euros
+        elif self.membership_type is not None:
+            # Custom amount: use the dedicated custom amount product
+            product = self.membership_type.custom_amount_product
+            price_euros = self.payment_amount_euros
+        else:
+            # Legacy fallback: should not happen for new applications
+            raise ValueError("MembershipApplication has no membership_type set")
 
         billing_address = BillingAddress.objects.create(
             user=None,
@@ -118,7 +124,6 @@ class MembershipApplication(models.Model):
             postal_code=self.postal_code,
         )
 
-        price_euros = Decimal(self.payment_amount) / 100
         order = Order.objects.create_with_obligation(
             product=product,
             billing_address=billing_address,
@@ -145,6 +150,9 @@ class MembershipApplication(models.Model):
                 raise DuplicateEmailError from e
             else:
                 raise e
+        user.membership_type = self.membership_type
+        user.membership_tier = self.membership_tier
+        user.save()
         self.user = user
         if self.preferred_group:
             user.groups.add(self.preferred_group)

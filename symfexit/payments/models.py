@@ -209,7 +209,7 @@ class Account(models.Model):
             defaults={
                 "name": _("Bank"),
                 "description": _(
-                    "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba (10201)."
+                    "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba (10201). See: https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/Rekening_courant_bank_tegoeden_bij_banken.htm"
                 ),
                 "credit_balance": False,
             },
