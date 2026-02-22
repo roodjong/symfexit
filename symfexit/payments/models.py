@@ -306,8 +306,8 @@ class OrderManager(models.Manager):
             ordered_for=for_user,
             ordered_for_billing_address=billing_address,
         )
-        order.get_or_create_next_payment_obligation(timezone=timezone)
-        return order
+        obligation = order.get_or_create_next_payment_obligation(timezone=timezone)
+        return order, obligation
 
 
 class Order(models.Model):

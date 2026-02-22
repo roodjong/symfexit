@@ -1,7 +1,7 @@
 {% load i18n %}
-<p>{% blocktranslate with price=order.product_price_euros %} Fake this payment for EUR {{ price }}. {% endblocktranslate %}</p>
+<p>{% blocktranslate with price=obligation.amount_euros %} Fake this payment for EUR {{ price }}. {% endblocktranslate %}</p>
 
-<form method="post" class="grid grid-cols-1 gap-y-4" action="{% url 'payments_dummy:pay' order.id %}">
+<form method="post" class="grid grid-cols-1 gap-y-4" action="{% url 'payments_dummy:pay' obligation.id %}">
   {% csrf_token %} {{ form.as_div }}
   <button type="submit">{% translate 'Fake pay' %}</button>
 </form>

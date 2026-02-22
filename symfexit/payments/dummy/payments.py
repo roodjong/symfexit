@@ -15,10 +15,10 @@ class DummyProcessor(PaymentProcessor):
     def is_available(self):
         return bool(settings.DEBUG)
 
-    def start_payment_flow(self, request, order, return_url):
-        request.session[f"dummy_return_url_{order.id}"] = return_url
+    def start_payment_flow(self, request, obligation, return_url):
+        request.session[f"dummy_return_url_{obligation.id}"] = return_url
         return render(
             request,
             "payments_dummy/dummy_pay.html",
-            {"order": order, "form": FakePayForm()},
+            {"obligation": obligation, "form": FakePayForm()},
         )

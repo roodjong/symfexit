@@ -167,7 +167,7 @@ def _start_payment(request):
         messages.error(request, _("Please fill in your address, city, and postal code before starting a subscription."))
         return redirect("members:memberdata")
 
-    order = Order.objects.create_with_obligation(
+    _order, obligation = Order.objects.create_with_obligation(
         product=product,
         billing_address=billing_address,
         for_user=user,
@@ -176,7 +176,7 @@ def _start_payment(request):
 
     provider = payments_registry.get_main()
     return provider.start_payment_flow(
-        request, order, reverse("members:memberdata")
+        request, obligation, reverse("members:memberdata")
     )
 
 
