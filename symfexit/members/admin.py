@@ -320,10 +320,20 @@ class BaseUserAdmin(admin.ModelAdmin):
         context.update({"delete_is_cancel": True})
         return super().render_change_form(request, context, add, change, form_url, obj)
 
+    def delete_view(self, request, object_id, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+        obj = self.get_object(request, unquote(object_id))
+        if obj is not None:
+            extra_context["active_orders"] = obj.order_set.filter(cancelled_at__isnull=True)
+        return super().delete_view(request, object_id, extra_context)
+
     def delete_model(self, request, obj: User):
         obj.is_active = False
         obj.date_left = timezone.now()
         obj.save()
+        for order in obj.order_set.filter(cancelled_at__isnull=True):
+            order.cancel()
 
     def has_add_permission(self, request):
         return False
