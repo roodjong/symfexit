@@ -62,8 +62,8 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
         """Returns whether this payment processor is available."""
         pass
 
-    def start_payment_flow(self, request, order, return_url):
-        """Starts the payment flow for the given order.
+    def start_payment_flow(self, request, obligation, return_url):
+        """Starts the payment flow for the given payment obligation.
 
         Should return an HttpResponse (either a redirect or a rendered template).
         """

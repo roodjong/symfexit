@@ -103,7 +103,8 @@ class MembershipApplication(models.Model):
 
     def get_or_create_order(self):
         if self._order is not None:
-            return self._order
+            obligation = self._order.get_or_create_next_payment_obligation(timezone="UTC")
+            return self._order, obligation
 
         if self.membership_tier is not None:
             product = self.membership_tier.product
@@ -124,7 +125,7 @@ class MembershipApplication(models.Model):
             postal_code=self.postal_code,
         )
 
-        order = Order.objects.create_with_obligation(
+        order, obligation = Order.objects.create_with_obligation(
             product=product,
             billing_address=billing_address,
             price_euros=price_euros,
@@ -132,7 +133,7 @@ class MembershipApplication(models.Model):
 
         self._order = order
         self.save()
-        return order
+        return order, obligation
 
     def create_user(self):
         try:

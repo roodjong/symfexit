@@ -46,9 +46,9 @@ class MemberSignup(FormView):
 def member_signup_pay(request, application_id):
     provider = payments_registry.get_main()
     application = MembershipApplication.get_or_404(application_id)
-    order = application.get_or_create_order()
+    _, obligation = application.get_or_create_order()
     return provider.start_payment_flow(
-        request, order, reverse("signup:return", args=[application.eid])
+        request, obligation, reverse("signup:return", args=[application.eid])
     )
 
 
@@ -57,9 +57,9 @@ def member_signup_pay_retry(request, application_id):
         return HttpResponseNotAllowed(["POST"])
     application = MembershipApplication.get_or_404(application_id)
     provider = payments_registry.get_main()
-    order = application.get_or_create_order()
+    _, obligation = application.get_or_create_order()
     return provider.start_payment_flow(
-        request, order, reverse("signup:return", args=[application.eid])
+        request, obligation, reverse("signup:return", args=[application.eid])
     )
 
 
