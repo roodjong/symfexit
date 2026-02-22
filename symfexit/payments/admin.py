@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
@@ -158,11 +159,40 @@ class PaymentInline(admin.TabularInline):
     extra = 0
 
 
+class OrderStatusFilter(SimpleListFilter):
+    title = _("status")
+    parameter_name = "status"
+
+    def lookups(self, request, model_admin):
+        return [(None, _("Active")), ("cancelled", _("Cancelled")), ("all", _("All"))]
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset.filter(cancelled_at__isnull=True)
+        if self.value() == "cancelled":
+            return queryset.filter(cancelled_at__isnull=False)
+        return queryset
+
+    def choices(self, cl):
+        for lookup, title in self.lookup_choices:
+            yield {
+                "selected": self.value() == lookup,
+                "query_string": cl.get_query_string(
+                    {self.parameter_name: lookup},
+                    [],
+                ),
+                "display": title,
+            }
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     change_form_template = "admin/payments/change_form.html"
+    delete_confirmation_template = "admin/payments/order_cancel_confirm.html"
     autocomplete_fields = ("ordered_for", "ordered_for_billing_address")
     inlines = (PaymentObligationInline, PaymentInline)
+    list_display = ("product_name", "ordered_for", "created_at", "cancelled_at")
+    list_filter = (OrderStatusFilter,)
     show_change_link = True
 
     def get_readonly_fields(self, request, obj=None):
@@ -175,8 +205,27 @@ class OrderAdmin(admin.ModelAdmin):
                 "subscription_period_unit",
                 "subscription_period",
                 "ordered_for",
+                "cancelled_at",
             )
         return super().get_readonly_fields(request, obj)
+
+    def render_change_form(self, request, context, add=False, change=False, form_url="", obj=None):
+        context.update({"delete_is_cancel": True})
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
+    def delete_model(self, request, obj):
+        obj.cancel()
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None and obj.cancelled_at is not None:
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
