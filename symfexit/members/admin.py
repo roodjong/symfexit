@@ -28,9 +28,46 @@ from symfexit.members.models import LocalGroup, User, WorkGroup, generate_member
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")
 
-# class MembershipInline(admin.StackedInline):
-#     model = Membership
-#     extra = 0
+
+def _get_order_inline():
+    from symfexit.payments.models import Order  # noqa: PLC0415
+
+    class OrderInline(admin.TabularInline):
+        model = Order
+        fields = (
+            "product_name",
+            "product_price_euros",
+            "created_at",
+            "cancelled_at",
+            "last_payment",
+        )
+        readonly_fields = (
+            "product_name",
+            "product_price_euros",
+            "created_at",
+            "cancelled_at",
+            "last_payment",
+        )
+        extra = 0
+        max_num = 0
+        can_delete = False
+        show_change_link = True
+        verbose_name = _("active order")
+        verbose_name_plural = _("active orders")
+
+        @admin.display(description=_("last payment"))
+        def last_payment(self, obj):
+            from django.utils.formats import date_format  # noqa: PLC0415
+
+            payment = obj.payment_set.order_by("-paid_at").first()
+            if payment:
+                return date_format(payment.paid_at, "DATETIME_FORMAT")
+            return "-"
+
+        def get_queryset(self, request):
+            return super().get_queryset(request).filter(cancelled_at__isnull=True)
+
+    return OrderInline
 
 #     # autocomplete_fields = ("address",)
 #     exclude = ()
@@ -179,7 +216,8 @@ class BaseUserAdmin(admin.ModelAdmin):
     )
     delete_confirmation_template = "admin/members/membership_cancellation_confirm.html"
 
-    # inlines = (MembershipInline,)
+    def get_inlines(self, request, obj=None):
+        return [_get_order_inline()]
 
     def get_changeform_initial_data(self, request):
         return {"member_identifier": generate_member_number()}
