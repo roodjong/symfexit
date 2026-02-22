@@ -148,7 +148,14 @@ class BaseUserAdmin(admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("last_login", "date_joined", "date_left", "is_active")
+    readonly_fields = (
+        "membership_type",
+        "membership_tier",
+        "last_login",
+        "date_joined",
+        "date_left",
+        "is_active",
+    )
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
@@ -431,6 +438,8 @@ class LocalGroupMemberAdmin(AbstractUserAdmin):
     )
     readonly_fields = [
         "member_identifier",
+        "membership_type",
+        "membership_tier",
         "first_name",
         "last_name",
         "email",
