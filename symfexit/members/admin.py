@@ -353,6 +353,11 @@ class BaseUserAdmin(admin.ModelAdmin):
 
 
 class AbstractUserAdmin(BaseUserAdmin):
+    MEMBER_TYPE_MODEL_MAP = {
+        User.MemberType.MEMBER: "member",
+        User.MemberType.SUPPORT_MEMBER: "supportmember",
+    }
+
     def has_add_permission(self, request):
         return super(admin.ModelAdmin, self).has_add_permission(request)
 
@@ -377,6 +382,25 @@ class AbstractUserAdmin(BaseUserAdmin):
             return False
         return super(admin.ModelAdmin, self).has_change_permission(request, obj)
 
+    def response_change(self, request, obj):
+        expected_model = self.MEMBER_TYPE_MODEL_MAP.get(obj.member_type)
+        current_model = self.model._meta.model_name
+
+        if (
+            expected_model
+            and current_model in self.MEMBER_TYPE_MODEL_MAP.values()
+            and current_model != expected_model
+        ):
+            if "_continue" in request.POST:
+                url = reverse(f"admin:members_{expected_model}_change", args=[obj.pk])
+            elif "_addanother" in request.POST:
+                url = reverse(f"admin:members_{expected_model}_add")
+            else:
+                url = reverse(f"admin:members_{expected_model}_changelist")
+            return HttpResponseRedirect(url)
+
+        return super().response_change(request, obj)
+
 
 # Proxy for a separate view with only members on the admin page
 class Member(User):
@@ -391,6 +415,11 @@ class MemberAdmin(AbstractUserAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(member_type=User.MemberType.MEMBER)
 
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.member_type = User.MemberType.MEMBER
+        super().save_model(request, obj, form, change)
+
 
 # Proxy for a separate view with only support members on the admin page
 class SupportMember(User):
@@ -404,6 +433,11 @@ class SupportMember(User):
 class SupportMemberAdmin(AbstractUserAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(member_type=User.MemberType.SUPPORT_MEMBER)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.member_type = User.MemberType.SUPPORT_MEMBER
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(LocalGroup)
