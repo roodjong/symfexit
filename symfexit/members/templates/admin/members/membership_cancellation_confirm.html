@@ -29,8 +29,16 @@
     <p>{% blocktranslate with escaped_object=object %}Are you sure you want to cancel the membership of {{ object_name }} “{{ escaped_object }}”? {% endblocktranslate %}</p>
     <p>Cancelling membership will result in:</p>
     <ul>
-        <li>Stopping any payments.</li>
         <li>The (former) member not being able to log in anymore.</li>
+        {% if active_orders %}
+        <li>The following orders will be cancelled:
+            <ul>
+            {% for order in active_orders %}
+                <li>{{ order }}</li>
+            {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
     </ul>
     <p>This cannot be undone!</p>
     <form method="post">{% csrf_token %}

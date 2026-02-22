@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 from hashids import Hashids
 
 from symfexit.members.admin import Member
@@ -325,6 +326,7 @@ class Order(models.Model):
     ordered_for_billing_address = models.ForeignKey(BillingAddress, on_delete=models.PROTECT)
 
     created_at = models.DateTimeField(auto_now_add=True)
+    cancelled_at = models.DateTimeField(_("cancelled at"), null=True, blank=True)
 
     objects = OrderManager()
 
@@ -396,7 +398,13 @@ class Order(models.Model):
             next_year = previous_year + int(year_rollover)
         return next_year, next_period
 
+    def cancel(self):
+        self.cancelled_at = datetime.now(tz=zoneinfo.ZoneInfo("UTC"))
+        self.save(update_fields=["cancelled_at"])
+
     def get_or_create_next_payment_obligation(self, *, timezone, now: datetime = None):
+        if self.cancelled_at is not None:
+            return None
         timezone = zoneinfo.ZoneInfo(timezone)
         if now is None:
             now = datetime.now(tz=timezone)
@@ -426,19 +434,20 @@ class Order(models.Model):
         if obligation is None:
             ar_account, _ = Account.get_accounts_receivable_account()
             revenue_account, _ = Account.get_revenue_account()
-            transaction = Transaction.objects.create(
-                credit_account=revenue_account,
-                debit_account=ar_account,
-                amount_cents=int(self.product_price_euros * 100),
-            )
-            obligation = PaymentObligation.objects.create(
-                order=self,
-                year=next_year,
-                period=next_period,
-                pay_before=pay_before,
-                ordered_for_billing_address=self.ordered_for_billing_address,
-                transaction=transaction,
-            )
+            with transaction.atomic():
+                t = Transaction.objects.create(
+                    credit_account=revenue_account,
+                    debit_account=ar_account,
+                    amount_cents=int(self.product_price_euros * 100),
+                )
+                obligation = PaymentObligation.objects.create(
+                    order=self,
+                    year=next_year,
+                    period=next_period,
+                    pay_before=pay_before,
+                    ordered_for_billing_address=self.ordered_for_billing_address,
+                    transaction=t,
+                )
         return obligation
 
 
