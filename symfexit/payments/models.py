@@ -489,7 +489,8 @@ class Payment(models.Model):
 
 
 class PaymentProvider(models.Model):
+    name = models.CharField(max_length=100, default="")
     type = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.type
+        return self.name
