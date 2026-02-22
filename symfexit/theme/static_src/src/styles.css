@@ -89,7 +89,6 @@ form {
     @apply text-red-500;
   }
   .pay-more {
-    @apply -mt-4;
     label {
       @apply hidden;
     }
