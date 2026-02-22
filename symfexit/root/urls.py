@@ -74,11 +74,11 @@ urlpatterns = (
         lambda: [path("__reload__/", include("django_browser_reload.urls"))],
     )
     + enable_if(
-        settings.DEBUG,
+        settings.SYMFEXIT_ENV == "development",
         lambda: (
             [
-                path("dummy/", include("symfexit.payments.dummy.urls")),
                 path(".well-known/appspecific/com.chrome.devtools.json", chrome_devtools),
+                path("dummy/", include("symfexit.payments.dummy.urls")),
             ]
             + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
         ),
