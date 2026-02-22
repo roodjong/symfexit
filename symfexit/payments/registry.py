@@ -43,7 +43,7 @@ class PaymentsRegistry:
             processor.initialize()
 
     def __iter__(self):
-        return reversed(self._registry)
+        return iter(self._names.items())
 
 
 payments_registry = PaymentsRegistry()
@@ -61,6 +61,10 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
     def is_available(self) -> bool:
         """Returns whether this payment processor is available."""
         pass
+
+    def can_install(self) -> bool:
+        """Returns whether this payment processor can be installed in this environment."""
+        return True
 
     def start_payment_flow(self, request, obligation, return_url):
         """Starts the payment flow for the given payment obligation.

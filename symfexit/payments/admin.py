@@ -278,24 +278,32 @@ class PaymentProviderAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance:
+            choices = [
+                (name, provider.description())
+                for name, provider in payments_registry
+                if provider.can_install()
+            ]
+            # Keep the current type in the dropdown even if no longer installable
+            if self.instance.pk and self.instance.type:
+                if not any(name == self.instance.type for name, _ in choices):
+                    provider = payments_registry.get(self.instance.type)
+                    if provider:
+                        choices.append((self.instance.type, provider.description()))
             self.fields["type"].widget = forms.Select(
-                choices=[
-                    ("", "---"),
-                    *((name, provider.description()) for name, provider in payments_registry),
-                ]
+                choices=[("", "---"), *choices]
             )
 
 
 @admin.register(PaymentProvider)
 class PaymentProviderAdmin(admin.ModelAdmin):
     form = PaymentProviderAdminForm
-    list_display = ("type",)
+    list_display = ("name", "type")
 
     def get_inlines(self, request, obj):
-        inlines = []
-        for _, provider in payments_registry:
-            inline = provider.get_settings_inline()
-            if inline is not None:
-                inlines.append(inline)
-
-        return inlines
+        if obj and obj.type:
+            provider = payments_registry.get(obj.type)
+            if provider:
+                inline = provider.get_settings_inline()
+                if inline:
+                    return [inline]
+        return []
