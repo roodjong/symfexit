@@ -46,6 +46,7 @@ class SubscriptionInline(admin.StackedInline):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     inlines = [SubscriptionInline]
+    search_fields = ("name", "sku")
 
 
 class GeneralLedgerForm(forms.ModelForm):

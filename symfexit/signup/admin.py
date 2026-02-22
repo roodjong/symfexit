@@ -5,7 +5,7 @@ from symfexit.signup.models import DuplicateEmailError, MembershipApplication
 
 @admin.register(MembershipApplication)
 class MembershipApplicationAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "email", "status", "created_at")
+    list_display = ("first_name", "last_name", "email", "membership_type", "status", "created_at")
     fields = (
         "created_at",
         "first_name",
@@ -17,14 +17,18 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
         "city",
         "postal_code",
         "preferred_group",
-        "payment_amount",
+        "membership_type",
+        "membership_tier",
+        "payment_amount_euros",
         "_order",
         "status",
         "user",
     )
     readonly_fields = (
         "created_at",
-        "payment_amount",
+        "payment_amount_euros",
+        "membership_type",
+        "membership_tier",
         "_order",
         "user",
     )

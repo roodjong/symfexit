@@ -104,6 +104,8 @@ class BaseUserAdmin(admin.ModelAdmin):
                 "fields": (
                     "member_identifier",
                     "member_type",
+                    "membership_type",
+                    "membership_tier",
                     "first_name",
                     "last_name",
                     "email",
@@ -158,6 +160,8 @@ class BaseUserAdmin(admin.ModelAdmin):
         LocalGroupFilter,
         PermissionGroupFilter,
         "cadre",
+        "membership_type",
+        "membership_tier",
     )
 
     search_fields = ("first_name", "last_name", "email")

@@ -78,6 +78,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     member_type = models.CharField(
         _("membership type"), default=MemberType.MEMBER, choices=MemberType
     )
+    membership_type = models.ForeignKey(
+        "membership.MembershipType",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership type (tier)"),
+    )
+    membership_tier = models.ForeignKey(
+        "membership.MembershipTier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership tier"),
+    )
 
     is_staff = models.BooleanField(
         _("staff status"),
