@@ -1,6 +1,6 @@
 [project]
 name = "symfexit"
-version = "0.1.0"
+dynamic = ["version"]
 description = ""
 authors = [
     {name = "Jelle Besseling", email = "jelle@pingiun.com"}
@@ -26,8 +26,13 @@ dependencies = [
 ]
 requires-python = ">= 3.13"
 
+[tool.setuptools_scm]
+
+[tool.setuptools]
+packages = ["symfexit"]
+
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=80", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [dependency-groups]
