@@ -97,11 +97,13 @@ cd symfexit/theme/static_src
 npm install
 ```
 
-
-
 ### Loading fixtures
 
-To load sample data for development or testing, use the custom management command:
+To load sample data for development or testing, first apply migrations and then use the custom management command:
+
+```sh
+python manage.py migrate
+```
 
 ```sh
 python manage.py load_fixtures
@@ -192,3 +194,19 @@ python manage.py compilemessages
 ```
 
 More information can be found on the Django documentation site: https://docs.djangoproject.com/en/dev/topics/i18n/translation/
+
+## Production deployment
+
+The production instance at `symfexit.roodjongeren.nl` is currently deployed via simple git checkout:
+
+```bash
+sudo -u deploy -i
+systemctl stop symfexit
+systemctl stop symfexit-worker
+cd symfexit
+git pull
+systemctl start symfexit
+systemctl start symfexit-worker
+```
+
+The environment file at `.env` in the checkout is used when starting both services.
