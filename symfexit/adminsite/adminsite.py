@@ -1,10 +1,11 @@
 from functools import update_wrapper
 
-from constance import config
 from django.contrib import admin
 from django.urls.resolvers import URLResolver
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
+
+from symfexit.tenants.config import config
 
 
 class TenantAdminSite(admin.AdminSite):
@@ -26,6 +27,17 @@ class TenantAdminSite(admin.AdminSite):
     def index_title(self):
         # Text to put at the top of the admin index page.
         return format_lazy(_("{site_title} administration"), site_title=config.SITE_TITLE)
+
+    def get_app_list(self, request, app_label=None):
+        from django.apps import apps  # noqa: PLC0415
+
+        app_list = super().get_app_list(request, app_label=app_label)
+        for app in apps.get_app_configs():
+            if hasattr(app, "get_admin_app_list_entry"):
+                entry = app.get_admin_app_list_entry(request, self)
+                if entry and (app_label is None or app_label == entry.get("app_label")):
+                    app_list.append(entry)
+        return app_list
 
     def get_urls(self) -> list[URLResolver]:
         from django.apps import apps  # noqa: PLC0415
