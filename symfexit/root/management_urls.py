@@ -1,10 +1,9 @@
 from django.conf import settings
-from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 
-# from symfexit.adminsite.admin import admin_site
 from symfexit.root.utils import enable_if
+from symfexit.tenants.adminsite import global_admin
 
 try:
     import django_browser_reload  # noqa
@@ -27,7 +26,7 @@ def regular_urlpatterns():
 urlpatterns = (
     [
         path("healthz", health_check, name="healthz"),
-        path("management/", admin.site.urls),
+        path("management/", global_admin.urls),
     ]
     + enable_if(
         django_browser_reload_enabled,

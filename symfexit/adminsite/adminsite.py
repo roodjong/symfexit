@@ -7,7 +7,7 @@ from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 
-class MyAdminSite(admin.AdminSite):
+class TenantAdminSite(admin.AdminSite):
     def __init__(self, name: str = "admin") -> None:
         super().__init__(name)
         self.final_catch_all_view = False
@@ -48,7 +48,7 @@ class MyAdminSite(admin.AdminSite):
         return urls
 
 
-admin_site = MyAdminSite(name="symfexit_admin")
+admin_site = TenantAdminSite(name="symfexit_admin")
 
 
 def get_admin_site():
