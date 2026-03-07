@@ -179,7 +179,7 @@ To translate newly added strings, you need to do the following steps:
 1. Generate the list of strings to be translated by running:
 
 ```bash
-python manage.py makemessages -l nl
+python manage.py makemessages -l nl -i .venv
 ```
 
 2. Translate the strings in the `django.po` files.
@@ -190,8 +190,12 @@ So after checking and correcting these translations, the "fuzzy" tag should be r
 3. Compile the translation files:
 
 ```bash
-python manage.py compilemessages
+python manage.py compilemessages -l nl -i .venv
 ```
+
+Note that the files are only compiled if the timestamp in the `django.po` file has changed since the last compilation. 
+This timestamp is automatically updated by the `makemessages` command,
+but if you compile and then change the translations without running `makemessages`, you have to update it manually.
 
 More information can be found on the Django documentation site: https://docs.djangoproject.com/en/dev/topics/i18n/translation/
 
