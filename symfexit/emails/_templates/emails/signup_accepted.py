@@ -18,7 +18,7 @@ class SignupAcceptedEmail(BodyTemplate[ApplyContext]):
     subject_template = "Welcome to {{site_url}}"
     html_template = """<p>Welcome to {{site_url}}!</p>
 
-<p>Please go to the following page and choose a new password:</p>
+<p>Please go to the following page and choose a password:</p>
 
 <p><a href="{{password_reset_url}}">{{password_reset_url}}</a></p>
 
@@ -29,7 +29,7 @@ class SignupAcceptedEmail(BodyTemplate[ApplyContext]):
 {{site_title}}"""
     text_template = """Welcome to {{site_url}}!
 
-Please go to the following page and choose a new password:
+Please go to the following page and choose a password:
 
 {{password_reset_url}}
 
