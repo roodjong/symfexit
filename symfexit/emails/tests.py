@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from constance.test.unittest import override_config
+from symfexit.tenants.test import override_config
 from django.core import mail
 from django.template import Context, Template
 from django.test import TestCase, override_settings
@@ -173,7 +173,7 @@ class EmailComponentTests(TestCase):
         # Verify that the email is queued by the locmem backend
         self.assertEqual(len(mail.outbox), 1)
         sent_email = mail.outbox[0]
-        self.assertEqual(sent_email.subject, "Welcome to Symfexit")
+        self.assertEqual(sent_email.subject, "Welcome to Membersite")
         self.assertEqual(sent_email.to, ["user@example.com"])
         self.assertNotIn("User@example.com", sent_email.body)  # sanity check
         self.assertIn("Custom value", sent_email.body)

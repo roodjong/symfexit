@@ -2,6 +2,7 @@ import django
 from django.apps import AppConfig
 from django.conf import settings
 from django.db.models.signals import post_migrate
+from django.utils.translation import gettext_lazy as _
 
 
 def create_dev_domains(client):
@@ -35,6 +36,13 @@ def ensure_single_tenant_if_enabled(sender, **kwargs):
 class TenantsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "symfexit.tenants"
+    verbose_name = _("Tenants")
 
     def ready(self):
         post_migrate.connect(ensure_single_tenant_if_enabled, sender=self)
+
+
+class SiteSettingsConfig(AppConfig):
+    name = "symfexit.site_settings"
+    label = "site_settings"
+    verbose_name = _("Settings")

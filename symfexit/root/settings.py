@@ -137,16 +137,6 @@ else:
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-CONSTANCE_ADDITIONAL_FIELDS = {
-    "image_field": [
-        "django.forms.FileField",
-        {"required": False, "widget": "symfexit.root.helpers.ClearableFileInputFromStr"},
-    ]
-}
-
-CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
-
-# https://django-constance.readthedocs.io/en/latest/#configuration
 CONSTANCE_CONFIG = {
     "SITE_TITLE": ("Membersite", _("Main title of this site")),
     "LOGO_IMAGE": ("", _("Organisation logo"), "image_field"),
@@ -154,10 +144,6 @@ CONSTANCE_CONFIG = {
     "HOMEPAGE_CURRENT": (
         0,
         _("Current home page (configure this on the home pages admin)"),
-    ),
-    "PAYMENT_TIERS_JSON": (
-        "{}",
-        _("JSON with payment tiers (configure this on the membership admin)"),
     ),
 }
 
@@ -185,7 +171,6 @@ TENANT_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "tinymce",
-    "constance",
     "django_drf_filepond",
     # our own apps
     "symfexit.theme",
@@ -205,6 +190,7 @@ TENANT_APPS = [
     "symfexit.membership.apps.MembershipConfig",
     "symfexit.adminsite.apps.MyAdminConfig",
     "symfexit.events.apps.EventsConfig",
+    "symfexit.tenants.apps.SiteSettingsConfig",
 ]
 
 if SINGLE_SITE:
@@ -242,7 +228,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "constance.context_processors.config",
+                "symfexit.tenants.context_processors.config_context",
                 "django.template.context_processors.request",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
