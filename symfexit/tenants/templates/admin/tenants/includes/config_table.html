@@ -1,0 +1,53 @@
+{% load i18n static %}
+<table style="width: 100%; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">{% translate "NAME" %}</th>
+      <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">{% translate "DEFAULT" %}</th>
+      <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">{% translate "VALUE" %}</th>
+      <th style="text-align: center; padding: 8px; border-bottom: 2px solid #ddd;">{% translate "IS MODIFIED" %}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in config_rows %}
+    <tr style="border-bottom: 1px solid #eee;">
+      <td style="padding: 8px; vertical-align: top;">
+        <strong>{{ row.key }}</strong><br>
+        <span class="help">{{ row.description }}</span>
+      </td>
+      <td style="padding: 8px; vertical-align: top;">
+        {% if row.is_file %}
+          &mdash;
+        {% else %}
+          {{ row.default }}
+        {% endif %}
+      </td>
+      <td style="padding: 8px; vertical-align: top;">
+        {{ row.form_field }}
+        {% if not row.is_file %}
+        <br><a href="#" class="config-reset" data-default="{{ row.default }}" data-field-id="id_config_{{ row.key }}" style="font-size: 11px;">{% translate "Reset to default" %}</a>
+        {% endif %}
+      </td>
+      <td style="padding: 8px; text-align: center; vertical-align: top;">
+        {% if row.is_modified %}
+          <img src="{% static 'admin/img/icon-yes.svg' %}" alt="{% translate 'Modified' %}">
+        {% else %}
+          <img src="{% static 'admin/img/icon-no.svg' %}" alt="{% translate 'Default' %}">
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+document.querySelectorAll('.config-reset').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var field = document.getElementById(this.dataset.fieldId);
+        if (field) {
+            field.value = this.dataset.default;
+        }
+    });
+});
+</script>
