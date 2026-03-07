@@ -1,6 +1,5 @@
 from django import forms
 from django.apps import apps
-from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.options import csrf_protect_m
 from django.core.exceptions import PermissionDenied
@@ -15,6 +14,7 @@ from django_tenants.admin import TenantAdminMixin
 
 from symfexit.root.helpers import ClearableFileInputFromStr
 from symfexit.tenants.adminsite import global_admin
+from symfexit.tenants.config import CONFIG_SCHEMA
 from symfexit.tenants.models import Client, Domain
 
 
@@ -23,118 +23,104 @@ class DomainInline(admin.TabularInline):
     extra = 0
 
 
-IMAGE_FIELD_KEYS = {
-    key
-    for key, meta in settings.CONSTANCE_CONFIG.items()
-    if len(meta) > 2 and meta[2] == "image_field"  # noqa: PLR2004
-}
+class ConfigFormMixin:
+    """Mixin that initialises and saves config fields backed by CONFIG_SCHEMA."""
 
+    def _init_config_fields(self, config_data):
+        for key, schema in CONFIG_SCHEMA.items():
+            form_key = f"config_{key}"
+            if schema.field_type == "image_field":
+                form_field = forms.FileField(
+                    label=schema.label, required=False, widget=ClearableFileInputFromStr
+                )
+            elif isinstance(schema.default, bool):
+                form_field = forms.BooleanField(label=schema.label, required=False)
+            elif isinstance(schema.default, int):
+                form_field = forms.IntegerField(label=schema.label, required=False)
+            else:
+                form_field = forms.CharField(
+                    label=schema.label,
+                    required=False,
+                    widget=forms.Textarea(attrs={"rows": 3}),
+                )
+            form_field.initial = config_data.get(key, schema.default)
+            self.fields[form_key] = form_field
 
-def _make_config_model_form():
-    """Build a ModelForm class with fields for each CONSTANCE_CONFIG key."""
-    field_defs = _make_config_fields()
+    def _save_config_fields(self, client, cleaned_data):
+        if client.config is None:
+            client.config = {}
+        for key, schema in CONFIG_SCHEMA.items():
+            form_key = f"config_{key}"
+            if form_key not in cleaned_data:
+                continue
+            value = cleaned_data[form_key]
+            if schema.field_type == "image_field":
+                if value is False:
+                    client.config[key] = ""
+                elif value:
+                    name = default_storage.save(value.name, value)
+                    client.config[key] = name
+            else:
+                if isinstance(schema.default, int) and value is None:
+                    value = schema.default
+                client.config[key] = value
 
-    class ClientConfigForm(forms.ModelForm):
-        class Meta:
-            model = Client
-            fields = ("name",)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            instance = kwargs.get("instance")
-            config_data = instance.config if instance and instance.pk else {}
-            for cfg_key, cfg_meta in settings.CONSTANCE_CONFIG.items():
-                form_key = f"config_{cfg_key}"
-                if form_key in self.fields:
-                    self.fields[form_key].initial = config_data.get(cfg_key, cfg_meta[0])
-
-        def save(self, commit=True):
-            instance = super().save(commit=False)
-            _save_config_fields(instance, self.cleaned_data)
-            if commit:
-                instance.save()
-            return instance
-
-        def get_config_rows(self):
-            """Return config data for the template table."""
-            return _get_config_rows(self.instance, self)
-
-    for fname, fobj in field_defs.items():
-        ClientConfigForm.base_fields[fname] = fobj
-        ClientConfigForm.declared_fields[fname] = fobj
-
-    return ClientConfigForm
-
-
-def _make_config_fields():
-    """Create form field definitions for all CONSTANCE_CONFIG keys."""
-    field_defs = {}
-    for key, meta in settings.CONSTANCE_CONFIG.items():
-        default = meta[0]
-        label = str(meta[1])
-        field_type = meta[2] if len(meta) > 2 else None
-        if field_type == "image_field":
-            field_defs[f"config_{key}"] = forms.FileField(
-                label=label, required=False, widget=ClearableFileInputFromStr
+    def get_config_rows(self, instance):
+        config_data = instance.config if instance and instance.pk else {}
+        rows = []
+        for key, schema in CONFIG_SCHEMA.items():
+            is_file = schema.field_type == "image_field"
+            current = config_data.get(key, schema.default)
+            modified = key in config_data and config_data[key] != schema.default
+            rows.append(
+                {
+                    "key": key,
+                    "description": str(schema.label),
+                    "default": "" if is_file else localize(schema.default),
+                    "value": localize(current),
+                    "is_modified": modified,
+                    "is_file": is_file,
+                    "is_checkbox": isinstance(schema.default, bool),
+                    "form_field": self[f"config_{key}"],
+                }
             )
-        elif isinstance(default, bool):
-            field_defs[f"config_{key}"] = forms.BooleanField(label=label, required=False)
-        elif isinstance(default, int):
-            field_defs[f"config_{key}"] = forms.IntegerField(label=label, required=False)
-        else:
-            field_defs[f"config_{key}"] = forms.CharField(
-                label=label, required=False, widget=forms.Textarea(attrs={"rows": 3})
-            )
-    return field_defs
+        return rows
 
 
-def _save_config_fields(client, cleaned_data):
-    """Save config fields from cleaned form data into client.config."""
-    if client.config is None:
-        client.config = {}
-    for cfg_key, cfg_meta in settings.CONSTANCE_CONFIG.items():
-        form_key = f"config_{cfg_key}"
-        if form_key not in cleaned_data:
-            continue
-        value = cleaned_data[form_key]
-        if cfg_key in IMAGE_FIELD_KEYS:
-            if value is False:
-                client.config[cfg_key] = ""
-            elif value:
-                name = default_storage.save(value.name, value)
-                client.config[cfg_key] = name
-        else:
-            default = cfg_meta[0]
-            if isinstance(default, int) and value is None:
-                value = default
-            client.config[cfg_key] = value
+class ClientConfigForm(ConfigFormMixin, forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = ("name",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get("instance")
+        config_data = instance.config if instance and instance.pk else {}
+        self._init_config_fields(config_data)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        self._save_config_fields(instance, self.cleaned_data)
+        if commit:
+            instance.save()
+        return instance
+
+    def get_config_rows(self):
+        return super().get_config_rows(self.instance)
 
 
-def _get_config_rows(instance, form):
-    """Return config row data for the template table."""
-    config_data = instance.config if instance and instance.pk else {}
-    rows = []
-    for cfg_key, cfg_meta in settings.CONSTANCE_CONFIG.items():
-        default = cfg_meta[0]
-        is_file = cfg_key in IMAGE_FIELD_KEYS
-        current = config_data.get(cfg_key, default)
-        modified = cfg_key in config_data and config_data[cfg_key] != default
-        rows.append(
-            {
-                "key": cfg_key,
-                "description": str(cfg_meta[1]),
-                "default": "" if is_file else localize(default),
-                "value": localize(current),
-                "is_modified": modified,
-                "is_file": is_file,
-                "is_checkbox": isinstance(default, bool),
-                "form_field": form[f"config_{cfg_key}"],
-            }
-        )
-    return rows
+class SiteSettingsForm(ConfigFormMixin, forms.Form):
+    """Standalone form (not ModelForm) for the site settings page."""
 
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tenant = tenant
+        config_data = tenant.config if tenant else {}
+        self._init_config_fields(config_data)
 
-ClientConfigForm = _make_config_model_form()
+    def save(self):
+        self._save_config_fields(self.tenant, self.cleaned_data)
+        self.tenant.save(update_fields=["config"])
 
 
 @admin.register(Client, site=global_admin)
@@ -148,24 +134,6 @@ class GlobalClientAdmin(TenantAdminMixin, admin.ModelAdmin):
         return [
             (None, {"fields": ("name",)}),
         ]
-
-
-class SiteSettingsForm(forms.Form):
-    """Standalone form (not ModelForm) for the constance-style settings page."""
-
-    def __init__(self, *args, tenant=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.tenant = tenant
-        config_data = tenant.config if tenant else {}
-        for key, field in _make_config_fields().items():
-            cfg_key = key.removeprefix("config_")
-            default = settings.CONSTANCE_CONFIG[cfg_key][0]
-            field.initial = config_data.get(cfg_key, default)
-            self.fields[key] = field
-
-    def save(self):
-        _save_config_fields(self.tenant, self.cleaned_data)
-        self.tenant.save(update_fields=["config"])
 
 
 class SiteSettings:
@@ -203,6 +171,7 @@ class SiteSettings:
     _meta = Meta()
 
 
+@admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
     change_list_template = "admin/tenants/sitesettings/change_list.html"
 
@@ -238,7 +207,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         context = {
             **self.admin_site.each_context(request),
             **(extra_context or {}),
-            "config_values": _get_config_rows(tenant, form),
+            "config_values": form.get_config_rows(tenant),
             "title": _("Site settings"),
             "app_label": "tenants",
             "opts": self.model._meta,
@@ -253,6 +222,3 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, *args, **kwargs):
         return False
-
-
-admin.site.register([SiteSettings], SiteSettingsAdmin)

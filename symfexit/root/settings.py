@@ -16,8 +16,6 @@ from collections import OrderedDict
 from pathlib import Path
 
 import dj_database_url
-from django.utils.translation import gettext_lazy as _
-
 from symfexit.root.utils import enable_if
 
 try:
@@ -136,16 +134,6 @@ else:
     CSRF_TRUSTED_ORIGINS = []
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-CONSTANCE_CONFIG = {
-    "SITE_TITLE": ("Membersite", _("Main title of this site")),
-    "LOGO_IMAGE": ("", _("Organisation logo"), "image_field"),
-    "MAIN_SITE": ("https://roodjongeren.nl/", _("Main site of the organisation")),
-    "HOMEPAGE_CURRENT": (
-        0,
-        _("Current home page (configure this on the home pages admin)"),
-    ),
-}
 
 # Application definition
 

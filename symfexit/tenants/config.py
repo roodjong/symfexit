@@ -1,33 +1,53 @@
-from django.conf import settings
+from dataclasses import dataclass
+
 from django.db import connection
+from django.utils.translation import gettext_lazy as _
+
+
+@dataclass
+class ConfigField:
+    default: object
+    label: str
+    field_type: str = ""
+
+
+CONFIG_SCHEMA = {
+    "SITE_TITLE": ConfigField(default="Membersite", label=_("Main title of this site")),
+    "LOGO_IMAGE": ConfigField(default="", label=_("Organisation logo"), field_type="image_field"),
+    "MAIN_SITE": ConfigField(
+        default="https://roodjongeren.nl/", label=_("Main site of the organisation")
+    ),
+    "HOMEPAGE_CURRENT": ConfigField(
+        default=0, label=_("Current home page (configure this on the home pages admin)")
+    ),
+}
 
 
 class TenantConfig:
     """Attribute-style access to per-tenant config stored in Client.config JSONField.
 
     Reads/writes from connection.tenant.config, falling back to defaults
-    defined in settings.CONSTANCE_CONFIG.
+    defined in CONFIG_SCHEMA.
     """
 
     def __getattr__(self, key):
         if key.startswith("_"):
             raise AttributeError(key)
         try:
-            meta = settings.CONSTANCE_CONFIG[key]
+            field = CONFIG_SCHEMA[key]
         except KeyError as e:
             raise AttributeError(key) from e
-        default = meta[0]
         tenant = getattr(connection, "tenant", None)
         if tenant is None:
-            return default
+            return field.default
         config_data = getattr(tenant, "config", None) or {}
-        return config_data.get(key, default)
+        return config_data.get(key, field.default)
 
     def __setattr__(self, key, value):
         if key.startswith("_"):
             super().__setattr__(key, value)
             return
-        if key not in settings.CONSTANCE_CONFIG:
+        if key not in CONFIG_SCHEMA:
             raise AttributeError(key)
         tenant = getattr(connection, "tenant", None)
         if tenant is None or not hasattr(tenant, "config"):
