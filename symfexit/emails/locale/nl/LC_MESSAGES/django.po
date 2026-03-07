@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-14 14:39+0100\n"
+"POT-Creation-Date: 2026-03-07 16:10+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,10 +31,8 @@ msgid "Organisation logo"
 msgstr "Logo van de organisatie"
 
 #: symfexit/emails/_templates/base.py:125
-#, fuzzy
-#| msgid "Email templates"
-msgid "Email template outlet"
-msgstr "E-mail sjablonen"
+msgid "Email contents"
+msgstr "Inhoud van de e-mail"
 
 #: symfexit/emails/_templates/emails/membership_application.py:14
 msgid "Membership application template"
@@ -50,38 +48,34 @@ msgid "Request new password template"
 msgstr "Nieuw wachtwoord aanvragen sjabloon"
 
 #: symfexit/emails/_templates/emails/password_request.py:47
-#, fuzzy
-#| msgid "Full name of the member"
 msgid "Email address of the member"
-msgstr "Volledige naam van het lid"
+msgstr "E-mailadres van het lid"
 
 #: symfexit/emails/_templates/emails/password_request.py:48
 msgid "Url of the reset password link"
 msgstr "URL van de link voor het opnieuw instellen van het wachtwoord"
 
 #: symfexit/emails/_templates/layouts/base.py:7
-#, fuzzy
-#| msgid "email layout"
 msgid "layout"
-msgstr "e-mail lay-out"
+msgstr "lay-out"
 
 #: symfexit/emails/admin.py:73
 #, python-format
 msgid "The following required keys are missing: %s"
-msgstr ""
+msgstr "De volgende vereiste sleutels missen: %s"
 
 #: symfexit/emails/admin.py:78
 #, python-format
 msgid "The following keys are not recognised: %s"
-msgstr ""
+msgstr "De volgende sleutels zijn niet erkend: %s"
 
 #: symfexit/emails/admin.py:81
 msgid "Allowed keys:"
-msgstr "Toegestane sleutels"
+msgstr "Toegestane sleutels:"
 
 #: symfexit/emails/apps.py:8
 msgid "Email templates"
-msgstr "E-mail sjablonen"
+msgstr "E-mailsjablonen"
 
 #: symfexit/emails/models.py:12 symfexit/emails/models.py:43
 msgid "template"

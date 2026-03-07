@@ -24,7 +24,7 @@ msgstr "Aanmelden"
 
 #: symfexit/signup/forms.py:51
 msgid "None"
-msgstr ""
+msgstr "Geen"
 
 #: symfexit/signup/models.py:22
 msgid "Created"
@@ -88,17 +88,15 @@ msgstr "gebruiker"
 
 #: symfexit/signup/models.py:54
 msgid "subscription order"
-msgstr ""
+msgstr "abbonnementsbestelling"
 
 #: symfexit/signup/models.py:57
 msgid "created at"
 msgstr "gemaakt op"
 
 #: symfexit/signup/models.py:58
-#, fuzzy
-#| msgid "created at"
 msgid "updated at"
-msgstr "gemaakt op"
+msgstr "geüpdatet op"
 
 #: symfexit/signup/models.py:61
 msgid "membership application"

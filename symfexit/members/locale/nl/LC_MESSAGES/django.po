@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-08 16:24+0100\n"
+"POT-Creation-Date: 2026-03-07 15:39+0100\n"
 "PO-Revision-Date: 2025-08-25 20:02+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,71 +17,71 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/members/admin.py:26
+#: symfexit/members/admin.py:28
 msgid "Permission Group"
 msgstr "Rechtengroep"
 
-#: symfexit/members/admin.py:27
+#: symfexit/members/admin.py:29
 msgid "Permission Groups"
 msgstr "Rechtengroepen"
 
-#: symfexit/members/admin.py:38 symfexit/members/models.py:88
+#: symfexit/members/admin.py:40 symfexit/members/models.py:88
 msgid "is registered"
 msgstr "is ingeschreven"
 
-#: symfexit/members/admin.py:42
+#: symfexit/members/admin.py:44
 msgid "Yes"
 msgstr "Ja"
 
-#: symfexit/members/admin.py:42
+#: symfexit/members/admin.py:44
 msgid "No"
 msgstr "Nee"
 
-#: symfexit/members/admin.py:42
+#: symfexit/members/admin.py:44
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:66 symfexit/members/models.py:171
+#: symfexit/members/admin.py:68 symfexit/members/models.py:171
 msgid "local groups"
 msgstr "groepen"
 
-#: symfexit/members/admin.py:79
+#: symfexit/members/admin.py:81
 msgid "permission groups"
 msgstr "rechtengroepen"
 
-#: symfexit/members/admin.py:99 symfexit/members/admin.py:416
+#: symfexit/members/admin.py:101 symfexit/members/admin.py:417
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
-#: symfexit/members/admin.py:117
+#: symfexit/members/admin.py:119
 msgid "Permissions"
 msgstr "Rechten"
 
-#: symfexit/members/admin.py:127
+#: symfexit/members/admin.py:129
 msgid "Important dates"
 msgstr "Belangrijke data"
 
-#: symfexit/members/admin.py:347
+#: symfexit/members/admin.py:348
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:348
+#: symfexit/members/admin.py:349
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:361
+#: symfexit/members/admin.py:362
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:362
+#: symfexit/members/admin.py:363
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:390
+#: symfexit/members/admin.py:391
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:391
+#: symfexit/members/admin.py:392
 msgid "local group members"
 msgstr "groepsleden"
 
