@@ -1,4 +1,3 @@
-from symfexit.tenants.config import config
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.urls import reverse
@@ -6,6 +5,7 @@ from django_tenants.test.cases import FastTenantTestCase
 from django_tenants.test.client import TenantClient
 
 from symfexit.home.models import HomePage
+from symfexit.tenants.config import config
 
 User = get_user_model()
 
