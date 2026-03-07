@@ -17,7 +17,8 @@ from symfexit.home.models import HomePage
 from symfexit.members.models import LocalGroup, User, WorkGroup
 from symfexit.membership.models import Membership
 from symfexit.signup.models import MembershipApplication
-from symfexit.tenants.models import Client, Domain
+from symfexit.tenants.apps import ensure_single_tenant_if_enabled
+from symfexit.tenants.models import Client
 
 
 class Command(BaseCommand):
@@ -39,6 +40,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("Aborted by user."))
             return
 
+        self.delete_all_data()
+
+        self.recreate_tenant()
+
+        self.load_fixtures()
+
+    def delete_all_data(self):
         # Delete all relevant data
         self.stdout.write(self.style.WARNING("Deleting all data..."))
         File.objects.all().delete()
@@ -52,16 +60,15 @@ class Command(BaseCommand):
         WorkGroup.objects.all().delete()
         Membership.objects.all().delete()
         HomePage.objects.all().delete()
-        Client.objects.all().delete()
         self.stdout.write(self.style.SUCCESS("All relevant data deleted."))
 
+    def recreate_tenant(self):
+        Client.objects.all().delete()
+
+        ensure_single_tenant_if_enabled(None)
+
+    def load_fixtures(self):
         now = timezone.now()
-
-        tenant = Client(schema_name="public", name="symfexit")
-        tenant.save()
-
-        domain = Domain(domain="127.0.0.1", tenant=tenant, is_primary=True)
-        domain.save()
 
         view_all_group = WellKnownPermissionGroup.get_or_create(
             code=WellKnownPermissionGroup.WellKnownPermissionGroups.VIEW_ALL
