@@ -9,6 +9,7 @@ from hashids import Hashids
 from symfexit.payments.models import (
     BillingAddress,
     Order,
+    PaymentProvider,
 )
 
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)
@@ -97,7 +98,7 @@ class MembershipApplication(models.Model):
         id = hashids.decode(eid)[0]
         return get_object_or_404(MembershipApplication, id=id)
 
-    def get_or_create_order(self):
+    def get_or_create_order(self, default_provider: PaymentProvider):
         if self._order is not None:
             obligation = self._order.get_or_create_next_payment_obligation(timezone="UTC")
             return self._order, obligation
@@ -125,6 +126,7 @@ class MembershipApplication(models.Model):
             product=product,
             billing_address=billing_address,
             price_euros=price_euros,
+            paid_using=default_provider,
         )
 
         self._order = order

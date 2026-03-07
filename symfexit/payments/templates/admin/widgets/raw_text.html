@@ -1,2 +1,2 @@
-<input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}"/>
+<input type="hidden" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value }}"{% endif %}/>
 <p {% include "django/forms/widgets/attrs.html" %}>{{ widget.label }}</p>

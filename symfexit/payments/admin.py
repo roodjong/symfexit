@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
+from django.db.models import Exists, OuterRef
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
@@ -20,6 +23,7 @@ from symfexit.payments.models import (
     Transaction,
 )
 from symfexit.payments.registry import payments_registry
+from symfexit.tenants.models import Client
 
 User = get_user_model()
 
@@ -111,7 +115,7 @@ class RawTextWidget(forms.TextInput):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        context.update({"widget": {"label": self.label}})
+        context["widget"].update({"label": self.label})
         return context
 
 
@@ -119,7 +123,7 @@ class PaymentObligationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         parent_obj = kwargs.pop("parent_obj")
         super().__init__(*args, **kwargs)
-        if parent_obj is not None:
+        if parent_obj is not None and not self.instance.pk:
             self.fields[
                 "ordered_for_billing_address"
             ].initial = parent_obj.ordered_for_billing_address.id
@@ -135,6 +139,7 @@ class PaymentObligationInline(admin.TabularInline):
     readonly_fields = ("pay_before", "transaction")
     extra = 0
     form = PaymentObligationForm
+    show_change_link = True
 
     def get_formset(self, request, obj=None, **kwargs):
         # First get the base formset class
@@ -152,11 +157,51 @@ class PaymentObligationInline(admin.TabularInline):
         kwargs["formset"] = CustomFormSet
         return super().get_formset(request, obj, **kwargs)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(~Exists(Payment.objects.filter(obligation=OuterRef("pk"))))
+
+    def save_model(self, request, obj, form, change):
+        tenant: Client = request.tenant
+        if obj.pay_before is None:
+            obj.pay_before = obj.order._period_to_datetime(
+                *self.order._calculate_next_period(self.year, self.period),
+                timezone=tenant.payments_timezone,
+            ) - timedelta(seconds=1)
+
+
+class PaidPaymentObligationInline(admin.TabularInline):
+    model = PaymentObligation
+    extra = 0
+    verbose_name = _("Paid payment obligation")
+    verbose_name_plural = _("Paid payment obligations")
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(Exists(Payment.objects.filter(obligation=OuterRef("pk"))))
+
 
 class PaymentInline(admin.TabularInline):
     model = Payment
-    readonly_fields = ("paid_at", "transaction")
+    readonly_fields = ("obligation", "paid_using", "paid_at", "transaction")
     extra = 0
+    show_change_link = True
+
+    def has_change_permission(self, request, obj=...):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class OrderStatusFilter(SimpleListFilter):
@@ -190,7 +235,7 @@ class OrderAdmin(admin.ModelAdmin):
     change_form_template = "admin/payments/change_form.html"
     delete_confirmation_template = "admin/payments/order_cancel_confirm.html"
     autocomplete_fields = ("ordered_for", "ordered_for_billing_address")
-    inlines = (PaymentObligationInline, PaymentInline)
+    inlines = (PaidPaymentObligationInline, PaymentObligationInline, PaymentInline)
     list_display = ("product_name", "ordered_for", "created_at", "cancelled_at")
     list_filter = (OrderStatusFilter,)
     show_change_link = True
@@ -274,12 +319,22 @@ def get_or_create_billing_address(request, user_id):
     return JsonResponse({"billing_address_id": address.id, "full_name": str(address)})
 
 
+@admin.register(PaymentObligation)
+class PaymentObligationAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    pass
+
+
 class PaymentProviderAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance:
             choices = [
-                (name, provider.description())
+                (name, provider.name())
                 for name, provider in payments_registry
                 if provider.can_install()
             ]
@@ -288,10 +343,8 @@ class PaymentProviderAdminForm(forms.ModelForm):
                 if not any(name == self.instance.type for name, _ in choices):
                     provider = payments_registry.get(self.instance.type)
                     if provider:
-                        choices.append((self.instance.type, provider.description()))
-            self.fields["type"].widget = forms.Select(
-                choices=[("", "---"), *choices]
-            )
+                        choices.append((self.instance.type, provider.name()))
+            self.fields["type"].widget = forms.Select(choices=[("", "---"), *choices])
 
 
 @admin.register(PaymentProvider)
@@ -307,3 +360,8 @@ class PaymentProviderAdmin(admin.ModelAdmin):
                 if inline:
                     return [inline]
         return []
+
+    def save_model(self, request, obj, form, change):
+        if obj.default:
+            PaymentProvider.objects.filter(default=True).update(default=False)
+        return super().save_model(request, obj, form, change)
