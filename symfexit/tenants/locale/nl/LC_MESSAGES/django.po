@@ -1,0 +1,94 @@
+# Dutch translations for the tenants app.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-07 19:54+0100\n"
+"PO-Revision-Date: 2026-03-07 19:54+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: admin.py:150 apps.py:68
+msgid "Site settings"
+msgstr "Site-instellingen"
+
+#: admin.py:155
+msgid "Live settings updated successfully."
+msgstr "Live-instellingen succesvol bijgewerkt."
+
+#: admin.py:159
+msgid "Failed to update live settings."
+msgstr "Bijwerken van live-instellingen mislukt."
+
+#: apps.py:39
+msgid "Tenants"
+msgstr "Tenants"
+
+#: apps.py:48
+msgid "Settings"
+msgstr "Instellingen"
+
+#: config.py:15
+msgid "Main title of this site"
+msgstr "Hoofdtitel van deze site"
+
+#: config.py:16
+msgid "Organisation logo"
+msgstr "Organisatielogo"
+
+#: config.py:18
+msgid "Main site of the organisation"
+msgstr "Hoofdsite van de organisatie"
+
+#: config.py:21
+msgid "Current home page (configure this on the home pages admin)"
+msgstr "Huidige startpagina (configureer dit in het startpagina-beheer)"
+
+#: templates/admin/tenants/client/change_form.html:6
+msgid "Configuration"
+msgstr "Configuratie"
+
+#: templates/admin/tenants/includes/config_table.html:5
+msgid "NAME"
+msgstr "NAAM"
+
+#: templates/admin/tenants/includes/config_table.html:6
+msgid "DEFAULT"
+msgstr "STANDAARD"
+
+#: templates/admin/tenants/includes/config_table.html:7
+msgid "VALUE"
+msgstr "WAARDE"
+
+#: templates/admin/tenants/includes/config_table.html:8
+msgid "IS MODIFIED"
+msgstr "IS GEWIJZIGD"
+
+#: templates/admin/tenants/includes/config_table.html:28
+msgid "Reset to default"
+msgstr "Standaardwaarde herstellen"
+
+#: templates/admin/tenants/includes/config_table.html:33
+msgid "Modified"
+msgstr "Gewijzigd"
+
+#: templates/admin/tenants/includes/config_table.html:35
+msgid "Default"
+msgstr "Standaard"
+
+#: templates/admin/tenants/sitesettings/change_list.html:8
+msgid "Home"
+msgstr "Start"
+
+#: templates/admin/tenants/sitesettings/change_list.html:23
+msgid "Save"
+msgstr "Opslaan"
