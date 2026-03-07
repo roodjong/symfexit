@@ -55,3 +55,8 @@ jobs:
         uv run --frozen python manage.py makemigrations --check
       env:
         DATABASE_URL: postgres://symfexit:symfexit@localhost:5432/symfexit
+    - name: Check translations
+      run: |
+        uv run --frozen python manage.py makemessages --locale nl --ignore .venv
+        grep -zP --include="*.po" --files-with-matches --recursive "#, fuzzy\nmsgid \"[^\"]" symfexit && exit 1 || echo "No fuzzy translations found."
+        grep -zP --include="*.po" --files-with-matches --recursive "msgstr \"\"\n\n" symfexit && exit 1 || echo "No untranslated strings found."
