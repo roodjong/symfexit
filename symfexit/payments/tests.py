@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timezone
 from decimal import Decimal
+from unittest.mock import patch
 from uuid import uuid4
 
 from django.test import TestCase
@@ -9,12 +10,14 @@ from symfexit.payments.models import (
     Account,
     BillingAddress,
     Order,
+    PaymentObligation,
     PeriodUnit,
     Product,
     ProductType,
     Subscription,
     Transaction,
 )
+from symfexit.payments.tasks import gen_obligations
 
 
 class TestBalance(TestCase):
@@ -213,3 +216,72 @@ class TestNextPeriod(TestCase):
         )
         self.assertEqual(next_payment_obligation.year, 2026)
         self.assertEqual(next_payment_obligation.period, 2)  # Week 3
+
+
+class FakeTenant:
+    payments_time_zone = "UTC"
+
+
+class TestGeneratePaymentObligations(TestCase):
+    def setUp(self):
+        self.user = Member.objects.create_user(email="testuser@example.com")
+        self.billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Roghorst 1",
+            city="Nijmegen",
+            postal_code="6525AG",
+        )
+        self.product = Product.objects.create(
+            enabled=True,
+            sku="lid",
+            name="Lidmaatschap",
+            price_euros=Decimal(10),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(
+            product=self.product, period_unit=PeriodUnit.MONTH, period=3
+        )
+
+    def _create_order(self, cancelled=False):
+        order = self.product.order(
+            for_user=self.user, billing_address=self.billing_address
+        )
+        if cancelled:
+            order.cancel()
+        return order
+
+    @patch("symfexit.payments.tasks.connection")
+    def test_creates_obligations_for_active_orders(self, mock_connection):
+        mock_connection.tenant = FakeTenant()
+        order = self._create_order()
+
+        gen_obligations()
+
+        self.assertTrue(
+            PaymentObligation.objects.filter(order=order).exists()
+        )
+
+    @patch("symfexit.payments.tasks.connection")
+    def test_skips_cancelled_orders(self, mock_connection):
+        mock_connection.tenant = FakeTenant()
+        order = self._create_order(cancelled=True)
+
+        gen_obligations()
+
+        self.assertFalse(
+            PaymentObligation.objects.filter(order=order).exists()
+        )
+
+    @patch("symfexit.payments.tasks.connection")
+    def test_idempotent(self, mock_connection):
+        mock_connection.tenant = FakeTenant()
+        self._create_order()
+
+        gen_obligations()
+        count_after_first = PaymentObligation.objects.count()
+
+        gen_obligations()
+        count_after_second = PaymentObligation.objects.count()
+
+        self.assertEqual(count_after_first, count_after_second)
