@@ -69,6 +69,10 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
     def name(self):
         return self.__class__.__name__
 
+    def allows_manual_payments(self) -> bool:
+        """Returns whether this payment processor allows manual payments (e.g. for offline payment methods)."""
+        return False
+
     @abc.abstractmethod
     def is_available(self) -> bool:
         """Returns whether this payment processor is available."""

@@ -15,6 +15,9 @@ class DummyProcessor(PaymentProcessor):
     def can_install(self):
         return getattr(settings, "SYMFEXIT_ENV", "") == "development"
 
+    def allows_manual_payments(self):
+        return True
+
     def is_available(self):
         return bool(settings.DEBUG)
 

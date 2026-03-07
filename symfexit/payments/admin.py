@@ -210,6 +210,11 @@ class PaymentInline(admin.TabularInline):
             kwargs["queryset"] = PaymentObligation.objects.filter(order=self.parent_obj).filter(
                 ~Exists(Payment.objects.filter(obligation=OuterRef("pk")))
             )
+        if db_field.name == "paid_using":
+            manual_types = [
+                name for name, processor in payments_registry if processor.allows_manual_payments()
+            ]
+            kwargs["queryset"] = PaymentProvider.objects.filter(type__in=manual_types)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_formset(self, request, obj=None, **kwargs):
