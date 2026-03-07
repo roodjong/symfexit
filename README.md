@@ -122,7 +122,7 @@ This will create demo data for all major models, including users, groups, events
 - **Local group members** (for each of 5 groups: Local Group 1 to Local Group 5):
 	- member1_1@example.com: Contact person, cadre
 	- member1_2@example.com: Contact person, cadre
-	- member1_3@example.com: Cadre
+	- member1_3@example.com: Cadre, workgroup contact person
 	- member1_4@example.com: Cadre
 	- member1_5@example.com: Non-cadre
 	- member1_6@example.com: Support member

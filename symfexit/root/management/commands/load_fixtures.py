@@ -14,7 +14,7 @@ from symfexit.documents.models import Directory, File
 from symfexit.emails.models import EmailLayout, EmailTemplate
 from symfexit.events.models import Event
 from symfexit.home.models import HomePage
-from symfexit.members.models import LocalGroup, User
+from symfexit.members.models import LocalGroup, User, WorkGroup
 from symfexit.membership.models import Membership
 from symfexit.signup.models import MembershipApplication
 from symfexit.tenants.models import Client, Domain
@@ -49,6 +49,7 @@ class Command(BaseCommand):
         MembershipApplication.objects.all().delete()
         User.objects.all().delete()
         LocalGroup.objects.all().delete()
+        WorkGroup.objects.all().delete()
         Membership.objects.all().delete()
         HomePage.objects.all().delete()
         Client.objects.all().delete()
@@ -75,14 +76,14 @@ class Command(BaseCommand):
         view_all_group.group.user_set.add(superuser)
 
         board_members = self.create_board_members()
-        local_groups, all_members, contact_people = self.create_local_groups(board_members)
-
-        # add payment and transaction date to the members
-        # self.create_memberships(all_members, now)
+        work_groups = self.create_work_groups()
+        local_groups, all_members, contact_people, workgroup_members = self.create_local_groups(
+            board_members, work_groups[0]
+        )
 
         self.create_events(board_members, contact_people, all_members, now)
 
-        self.create_documents()
+        self.create_documents(work_groups[0])
         # Not creating email templates and layouts
         home = HomePage.objects.create(title="Welcome Home", content="<h1>Home</h1>")
         config.HOMEPAGE_CURRENT = home.pk  # set it to the default home page.
@@ -106,10 +107,15 @@ class Command(BaseCommand):
             board_group.group.user_set.add(user)
         return board_members
 
-    def create_local_groups(self, board_members):
+    def create_work_groups(self):
+        fixture_workgroup = WorkGroup.objects.create(name="Webteam")
+        return [fixture_workgroup]
+
+    def create_local_groups(self, board_members: list[User], workgroup: WorkGroup):
         local_groups = []
         all_members = []
         contact_people = set()
+        workgroup_members = []
         contact_person_group = WellKnownPermissionGroup.get_or_create(
             code=WellKnownPermissionGroup.WellKnownPermissionGroups.CONTACT_PERSON
         )
@@ -160,7 +166,9 @@ class Command(BaseCommand):
                 group.contact_people.add(contact)
                 contact_people.add(contact)
                 contact_person_group.group.user_set.add(contact)
-        return local_groups, all_members, contact_people
+            # Add member number 3 to a workgroup
+            workgroup.workgroup_contact_people.add(group_members[2])
+        return local_groups, all_members, contact_people, workgroup_members
 
     def create_memberships(self, all_members, now):
         for user in all_members:
@@ -200,14 +208,17 @@ class Command(BaseCommand):
             event.attendees.set([*board_members, *all_members])
         return [event_past, event_ongoing, event_future, event_future_no_attendees]
 
-    def create_documents(self):
+    def create_documents(self, workgroup: WorkGroup):
         root_dir = Directory.objects.create(name="root")
+        dirs = []
+        files = []
         for i in range(3):
             sub_dir = Directory.objects.create(name=f"subfolder_{i + 1}", parent=root_dir)
             File.objects.create(
                 name="README.md",
                 parent=sub_dir,
             ).content.save("README.md", ContentFile(f"# Readme for subfolder {i + 1}".encode()))
+            dirs.append(sub_dir)
             for j in range(2):
                 File.objects.create(
                     name=f"file_{j + 1}.txt",
@@ -216,3 +227,7 @@ class Command(BaseCommand):
                     f"file_{j + 1}.txt",
                     ContentFile(f"Sample content {j + 1} in subfolder {i + 1}".encode()),
                 )
+                files.append(sub_dir)
+        dirs[-1].owner = workgroup
+        dirs[-1].save()
+        return files, dirs
