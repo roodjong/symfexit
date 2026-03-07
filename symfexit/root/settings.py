@@ -342,6 +342,8 @@ DJANGO_DRF_FILEPOND_PERMISSION_CLASSES = {
     ],
 }
 
+TENANT_COLOR_ADMIN_APPS = False
+
 DYNAMIC_THEME_URL = setting_from_env(
     "DYNAMIC_THEME_URL", production="theme/", development="static/css/dist/"
 )
