@@ -1,7 +1,8 @@
 from django.contrib import admin, messages
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
+from django.http import HttpResponseRedirect
+from django.urls import path, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -13,6 +14,7 @@ from symfexit.signup.models import DuplicateEmailError, MembershipApplication
 @admin.register(MembershipApplication)
 class MembershipApplicationAdmin(admin.ModelAdmin):
     list_display = ("first_name", "last_name", "email", "membership_type", "status", "created_at")
+    change_form_template = "signup/admin/change_form.html"
     fields = (
         "created_at",
         "first_name",
@@ -39,6 +41,36 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
         "_order",
         "user",
     )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<int:pk>/resend-accepted-email/",
+                self.admin_site.admin_view(self.resend_accepted_email_view),
+                name="signup_membershipapplication_resend_accepted_email",
+            ),
+        ]
+        return custom_urls + urls
+
+    def resend_accepted_email_view(self, request, pk):
+        obj = self.get_object(request, pk)
+        if obj and obj.status == MembershipApplication.Status.ACCEPTED and obj.user:
+            self.send_signup_accepted_email(request, obj)
+            messages.success(request, f"Accepted email resent to {obj.email}.")
+        return HttpResponseRedirect(reverse("admin:signup_membershipapplication_change", args=[pk]))
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        if object_id:
+            obj = self.get_object(request, object_id)
+            if obj and obj.status == MembershipApplication.Status.ACCEPTED and obj.user:
+                extra_context["show_resend_button"] = True
+                extra_context["resend_url"] = reverse(
+                    "admin:signup_membershipapplication_resend_accepted_email",
+                    args=[object_id],
+                )
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_add_permission(self, request):
         return False
