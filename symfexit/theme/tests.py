@@ -70,7 +70,7 @@ class TestAdminThemeWriter(FastTenantTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(TailwindKey.objects.count(), 1)
 
-        response = self.client.post(reverse("admin:rebuild_theme"), follow=True)
+        response = self.client.post(reverse("admin:rebuild_theme"), follow=True, headers={"Accept-Language": "en-US"})
         # Check that it redirected
         self.assertEqual(len(response.redirect_chain), 1)
         self.assertContains(response, "Rebuilding theme, refresh to see progress")

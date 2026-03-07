@@ -20,7 +20,7 @@ msgstr ""
 
 #: symfexit/theme/admin.py:59
 msgid "Rebuilding theme, refresh to see progress"
-msgstr "Thema aan het herbouwen, herlaad om de voortgang te zien"
+msgstr "Thema opnieuw aan het bouwen, herlaad om de voortgang te zien"
 
 #: symfexit/theme/apps.py:7
 msgid "Theme"
