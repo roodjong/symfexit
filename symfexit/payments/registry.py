@@ -83,6 +83,10 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
         """Returns whether this payment processor can be installed in this environment."""
         ...
 
+    def get_default_credit_account(self) -> "symfexit.payments.models.Account | None":
+        """Returns the default credit-to account for this processor, or None for the bank account."""
+        return None
+
     def get_settings_inline(self) -> type | None:
         """Returns an optional admin inline for the settings of this payment processor."""
         return None
