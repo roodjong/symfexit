@@ -1,6 +1,5 @@
 from django.db import models
 from django_tenants.models import DomainMixin, TenantMixin
-from django_tenants.utils import tenant_context
 
 
 class Client(TenantMixin):
@@ -8,7 +7,7 @@ class Client(TenantMixin):
     created_on = models.DateField(auto_now_add=True)
 
     site_title = models.CharField(max_length=100, blank=True, null=True, default="Membersite")  # noqa: DJ001
-    logo_image = models.CharField(max_length=255, blank=True, default="")
+    logo_image = models.ImageField(upload_to="logos/", blank=True, null=True)
     main_site = models.URLField(blank=True, default="https://roodjongeren.nl/")
     homepage_current = models.IntegerField(blank=True, null=True, default=0)
     payment_tiers_json = models.JSONField(blank=True, null=True, default=list)
