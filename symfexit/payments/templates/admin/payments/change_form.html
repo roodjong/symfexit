@@ -3,5 +3,5 @@
 
 {% block admin_change_form_document_ready %}
 {{ block.super }}
-<script id="load-product-script" data-auto-add-base-url="{% url 'admin:get_or_create_billing_addres_base' %}" data-load-product-base-url="{% url 'admin:load_product_base' %}" src="{% static 'admin/js/payments/order_admin.js' %}"></script>
+<script id="load-product-script" data-auto-add-base-url="{% url 'admin:get_or_create_billing_address_base' %}" data-load-product-base-url="{% url 'admin:load_product_base' %}" src="{% static 'admin/js/payments/order_admin.js' %}"></script>
 {% endblock %}

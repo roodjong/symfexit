@@ -6,16 +6,35 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
+def create_default_providers(sender, **kwargs):
+    from symfexit.payments.models import PaymentProvider  # noqa: PLC0415
+    from symfexit.payments.registry import payments_registry  # noqa: PLC0415
+
+    for name, processor in payments_registry:
+        if not processor.can_install():
+            continue
+        if PaymentProvider.objects.filter(type=name).exists():
+            continue
+        default_account = processor.get_default_credit_account()
+        kwargs = {"name": processor.name(), "type": name}
+        if default_account:
+            kwargs["credit_to_account"] = default_account
+        PaymentProvider.objects.create(**kwargs)
+
+
 class PaymentsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "symfexit.payments"
     verbose_name = _("Payments")
 
     def ready(self):
+        from django.db.models.signals import post_migrate  # noqa: PLC0415
+
         from symfexit.payments.registry import payments_registry  # noqa: PLC0415
 
         self.module.autodiscover()
         payments_registry.initialize()
+        post_migrate.connect(create_default_providers, sender=self)
 
     def get_admin_warnings(self, request):
         from symfexit.worker.models import Task  # noqa: PLC0415
@@ -52,11 +71,11 @@ class PaymentsConfig(AppConfig):
             path(
                 "api/get-or-create-billing-address",
                 admin_site.admin_view(get_or_create_billing_address),
-                name="get_or_create_billing_addres_base",
+                name="get_or_create_billing_address_base",
             ),
             path(
                 "api/get-or-create-billing-address/<int:user_id>",
                 admin_site.admin_view(get_or_create_billing_address),
-                name="get_or_create_billing_addres_base",
+                name="get_or_create_billing_address",
             ),
         ]

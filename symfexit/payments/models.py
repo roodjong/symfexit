@@ -23,6 +23,7 @@ User = get_user_model()
 ACCOUNT_ACCOUNTS_RECEIVABLE = 13011
 ACCOUNT_REVENUE = 82811
 ACCOUNT_BANK = 10201
+ACCOUNT_WAIVED = 45661
 
 
 def tigerbeetle_id():
@@ -200,6 +201,26 @@ class Account(models.Model):
                     "Membership revenue balance account. In RGS this is mapped to WLbeLbvLbv (82811). See: https://www.boekhoudplaza.nl/rgs_rekeningen/WLbeLbvLbv&KB=R&kzB=SVC&rgsv=WLbeLbvLbv/Ledenbetalingen_inclusief_reeds_betaalde_voorschotten.htm"
                 ),
                 "credit_balance": True,
+            },
+        )
+
+    @classmethod
+    def get_waived_account(cls):
+        """Account for waived (forgiven) payment obligations.
+
+        In RGS this is mapped to WBedVkkAdd (45661).
+        See: https://www.boekhoudplaza.nl/rgs_rekeningen/WBedVkkAdd&KB=R&kzB=SVC/Afboeking_dubieuze_debiteuren.htm
+        """
+        return cls.objects.get_or_create(
+            code=ACCOUNT_WAIVED,
+            defaults={
+                "name": _("Waived Payments"),
+                "description": _(
+                    "Expense account for waived (forgiven) payment obligations. "
+                    "When a payment is waived, the debt is written off against this account. "
+                    "In RGS this is mapped to WBedVkkAdd (45661)."
+                ),
+                "credit_balance": False,
             },
         )
 

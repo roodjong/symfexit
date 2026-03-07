@@ -310,10 +310,14 @@ class OrderAdmin(admin.ModelAdmin):
                     ) - timedelta(seconds=1)
             elif isinstance(instance, Payment) and not instance.pk:
                 ar_account, _ = Account.get_accounts_receivable_account()
-                bank_account, _ = Account.get_bank_account()
+                credit_to = (
+                    instance.paid_using.credit_to_account
+                    if instance.paid_using
+                    else Account.get_bank_account()[0]
+                )
                 transaction = Transaction.objects.create(
                     credit_account=ar_account,
-                    debit_account=bank_account,
+                    debit_account=credit_to,
                     amount_cents=int(instance.order.product_price_euros * 100),
                 )
                 instance.transaction = transaction
@@ -412,10 +416,14 @@ class PaymentObligationAdmin(admin.ModelAdmin):
         for instance in instances:
             if isinstance(instance, Payment) and not instance.pk:
                 ar_account, _ = Account.get_accounts_receivable_account()
-                bank_account, _ = Account.get_bank_account()
+                credit_to = (
+                    instance.paid_using.credit_to_account
+                    if instance.paid_using
+                    else Account.get_bank_account()[0]
+                )
                 transaction = Transaction.objects.create(
                     credit_account=ar_account,
-                    debit_account=bank_account,
+                    debit_account=credit_to,
                     amount_cents=int(obligation.amount_euros * 100),
                 )
                 instance.transaction = transaction
