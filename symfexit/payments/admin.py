@@ -1,6 +1,8 @@
 import zoneinfo
 from datetime import timedelta
 
+from django.utils import timezone
+
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
@@ -183,9 +185,17 @@ class PaidPaymentObligationInline(admin.TabularInline):
         return qs.filter(Exists(Payment.objects.filter(obligation=OuterRef("pk"))))
 
 
+class PaymentInlineForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.fields["paid_at"].initial = timezone.now()
+
+
 class PaymentInline(admin.TabularInline):
     model = Payment
-    # readonly_fields = ("obligation", "paid_using", "paid_at", "transaction")
+    form = PaymentInlineForm
+    readonly_fields = ("transaction",)
     extra = 0
     show_change_link = True
 
@@ -194,6 +204,17 @@ class PaymentInline(admin.TabularInline):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "obligation" and hasattr(self, "parent_obj"):
+            kwargs["queryset"] = PaymentObligation.objects.filter(order=self.parent_obj).filter(
+                ~Exists(Payment.objects.filter(obligation=OuterRef("pk")))
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_formset(self, request, obj=None, **kwargs):
+        self.parent_obj = obj
+        return super().get_formset(request, obj, **kwargs)
 
 
 class OrderStatusFilter(SimpleListFilter):
