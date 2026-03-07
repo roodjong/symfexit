@@ -1,5 +1,5 @@
 import bleach
-from constance import config
+from symfexit.tenants.config import config
 from django.contrib import admin
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _

@@ -1,6 +1,6 @@
 import json
 
-from constance import config
+from symfexit.tenants.config import config
 from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
