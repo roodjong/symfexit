@@ -42,6 +42,11 @@ dev = [
     "ruff>=0.8.0",
 ]
 
+prod = [
+    "uvicorn>=0.41.0",
+    "dotenv>=0.9.9",
+]
+
 [tool.black]
 line-length = 100
 target-version = ['py312']
