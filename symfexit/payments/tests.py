@@ -219,7 +219,7 @@ class TestNextPeriod(TestCase):
 
 
 class FakeTenant:
-    payments_time_zone = "UTC"
+    payments_timezone = "UTC"
 
 
 class TestGeneratePaymentObligations(TestCase):
@@ -239,14 +239,10 @@ class TestGeneratePaymentObligations(TestCase):
             price_euros=Decimal(10),
             type=ProductType.SUBSCRIPTION,
         )
-        Subscription.objects.create(
-            product=self.product, period_unit=PeriodUnit.MONTH, period=3
-        )
+        Subscription.objects.create(product=self.product, period_unit=PeriodUnit.MONTH, period=3)
 
     def _create_order(self, cancelled=False):
-        order = self.product.order(
-            for_user=self.user, billing_address=self.billing_address
-        )
+        order = self.product.order(for_user=self.user, billing_address=self.billing_address)
         if cancelled:
             order.cancel()
         return order
@@ -258,9 +254,7 @@ class TestGeneratePaymentObligations(TestCase):
 
         gen_obligations()
 
-        self.assertTrue(
-            PaymentObligation.objects.filter(order=order).exists()
-        )
+        self.assertTrue(PaymentObligation.objects.filter(order=order).exists())
 
     @patch("symfexit.payments.tasks.connection")
     def test_skips_cancelled_orders(self, mock_connection):
@@ -269,9 +263,7 @@ class TestGeneratePaymentObligations(TestCase):
 
         gen_obligations()
 
-        self.assertFalse(
-            PaymentObligation.objects.filter(order=order).exists()
-        )
+        self.assertFalse(PaymentObligation.objects.filter(order=order).exists())
 
     @patch("symfexit.payments.tasks.connection")
     def test_idempotent(self, mock_connection):

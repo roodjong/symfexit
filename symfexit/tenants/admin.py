@@ -17,10 +17,10 @@ class DomainInline(admin.TabularInline):
 class ClientAdminForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ("name", "payments_time_zone")
+        fields = ("name", "payments_timezone")
 
-    def clean_payments_time_zone(self, *args, **kwargs):
-        value = self.cleaned_data["payments_time_zone"]
+    def clean_payments_timezone(self, *args, **kwargs):
+        value = self.cleaned_data["payments_timezone"]
         try:
             zoneinfo.ZoneInfo(value)
         except Exception:

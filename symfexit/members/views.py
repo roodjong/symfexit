@@ -47,9 +47,11 @@ class MemberData(LoginRequiredMixin, TemplateView):
         subscription_period = ""
         payment_provider = ""
         if active_order:
-            payment_qs = Payment.objects.filter(order=active_order).select_related(
-                "transaction"
-            ).order_by("-paid_at")
+            payment_qs = (
+                Payment.objects.filter(order=active_order)
+                .select_related("transaction")
+                .order_by("-paid_at")
+            )
             payments = [
                 {"paid_at": p.paid_at, "amount_euros": p.transaction.amount_cents / 100}
                 for p in payment_qs
@@ -58,7 +60,7 @@ class MemberData(LoginRequiredMixin, TemplateView):
                 active_order.subscription_period,
                 active_order.subscription_period_unit,
             )
-            payment_provider = payments_registry.get_main().description()
+            payment_provider = payments_registry.get_main().name()
 
         return render(
             request,
@@ -120,7 +122,10 @@ class MembershipSelection(LoginRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
 
         membership_types = MembershipType.objects.filter(enabled=True).prefetch_related(
-            Prefetch("tiers", queryset=MembershipTier.objects.filter(enabled=True).select_related("product"))
+            Prefetch(
+                "tiers",
+                queryset=MembershipTier.objects.filter(enabled=True).select_related("product"),
+            )
         )
 
         tiers_data = {}
@@ -138,7 +143,9 @@ class MembershipSelection(LoginRequiredMixin, FormView):
             tiers_data[mt.pk] = {
                 "tiers": tiers_list,
                 "allow_custom_amount": mt.allow_custom_amount,
-                "minimum_custom_amount_euros": str(mt.custom_amount_product.price_euros) if mt.custom_amount_product else None,
+                "minimum_custom_amount_euros": str(mt.custom_amount_product.price_euros)
+                if mt.custom_amount_product
+                else None,
             }
 
         context["tiers_json"] = json.dumps(tiers_data)
@@ -159,12 +166,20 @@ def _start_payment(request):
         product = user.membership_type.custom_amount_product
         price_euros = product.price_euros
     else:
-        messages.error(request, _("No membership type is configured for your account. Please contact the administrator."))
+        messages.error(
+            request,
+            _(
+                "No membership type is configured for your account. Please contact the administrator."
+            ),
+        )
         return redirect("members:memberdata")
 
     billing_address = BillingAddress.get_or_create_for_user(user)
     if billing_address is None:
-        messages.error(request, _("Please fill in your address, city, and postal code before starting a subscription."))
+        messages.error(
+            request,
+            _("Please fill in your address, city, and postal code before starting a subscription."),
+        )
         return redirect("members:memberdata")
 
     _order, obligation = Order.objects.create_with_obligation(
@@ -175,9 +190,7 @@ def _start_payment(request):
     )
 
     provider = payments_registry.get_main()
-    return provider.start_payment_flow(
-        request, obligation, reverse("members:memberdata")
-    )
+    return provider.start_payment_flow(request, obligation, reverse("members:memberdata"))
 
 
 def payment_start(request):

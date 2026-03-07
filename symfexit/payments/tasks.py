@@ -8,7 +8,7 @@ from symfexit.worker.registry import task_registry
 @task_registry.register("gen_obligations")
 def gen_obligations():
     tenant = connection.tenant
-    timezone = tenant.payments_time_zone
+    timezone = tenant.payments_timezone
 
     orders = Order.objects.filter(
         subscription__isnull=False,

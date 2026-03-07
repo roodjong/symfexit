@@ -42,6 +42,10 @@ def tigerbeetle_id():
     return uuid.UUID(bytes=bytes(value + os.urandom(10)))
 
 
+def default_bank_account_uuid():
+    return Account.get_bank_account()[0].id
+
+
 class PeriodUnit(models.TextChoices):
     DAY = "day", _("Day")
     WEEK = "week", _("Week")
@@ -293,7 +297,14 @@ def _weeks_for_year(year):
 
 class OrderManager(models.Manager):
     def create_with_obligation(
-        self, *, product, billing_address, for_user=None, price_euros=None, timezone="UTC"
+        self,
+        *,
+        product,
+        paid_using: "PaymentProvider",
+        billing_address,
+        for_user=None,
+        price_euros=None,
+        timezone="UTC",
     ):
         order = self.create(
             product=product,
@@ -305,6 +316,7 @@ class OrderManager(models.Manager):
             subscription_period=product.subscription.period,
             ordered_for=for_user,
             ordered_for_billing_address=billing_address,
+            paid_using=paid_using,
         )
         obligation = order.get_or_create_next_payment_obligation(timezone=timezone)
         return order, obligation
@@ -327,6 +339,8 @@ class Order(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     cancelled_at = models.DateTimeField(_("cancelled at"), null=True, blank=True)
+
+    paid_using = models.ForeignKey("PaymentProvider", on_delete=models.SET_NULL, null=True)
 
     objects = OrderManager()
 
@@ -469,10 +483,6 @@ class PaymentObligation(models.Model):
     def save(self, *args, **kwargs):
         if self.amount_euros is None:
             self.amount_euros = self.order.product_price_euros
-        if self.pay_before is None:
-            self.pay_before = self.order._period_to_datetime(
-                *self.order._calculate_next_period(self.year, self.period)
-            ) - timedelta(seconds=1)
         super().save(*args, **kwargs)
 
 
@@ -480,6 +490,7 @@ class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     obligation = models.ForeignKey(PaymentObligation, on_delete=models.SET_NULL, null=True)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    paid_using = models.ForeignKey("PaymentProvider", on_delete=models.SET_NULL, null=True)
     # When this payment was made according to the payer
     paid_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -491,6 +502,11 @@ class Payment(models.Model):
 class PaymentProvider(models.Model):
     name = models.CharField(max_length=100, default="")
     type = models.CharField(max_length=100)
+    credit_to_account = models.ForeignKey(
+        Account, on_delete=models.PROTECT, default=default_bank_account_uuid
+    )
+    default = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name

@@ -7,8 +7,8 @@ class MollieSettings(models.Model):
         on_delete=models.CASCADE,
         related_name="mollie_settings",
     )
-    api_key = models.CharField(max_length=255, blank=True, null=True)
-    test_api_key = models.CharField(max_length=255, blank=True, null=True)
+    api_key = models.CharField(max_length=255, blank=True)
+    test_api_key = models.CharField(max_length=255, blank=True)
     live_mode = models.BooleanField(default=False)
 
     def __str__(self):
