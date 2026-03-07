@@ -1,6 +1,5 @@
 from typing import TypedDict
 
-from symfexit.tenants.test import override_config
 from django.core import mail
 from django.template import Context, Template
 from django.test import TestCase, override_settings
@@ -14,6 +13,7 @@ from symfexit.emails._templates.base import (
 )
 from symfexit.emails._templates.manager import EmailTemplateManager
 from symfexit.emails._templates.render import send_email
+from symfexit.tenants.test import override_config
 
 BASE_CONTEXT = {
     "site_title": "Test Site",

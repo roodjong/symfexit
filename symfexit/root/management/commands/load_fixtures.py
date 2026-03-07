@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 
-from symfexit.tenants.config import config
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
@@ -18,6 +17,7 @@ from symfexit.members.models import LocalGroup, User, WorkGroup
 from symfexit.membership.models import Membership
 from symfexit.signup.models import MembershipApplication
 from symfexit.tenants.apps import ensure_single_tenant_if_enabled
+from symfexit.tenants.config import config
 from symfexit.tenants.models import Client
 
 

@@ -1,10 +1,10 @@
-from symfexit.tenants.config import config
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
 from symfexit.home.models import HomePage
 from symfexit.members.models import User
+from symfexit.tenants.config import config
 
 # Create your views here.
 
