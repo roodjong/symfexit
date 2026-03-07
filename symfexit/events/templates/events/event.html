@@ -1,7 +1,11 @@
 {% load i18n %}
 <style>
-    h2 { font-weight: bold; text-transform: uppercase; }
-    button {
+    .event-title {
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: unset;
+    }
+    .event-action-btn {
         background: var(--color-primary);
         padding: 10px;
         margin-bottom: calc(var(--spacing)*6);
@@ -9,13 +13,13 @@
         transform: skewX(-7deg) scale(1);
         transition: transform 0.3s ease-in-out;
     }
-    button:hover {
+    .event-action-btn:hover {
         transform: skewX(0deg) scale(1.2);
         cursor: pointer;
     }
 </style>
 <div>
-    <h2 style="margin: unset;">
+    <h2 class="event-title">
         {{ event.event_name }}</h2>
     <p style="font-size: smaller; margin: unset;">
         {{ event.event_date|date:"j F Y, H:i" }}
@@ -31,12 +35,12 @@
         {% if user in event.attendees.all %}
             <form method="post" action="{% url 'events:unsign_event' event.id %}">
                 {% csrf_token %}
-                <button type="submit" style="">{% translate "Cancel attendance"%}</button>
+                <button class="event-action-btn" type="submit">{% translate "Cancel attendance"%}</button>
             </form>
         {% else %}
             <form method="post" action="{% url 'events:signup_event' event.id %}">
                 {% csrf_token %}
-                <button type="submit">{% translate "Sign up"%}</button>
+                <button class="event-action-btn" type="submit">{% translate "Sign up"%}</button>
             </form>
         {% endif %}
     {% endif %}
