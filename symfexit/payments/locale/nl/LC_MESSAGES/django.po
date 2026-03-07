@@ -25,11 +25,11 @@ msgstr "Betalingen"
 #: symfexit/payments/dummy/templates/payments_dummy/dummy_pay.html:2
 #, python-format
 msgid " Fake this payment for %(price)s cents. "
-msgstr ""
+msgstr " Nepbetaling doen voor %(price)s cent. "
 
 #: symfexit/payments/dummy/templates/payments_dummy/dummy_pay.html:6
 msgid "Fake pay"
-msgstr ""
+msgstr "Nepbetaling doen"
 
 #: symfexit/payments/models.py:14
 msgid "Day"
@@ -49,7 +49,7 @@ msgstr "Jaar"
 
 #: symfexit/payments/models.py:22
 msgid "user"
-msgstr ""
+msgstr "gebruiker"
 
 #: symfexit/payments/models.py:23
 msgid "name"
@@ -110,7 +110,7 @@ msgstr "betalingsopdracht"
 #: symfexit/payments/models.py:63
 #, python-brace-format
 msgid "Payment for {order}"
-msgstr ""
+msgstr "Betaling voor {order}"
 
 #: symfexit/payments/models.py:76
 msgid "description"
@@ -127,7 +127,7 @@ msgstr "betalingsopdrachten"
 #: symfexit/payments/models.py:99
 #, python-brace-format
 msgid "{description} for {price:.02f}"
-msgstr ""
+msgstr "{description} voor {price:.02f}"
 
 #: symfexit/payments/models.py:107 symfexit/payments/models.py:148
 msgid "external identifier"

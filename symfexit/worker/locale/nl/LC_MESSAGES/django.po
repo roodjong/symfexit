@@ -64,7 +64,7 @@ msgstr "status"
 
 #: symfexit/worker/models.py:28
 msgid "tenant"
-msgstr ""
+msgstr "tenant"
 
 #: symfexit/worker/models.py:30
 msgid "created at"

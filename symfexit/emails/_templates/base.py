@@ -122,7 +122,7 @@ class WrapperLayout[LayoutContext](BaseEmailComponent[LayoutContext]):
     def get_input_context(cls):
         return [
             *super().get_input_context(),
-            ("content", _("Email template outlet"), True),
+            ("content", _("Email contents"), True),
         ]
 
 

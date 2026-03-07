@@ -20,7 +20,7 @@ msgstr ""
 
 #: symfexit/theme/admin.py:59
 msgid "Rebuilding theme, refresh to see progress"
-msgstr ""
+msgstr "Thema aan het herbouwen, herlaad om de voortgang te zien"
 
 #: symfexit/theme/apps.py:7
 msgid "Theme"
@@ -74,7 +74,7 @@ msgid ""
 "  "
 msgstr ""
 "\n"
-"  <strong>Success!</strong> <a href=\"%(task_url)s\">Taak</a> toegevoegd.\n"
+"  <strong>Succes!</strong> <a href=\"%(task_url)s\">Taak</a> toegevoegd.\n"
 "  "
 
 #: symfexit/theme/templates/admin/rebuild_theme/index.html:12
