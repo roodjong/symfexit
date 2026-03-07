@@ -10,7 +10,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWid
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.payments.models import (
@@ -343,14 +343,104 @@ def get_or_create_billing_address(request, user_id):
     return JsonResponse({"billing_address_id": address.id, "full_name": str(address)})
 
 
+class PaymentObligationPaymentInlineForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk and "paid_at" in self.fields:
+            self.fields["paid_at"].initial = timezone.now()
+
+
+class PaymentObligationPaymentInline(admin.TabularInline):
+    model = Payment
+    form = PaymentObligationPaymentInlineForm
+    extra = 0
+
+    def get_fields(self, request, obj=None):
+        if obj and obj.payment_set.exists():
+            return ("order", "transaction", "paid_using", "paid_at")
+        return ("paid_using", "paid_at")
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.payment_set.exists():
+            return ("order", "transaction", "paid_using", "paid_at")
+        return ()
+
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.payment_set.exists():
+            return False
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "paid_using":
+            manual_types = [
+                name for name, processor in payments_registry if processor.allows_manual_payments()
+            ]
+            kwargs["queryset"] = PaymentProvider.objects.filter(type__in=manual_types)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 @admin.register(PaymentObligation)
 class PaymentObligationAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = ("transaction", "order")
+    inlines = (PaymentObligationPaymentInline,)
+
+    def has_module_permission(self, request):
+        return False
+
+    def _has_payment(self, obj):
+        return obj and obj.payment_set.exists()
+
+    def has_change_permission(self, request, obj=None):
+        if self._has_payment(obj):
+            return False
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        if self._has_payment(obj):
+            return False
+        return True
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        obligation = form.instance
+        for instance in instances:
+            if isinstance(instance, Payment) and not instance.pk:
+                ar_account, _ = Account.get_accounts_receivable_account()
+                bank_account, _ = Account.get_bank_account()
+                transaction = Transaction.objects.create(
+                    credit_account=ar_account,
+                    debit_account=bank_account,
+                    amount_cents=int(obligation.amount_euros * 100),
+                )
+                instance.transaction = transaction
+                instance.order = obligation.order
+                instance.obligation = obligation
+            instance.save()
+        formset.save_m2m()
+
+    def changelist_view(self, request, extra_context=None):
+        return redirect("admin:index")
 
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    pass
+    def has_module_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        return redirect("admin:index")
 
 
 class PaymentProviderAdminForm(forms.ModelForm):
