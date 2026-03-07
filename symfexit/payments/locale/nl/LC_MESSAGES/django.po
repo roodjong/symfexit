@@ -131,7 +131,7 @@ msgstr "{description} voor {price:.02f}"
 
 #: symfexit/payments/models.py:107 symfexit/payments/models.py:148
 msgid "external identifier"
-msgstr ""
+msgstr "extern kenmerk"
 
 #: symfexit/payments/models.py:139
 msgid "subscriptions"
