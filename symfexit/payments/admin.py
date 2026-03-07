@@ -1,3 +1,4 @@
+import zoneinfo
 from datetime import timedelta
 
 from django import forms
@@ -23,7 +24,6 @@ from symfexit.payments.models import (
     Transaction,
 )
 from symfexit.payments.registry import payments_registry
-from symfexit.tenants.models import Client
 
 User = get_user_model()
 
@@ -161,14 +161,6 @@ class PaymentObligationInline(admin.TabularInline):
         qs = super().get_queryset(request)
         return qs.filter(~Exists(Payment.objects.filter(obligation=OuterRef("pk"))))
 
-    def save_model(self, request, obj, form, change):
-        tenant: Client = request.tenant
-        if obj.pay_before is None:
-            obj.pay_before = obj.order._period_to_datetime(
-                *self.order._calculate_next_period(self.year, self.period),
-                timezone=tenant.payments_timezone,
-            ) - timedelta(seconds=1)
-
 
 class PaidPaymentObligationInline(admin.TabularInline):
     model = PaymentObligation
@@ -193,7 +185,7 @@ class PaidPaymentObligationInline(admin.TabularInline):
 
 class PaymentInline(admin.TabularInline):
     model = Payment
-    readonly_fields = ("obligation", "paid_using", "paid_at", "transaction")
+    # readonly_fields = ("obligation", "paid_using", "paid_at", "transaction")
     extra = 0
     show_change_link = True
 
@@ -284,6 +276,12 @@ class OrderAdmin(admin.ModelAdmin):
                     amount_cents=int(instance.order.product_price_euros * 100),
                 )
                 instance.transaction = transaction
+                if not instance.pay_before:
+                    order = instance.order
+                    instance.pay_before = order._period_to_datetime(
+                        *order._calculate_next_period(instance.year, instance.period),
+                        timezone=zoneinfo.ZoneInfo(request.tenant.payments_timezone),
+                    ) - timedelta(seconds=1)
             elif isinstance(instance, Payment) and not instance.pk:
                 ar_account, _ = Account.get_accounts_receivable_account()
                 bank_account, _ = Account.get_bank_account()
