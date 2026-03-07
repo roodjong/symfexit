@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, models
@@ -11,8 +9,6 @@ from hashids import Hashids
 from symfexit.payments.models import (
     BillingAddress,
     Order,
-    Product,
-    Subscription,
 )
 
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)

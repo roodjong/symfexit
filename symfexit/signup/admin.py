@@ -1,5 +1,12 @@
 from django.contrib import admin, messages
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
+from symfexit.emails._templates.emails.signup_accepted import SignupAcceptedEmail
+from symfexit.emails._templates.render import send_email
 from symfexit.signup.models import DuplicateEmailError, MembershipApplication
 
 
@@ -41,76 +48,40 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
             return super().has_change_permission(request, obj)
         return obj.status == MembershipApplication.Status.CREATED
 
+    def save_model(self, request, obj, form, change):
+        if not change:
+            return super().save_model(request, obj, form, change)
+        if obj.status == MembershipApplication.Status.ACCEPTED:
+            try:
+                obj.user = obj.create_user()
+            except DuplicateEmailError:
+                messages.set_level(request, messages.ERROR)
+                messages.error(
+                    request,
+                    "User with this email already exists. You can manually change the email address if you know this is really a new member.",
+                )
+                return
+            self.send_signup_accepted_email(request, obj)
+        return super().save_model(request, obj, form, change)
 
-#     def payment_url(self, obj: ApplicationPayment):
-#         url = obj.payment_url
-#         if url is None:
-#             raise ValueError("Payment URL is not set")
-#         absolute_url = self.request.build_absolute_uri(url)
-#         html = format_html('<a href="{}">{}</a>', absolute_url, url)
-#         return mark_safe(html)
-
-#     # don't show the add button
-#     def has_add_permission(self, request):
-#         return False
-
-#     # don't show the delete button
-#     def has_delete_permission(self, request, obj=None):
-#         return False
-
-#     # don't show the change button
-#     def has_change_permission(self, request, obj=None):
-#         return False
-
-
-@admin.register(MembershipApplication)
-class MembershipApplicationAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "email", "status", "created_at")
-    fields = (
-        "created_at",
-        "first_name",
-        "last_name",
-        "email",
-        "phone_number",
-        "birth_date",
-        "address",
-        "city",
-        "postal_code",
-        "preferred_group",
-        "payment_amount",
-        "_order",
-        # "_subscription",
-        "status",
-        "user",
-    )
-    readonly_fields = (
-        "created_at",
-        "payment_amount",
-        "_order",
-        # "_subscription",
-        "user",
-    )
-
-
-#     def has_add_permission(self, request):
-#         return False
-
-#     def has_change_permission(self, request, obj=None):
-#         if obj is None:
-#             return super().has_change_permission(request, obj)
-#         return obj.status == MembershipApplication.Status.CREATED
-
-#     def save_model(self, request, obj: MembershipApplication, form, change):
-#         if not change:
-#             return super().save_model(request, obj, form, change)
-#         if obj.status == MembershipApplication.Status.ACCEPTED:
-#             try:
-#                 obj.user = obj.create_user()
-#             except DuplicateEmailError:
-#                 messages.set_level(request, messages.ERROR)
-#                 messages.error(
-#                     request,
-#                     "User with this email already exists. You can manually change the email address if you know this is really a new member.",
-#                 )
-#                 return
-#         return super().save_model(request, obj, form, change)
+    def send_signup_accepted_email(self, request, obj):
+        current_site = get_current_site(request)
+        domain = current_site.domain
+        password_reset_url = reverse(
+            "password_reset_confirm",
+            kwargs={
+                "uidb64": urlsafe_base64_encode(force_bytes(obj.user.pk)),
+                "token": default_token_generator.make_token(obj.user),
+            },
+        )
+        password_reset_url = f"{request.scheme}://{domain}{password_reset_url}"
+        send_email(
+            SignupAcceptedEmail(
+                {
+                    "firstname": obj.first_name,
+                    "email": obj.email,
+                    "password_reset_url": password_reset_url,
+                }
+            ),
+            obj.email,
+        )
