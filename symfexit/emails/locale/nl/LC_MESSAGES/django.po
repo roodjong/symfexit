@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 16:10+0100\n"
+"POT-Creation-Date: 2026-03-07 21:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,6 +39,7 @@ msgstr "Lidmaatschapsverzoek sjabloon"
 
 #: symfexit/emails/_templates/emails/membership_application.py:24
 #: symfexit/emails/_templates/emails/password_request.py:46
+#: symfexit/emails/_templates/emails/signup_accepted.py:46
 msgid "First name of the member"
 msgstr "Voornaam van het lid"
 
@@ -48,12 +48,18 @@ msgid "Request new password template"
 msgstr "Nieuw wachtwoord aanvragen sjabloon"
 
 #: symfexit/emails/_templates/emails/password_request.py:47
+#: symfexit/emails/_templates/emails/signup_accepted.py:47
 msgid "Email address of the member"
 msgstr "E-mailadres van het lid"
 
 #: symfexit/emails/_templates/emails/password_request.py:48
+#: symfexit/emails/_templates/emails/signup_accepted.py:48
 msgid "Url of the reset password link"
 msgstr "URL van de link voor het opnieuw instellen van het wachtwoord"
+
+#: symfexit/emails/_templates/emails/signup_accepted.py:16
+msgid "Signup accepted template"
+msgstr "Aanmelding geaccepteerd sjabloon"
 
 #: symfexit/emails/_templates/layouts/base.py:7
 msgid "layout"

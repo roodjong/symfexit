@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 18:33+0000\n"
+"POT-Creation-Date: 2026-03-07 21:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,91 +21,99 @@ msgstr ""
 msgid "Signup"
 msgstr "Aanmelden"
 
-#: symfexit/signup/forms.py:51
+#: symfexit/signup/forms.py:56
 msgid "None"
 msgstr "Geen"
 
-#: symfexit/signup/models.py:22
+#: symfexit/signup/models.py:25
 msgid "Created"
 msgstr "Aangemaakt"
 
-#: symfexit/signup/models.py:23
+#: symfexit/signup/models.py:26
 msgid "Accepted"
 msgstr "Geaccepteerd"
 
-#: symfexit/signup/models.py:24
+#: symfexit/signup/models.py:27
 msgid "Rejected"
 msgstr "Afgewezen"
 
-#: symfexit/signup/models.py:27
+#: symfexit/signup/models.py:30
 msgid "first name"
 msgstr "voornaam"
 
-#: symfexit/signup/models.py:28
+#: symfexit/signup/models.py:31
 msgid "last name"
 msgstr "achternaam"
 
-#: symfexit/signup/models.py:29
+#: symfexit/signup/models.py:32
 msgid "email address"
 msgstr "emailadres"
 
-#: symfexit/signup/models.py:30
+#: symfexit/signup/models.py:33
 msgid "phone number"
 msgstr "telefoonnummer"
 
-#: symfexit/signup/models.py:31
+#: symfexit/signup/models.py:34
 msgid "date of birth"
 msgstr "geboortedatum"
 
-#: symfexit/signup/models.py:32
+#: symfexit/signup/models.py:35
 msgid "address"
 msgstr "adres"
 
-#: symfexit/signup/models.py:33
+#: symfexit/signup/models.py:36
 msgid "city"
 msgstr "plaats"
 
-#: symfexit/signup/models.py:34
+#: symfexit/signup/models.py:37
 msgid "postal code"
 msgstr "postcode"
 
-#: symfexit/signup/models.py:39
+#: symfexit/signup/models.py:42
 msgid "preferred group"
 msgstr "voorkeursgroep"
 
-#: symfexit/signup/models.py:43
-msgid "payment amount in cents"
-msgstr "betalingshoeveelheid in centen"
-
 #: symfexit/signup/models.py:46
+msgid "payment amount"
+msgstr "betalingsbedrag"
+
+#: symfexit/signup/models.py:53
+msgid "membership type"
+msgstr "lidmaatschapstype"
+
+#: symfexit/signup/models.py:60
+msgid "membership tier"
+msgstr "lidmaatschapsschijf"
+
+#: symfexit/signup/models.py:64
 msgid "status"
 msgstr "status"
 
-#: symfexit/signup/models.py:48
+#: symfexit/signup/models.py:66
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/signup/models.py:54
+#: symfexit/signup/models.py:73
 msgid "subscription order"
 msgstr "abbonnementsbestelling"
 
-#: symfexit/signup/models.py:57
+#: symfexit/signup/models.py:76
 msgid "created at"
 msgstr "gemaakt op"
 
-#: symfexit/signup/models.py:58
+#: symfexit/signup/models.py:77
 msgid "updated at"
 msgstr "geüpdatet op"
 
-#: symfexit/signup/models.py:61
+#: symfexit/signup/models.py:80
 msgid "membership application"
 msgstr "lidmaatschap aanmelding"
 
-#: symfexit/signup/models.py:62
+#: symfexit/signup/models.py:81
 msgid "membership applications"
 msgstr "lidmaatschap aanmeldingen"
 
-#: symfexit/signup/models.py:74
+#: symfexit/signup/models.py:93
 msgid "external identifier"
 msgstr "externe identifier"
 

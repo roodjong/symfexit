@@ -28,21 +28,21 @@
     {% if active_order %}
       <p class="mb-4">
         {% blocktranslate with amount=active_order.product_price_euros period=subscription_period provider=payment_provider %}
-          Je contributie wordt elk {{ period }} automatisch per automatische incasso afgeschreven via {{ provider }}. Je contributiebedrag bedraagt €&nbsp;{{ amount }}.
+          Your contribution is automatically debited every {{ period }} via direct debit through {{ provider }}. Your contribution amount is €&nbsp;{{ amount }}.
         {% endblocktranslate %}
       </p>
       <ul class="list-disc pl-5 mb-6 space-y-1">
-        <li>{% translate 'Stopzetten' %}</li>
-        <li>{% translate 'Andere bankrekening' %}</li>
-        <li>{% translate 'Bedrag aanpassen' %}</li>
+        <li>{% translate 'Cancel subscription' %}</li>
+        <li>{% translate 'Different bank account' %}</li>
+        <li>{% translate 'Adjust amount' %}</li>
       </ul>
       {% if payments %}
         <h2 class="font-header text-3xl mb-4">{% translate 'Payment history' %}</h2>
         <table class="w-full">
           <thead>
             <tr class="border-b">
-              <th class="text-left py-2">{% translate 'Datum' %}</th>
-              <th class="text-right py-2">{% translate 'Bedrag' %}</th>
+              <th class="text-left py-2">{% translate 'Date' %}</th>
+              <th class="text-right py-2">{% translate 'Amount' %}</th>
             </tr>
           </thead>
           <tbody>
