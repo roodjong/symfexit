@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 15:02+0000\n"
+"POT-Creation-Date: 2026-03-07 08:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,9 +17,37 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/payments/apps.py:8
+#: symfexit/payments/admin.py:163
+msgid "status"
+msgstr "status"
+
+#: symfexit/payments/admin.py:167
+msgid "Active"
+msgstr "Actief"
+
+#: symfexit/payments/admin.py:167
+msgid "Cancelled"
+msgstr "Geannuleerd"
+
+#: symfexit/payments/admin.py:167
+msgid "All"
+msgstr "Alle"
+
+#: symfexit/payments/admin.py:273
+msgid "User has not setup full address yet"
+msgstr "Gebruiker heeft nog geen volledig adres ingesteld"
+
+#: symfexit/payments/apps.py:12
 msgid "Payments"
 msgstr "Betalingen"
+
+#: symfexit/payments/apps.py:31
+msgid ""
+"Payment obligations haven't been generated recently. Make sure the "
+"generate_obligations command is scheduled."
+msgstr ""
+"Betalingsverplichtingen zijn niet recent gegenereerd. Zorg ervoor dat het "
+"generate_obligations commando is ingepland."
 
 #: symfexit/payments/dummy/templates/payments_dummy/dummy_pay.html:2
 #, python-format
@@ -31,47 +58,47 @@ msgstr " Nepbetaling doen voor %(price)s cent. "
 msgid "Fake pay"
 msgstr "Nepbetaling doen"
 
-#: symfexit/payments/models.py:14
+#: symfexit/payments/models.py:46
 msgid "Day"
 msgstr "Dag"
 
-#: symfexit/payments/models.py:15
+#: symfexit/payments/models.py:47
 msgid "Week"
 msgstr "Week"
 
-#: symfexit/payments/models.py:16
+#: symfexit/payments/models.py:48
 msgid "Month"
 msgstr "Maand"
 
-#: symfexit/payments/models.py:17
+#: symfexit/payments/models.py:49
 msgid "Year"
 msgstr "Jaar"
 
-#: symfexit/payments/models.py:22
+#: symfexit/payments/models.py:54
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/payments/models.py:23
+#: symfexit/payments/models.py:55
 msgid "name"
 msgstr "naam"
 
-#: symfexit/payments/models.py:24
+#: symfexit/payments/models.py:56
 msgid "address"
 msgstr "adres"
 
-#: symfexit/payments/models.py:25
+#: symfexit/payments/models.py:57
 msgid "city"
 msgstr "stad"
 
-#: symfexit/payments/models.py:26
+#: symfexit/payments/models.py:58
 msgid "postal code"
 msgstr "postcode"
 
-#: symfexit/payments/models.py:30 symfexit/payments/models.py:78
+#: symfexit/payments/models.py:62
 msgid "billing address"
 msgstr "Factuuradres"
 
-#: symfexit/payments/models.py:31
+#: symfexit/payments/models.py:63
 msgid "billing addresses"
 msgstr "factuuradressen"
 
@@ -91,10 +118,6 @@ msgstr "Betaald"
 msgid "Failed"
 msgstr "Mislukt"
 
-#: symfexit/payments/models.py:43
-msgid "Cancelled"
-msgstr "Afgebroken"
-
 #: symfexit/payments/models.py:44
 msgid "Expired"
 msgstr "Verlopen"
@@ -112,13 +135,13 @@ msgstr "betalingsopdracht"
 msgid "Payment for {order}"
 msgstr "Betaling voor {order}"
 
-#: symfexit/payments/models.py:76
-msgid "description"
-msgstr "omschrijving"
+#: symfexit/payments/models.py:133
+msgid "general ledger"
+msgstr "grootboek"
 
-#: symfexit/payments/models.py:85 symfexit/payments/models.py:138
-msgid "subscription"
-msgstr "abbonement"
+#: symfexit/payments/models.py:176
+msgid "Accounts Receivable"
+msgstr "Debiteuren"
 
 #: symfexit/payments/models.py:96
 msgid "orders"
@@ -133,21 +156,109 @@ msgstr "{description} voor {price:.02f}"
 msgid "external identifier"
 msgstr "extern kenmerk"
 
-#: symfexit/payments/models.py:139
-msgid "subscriptions"
-msgstr "abbonementen"
+#: symfexit/payments/models.py:211
+msgid "Bank"
+msgstr "Bank"
 
-#~ msgid "price"
-#~ msgstr "prijs"
+#: symfexit/payments/models.py:213
+msgid ""
+"Bank account (rekening-courant). In RGS this is mapped to BLimBanRba "
+"(10201). See: https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/"
+"Rekening_courant_bank_tegoeden_bij_banken.htm"
+msgstr ""
+"Bankrekening (rekening-courant). In RGS is dit gekoppeld aan BLimBanRba "
+"(10201). Zie: https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/"
+"Rekening_courant_bank_tegoeden_bij_banken.htm"
 
-#~ msgid "done at"
-#~ msgstr "klaar op"
+#: symfexit/payments/models.py:243
+msgid "Subscription"
+msgstr "Abonnement"
 
-#~ msgid "payment method"
-#~ msgstr "betaalmethode"
+#: symfexit/payments/models.py:247
+msgid "enabled"
+msgstr "ingeschakeld"
 
-#~ msgid "return URL"
-#~ msgstr "terugkeer URL"
+#: symfexit/payments/models.py:248 symfexit/payments/models.py:316
+msgid "product sku"
+msgstr "product-SKU"
 
-#~ msgid "EID"
-#~ msgstr "EID"
+#: symfexit/payments/models.py:249 symfexit/payments/models.py:317
+msgid "product name"
+msgstr "productnaam"
+
+#: symfexit/payments/models.py:253
+msgid "created at"
+msgstr "gemaakt op"
+
+#: symfexit/payments/models.py:254
+msgid "updated at"
+msgstr "bijgewerkt op"
+
+#: symfexit/payments/models.py:282 symfexit/payments/models.py:322
+msgid "How many of the period unit before the subscription repeats."
+msgstr "Hoeveel periode-eenheden voordat het abonnement herhaalt."
+
+#: symfexit/payments/models.py:329
+msgid "cancelled at"
+msgstr "geannuleerd op"
+
+#: symfexit/payments/templates/admin/payments/order/submit_line.html:5
+msgid "Save"
+msgstr "Opslaan"
+
+#: symfexit/payments/templates/admin/payments/order/submit_line.html:6
+msgid "Save as new"
+msgstr "Opslaan als nieuw"
+
+#: symfexit/payments/templates/admin/payments/order/submit_line.html:7
+msgid "Save and add another"
+msgstr "Opslaan en nieuwe toevoegen"
+
+#: symfexit/payments/templates/admin/payments/order/submit_line.html:8
+msgid "Save and continue editing"
+msgstr "Opslaan en doorgaan met bewerken"
+
+#: symfexit/payments/templates/admin/payments/order/submit_line.html:8
+msgid "Save and view"
+msgstr "Opslaan en bekijken"
+
+#: symfexit/payments/templates/admin/payments/order/submit_line.html:11
+msgid "Close"
+msgstr "Sluiten"
+
+#: symfexit/payments/templates/admin/payments/order/submit_line.html:15
+msgid "Cancel Order"
+msgstr "Bestelling annuleren"
+
+#: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:14
+msgid "Home"
+msgstr "Home"
+
+#: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:18
+msgid "Cancel"
+msgstr "Annuleren"
+
+#: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:25
+msgid "You are not allowed to cancel orders."
+msgstr "Je bent niet gemachtigd om bestellingen te annuleren."
+
+#: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:29
+#, python-format
+msgid "Are you sure you want to cancel the order \"%(escaped_object)s\"?"
+msgstr "Weet je zeker dat je de bestelling \"%(escaped_object)s\" wil annuleren?"
+
+#: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:30
+msgid ""
+"This will stop future payment obligations from being created. This cannot be "
+"undone!"
+msgstr ""
+"Dit stopt toekomstige betalingsverplichtingen. Dit kan niet ongedaan worden "
+"gemaakt!"
+
+#: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:36
+msgid "Yes, I'm sure"
+msgstr "Ja, ik weet het zeker"
+
+#: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:37
+msgid "No, take me back"
+msgstr "Nee, breng me terug"
