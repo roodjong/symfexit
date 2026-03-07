@@ -106,7 +106,9 @@ CONTENT_DIR = Path(setting_from_env("CONTENT_DIR", development=BASE_DIR / "conte
 SYMFEXIT_ENV = os.getenv("SYMFEXIT_ENV", "development")
 
 SINGLE_SITE = setting_from_env("SINGLE_SITE", development=True, production=False)
-SINGLE_SITE_DOMAIN = setting_from_env("SINGLE_SITE_DOMAIN", development="127.0.0.1")
+SINGLE_SITE_DOMAIN = setting_from_env(
+    "SINGLE_SITE_DOMAIN", development="127.0.0.1", production=None
+)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = setting_from_env(
