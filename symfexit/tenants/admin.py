@@ -1,15 +1,11 @@
 from django import forms
-from django.apps import apps
 from django.contrib import admin, messages
-from django.contrib.admin.options import csrf_protect_m
-from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
 from django.db import connection
 from django.http import HttpResponseRedirect
-from django.template.response import TemplateResponse
-from django.urls import path
 from django.utils.formats import localize
 from django.utils.translation import gettext_lazy as _
+from django.views.generic import FormView
 from django_tenants.admin import TenantAdminMixin
 
 from symfexit.root.helpers import ClearableFileInputFromStr
@@ -136,89 +132,29 @@ class GlobalClientAdmin(TenantAdminMixin, admin.ModelAdmin):
         ]
 
 
-class SiteSettings:
-    """Fake model class for the per-tenant settings admin (like constance's Config)."""
+class SiteSettingsView(FormView):
+    template_name = "admin/tenants/sitesettings/change_list.html"
+    form_class = SiteSettingsForm
+    admin_site = None
 
-    class Meta:
-        app_label = "site_settings"
-        object_name = "SiteSettings"
-        concrete_model = None
-        model_name = module_name = "sitesettings"
-        verbose_name = _("site settings")
-        verbose_name_plural = _("site settings")
-        abstract = False
-        swapped = False
-        is_composite_pk = False
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["tenant"] = connection.tenant
+        return kwargs
 
-        def get_ordered_objects(self):
-            return False
-
-        def get_change_permission(self):
-            return f"change_{self.model_name}"
-
-        @property
-        def app_config(self):
-            return apps.get_app_config(self.app_label)
-
-        @property
-        def label(self):
-            return f"{self.app_label}.{self.object_name}"
-
-        @property
-        def label_lower(self):
-            return f"{self.app_label}.{self.model_name}"
-
-    _meta = Meta()
-
-
-@admin.register(SiteSettings)
-class SiteSettingsAdmin(admin.ModelAdmin):
-    change_list_template = "admin/tenants/sitesettings/change_list.html"
-
-    def __init__(self, model, admin_site):
-        model._meta.concrete_model = SiteSettings
-        super().__init__(model, admin_site)
-
-    def get_urls(self):
-        info = f"{self.model._meta.app_label}_{self.model._meta.module_name}"
-        return [
-            path("", self.admin_site.admin_view(self.changelist_view), name=f"{info}_changelist"),
-            path("", self.admin_site.admin_view(self.changelist_view), name=f"{info}_add"),
-        ]
-
-    @csrf_protect_m
-    def changelist_view(self, request, extra_context=None):
-        if not self.has_view_or_change_permission(request):
-            raise PermissionDenied
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(self.admin_site.each_context(self.request))
         tenant = connection.tenant
-        form = SiteSettingsForm(tenant=tenant)
+        context["config_values"] = context["form"].get_config_rows(tenant)
+        context["title"] = _("Site settings")
+        return context
 
-        if request.method == "POST":
-            form = SiteSettingsForm(data=request.POST, files=request.FILES, tenant=tenant)
-            if form.is_valid():
-                form.save()
-                messages.add_message(
-                    request, messages.SUCCESS, _("Live settings updated successfully.")
-                )
-                return HttpResponseRedirect(".")
-            messages.add_message(request, messages.ERROR, _("Failed to update live settings."))
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _("Live settings updated successfully."))
+        return HttpResponseRedirect(".")
 
-        context = {
-            **self.admin_site.each_context(request),
-            **(extra_context or {}),
-            "config_values": form.get_config_rows(tenant),
-            "title": _("Site settings"),
-            "app_label": "tenants",
-            "opts": self.model._meta,
-            "form": form,
-            "media": self.media + form.media,
-        }
-        request.current_app = self.admin_site.name
-        return TemplateResponse(request, self.change_list_template, context)
-
-    def has_add_permission(self, *args, **kwargs):
-        return False
-
-    def has_delete_permission(self, *args, **kwargs):
-        return False
+    def form_invalid(self, form):
+        messages.error(self.request, _("Failed to update live settings."))
+        return super().form_invalid(form)
