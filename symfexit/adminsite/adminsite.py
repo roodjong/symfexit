@@ -1,10 +1,11 @@
 from functools import update_wrapper
 
-from constance import config
 from django.contrib import admin
 from django.urls.resolvers import URLResolver
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
+
+from symfexit.tenants.config import config
 
 
 class TenantAdminSite(admin.AdminSite):

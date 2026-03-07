@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 
-from constance import config
+from symfexit.tenants.config import config
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand

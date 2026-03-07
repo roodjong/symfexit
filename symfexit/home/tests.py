@@ -1,4 +1,4 @@
-from constance import config
+from symfexit.tenants.config import config
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.urls import reverse

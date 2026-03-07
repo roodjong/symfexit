@@ -9,18 +9,6 @@ from django.views.generic import TemplateView
 from symfexit.theme.models import TailwindKey
 from symfexit.worker.registry import add_task
 
-# class ConfigAdmin(ConstanceAdmin):
-#     change_list_template = "admin/constance_theme/change_list.html"
-#     # change_list_template = 'admin/constance/includes/results_list.html'
-
-#     def __init__(self, model, admin_site):
-#         super().__init__(model, admin_site)
-#         self.opts.app_label = "theme"
-
-
-# admin.site.unregister([Config])
-# admin.site.register([Config], ConfigAdmin)
-
 
 class TailwindAdmin(admin.ModelAdmin):
     change_list_template = "admin/tailwind_keys/change_list.html"

@@ -3,7 +3,7 @@ import urllib.parse
 from dataclasses import dataclass
 from typing import ClassVar, TypedDict, TypeVar
 
-from constance import config
+from symfexit.tenants.config import config
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.root import settings
