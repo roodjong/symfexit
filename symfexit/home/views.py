@@ -1,4 +1,3 @@
-from constance import config
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
@@ -14,7 +13,9 @@ class Home(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        hp = HomePage.objects.filter(id=config.HOMEPAGE_CURRENT)
+        tenant = getattr(self.request, "tenant", None)
+        homepage_id = tenant.homepage_current if tenant else None
+        hp = HomePage.objects.filter(id=homepage_id)
         if hp:
             context["homepage"] = hp[0]
         return context

@@ -1,6 +1,3 @@
-import json
-
-from constance import config
 from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
@@ -26,7 +23,13 @@ def save_new_tiers(tiers):
         }
         for x in tiers
     ]
-    # config.PAYMENT_TIERS_JSON = json.dumps(list(tiers))
+    from django_tenants.utils import get_tenant_model
+    from django.db import connection
+
+    tenant_model = get_tenant_model()
+    tenant = tenant_model.objects.get(schema_name=connection.schema_name)
+    tenant.payment_tiers_json = list(tiers)
+    tenant.save()
 
 
 class PaymentTiersAdmin(admin.ModelAdmin):
@@ -54,7 +57,12 @@ class PaymentTiersAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         if not self.has_view_or_change_permission(request):
             raise PermissionDenied
-        initial = json.loads(config.PAYMENT_TIERS_JSON)
+        from django_tenants.utils import get_tenant_model
+        from django.db import connection
+
+        tenant_model = get_tenant_model()
+        tenant = tenant_model.objects.get(schema_name=connection.schema_name)
+        initial = tenant.payment_tiers_json or []
 
         PaymentTierFormSet = forms.formset_factory(PaymentTier, extra=1, can_delete=True)
 

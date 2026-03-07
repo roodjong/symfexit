@@ -7,20 +7,17 @@ class Client(TenantMixin):
     name = models.CharField(max_length=100)
     created_on = models.DateField(auto_now_add=True)
 
+    site_title = models.CharField(max_length=100, blank=True, null=True, default="Membersite")  # noqa: DJ001
+    logo_image = models.CharField(max_length=255, blank=True, default="")
+    main_site = models.URLField(blank=True, default="https://roodjongeren.nl/")
+    homepage_current = models.IntegerField(blank=True, null=True, default=0)
+    payment_tiers_json = models.JSONField(blank=True, null=True, default=list)
+
     # default true, schema will be automatically created and synced when it is saved
     auto_create_schema = True
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        with tenant_context(self):
-            # Set the constance SITE_TITLE if not set yet
-            from constance import config  # noqa: PLC0415
-
-            if config._backend.get("SITE_TITLE") is None:
-                config.SITE_TITLE = self.name
 
 
 class Domain(DomainMixin):

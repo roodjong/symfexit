@@ -38,36 +38,39 @@ class EmailComponentTests(TestCase):
     # ---------------------------------------------------------------------
     # Tests for BaseEmailComponent
     # ---------------------------------------------------------------------
-    @override_config(
-        SITE_TITLE=BASE_CONTEXT["site_title"],
-        MAIN_SITE=BASE_CONTEXT["site_url"],
-        LOGO_IMAGE="logo.png",
-    )
     def test_get_context_values(self):
         """BaseEmailComponent.get_context_values() merges base context correctly."""
-        ctx = BaseEmailComponent.get_context_values()
 
-        self.assertEqual(ctx["site_title"], self.base_context["site_title"])
-        self.assertEqual(ctx["site_url"], self.base_context["site_url"])
+        class DummyTenant:
+            site_title = BASE_CONTEXT["site_title"]
+            main_site = BASE_CONTEXT["site_url"]
+            logo_image = "logo.png"
+
+        request = type("Request", (), {"tenant": DummyTenant()})()
+        ctx = BaseEmailComponent.get_base_context(request=request)
+        ctx_dict = {c[0]: c[2] for c in ctx}
+        self.assertEqual(ctx_dict["site_title"], self.base_context["site_title"])
+        self.assertEqual(ctx_dict["site_url"], self.base_context["site_url"])
         self.assertEqual(
-            ctx["site_logo"],
+            ctx_dict["site_logo"],
             f"{self.base_context['site_url']}/media/logo.png",
         )
 
-    @override_config(
-        SITE_TITLE=BASE_CONTEXT["site_title"],
-        MAIN_SITE=BASE_CONTEXT["site_url"],
-        LOGO_IMAGE="logo.png",
-    )
     def test_get_context_options(self):
         """The options dictionary contains the base keys and the input keys."""
-        opts = BaseEmailComponent.get_context_options()
 
+        class DummyTenant:
+            site_title = BASE_CONTEXT["site_title"]
+            main_site = BASE_CONTEXT["site_url"]
+            logo_image = "logo.png"
+
+        request = type("Request", (), {"tenant": DummyTenant()})()
+        ctx = BaseEmailComponent.get_base_context(request=request)
+        opts = {c[0]: c for c in ctx}
         # Base keys should be present
         self.assertIn("site_title", opts)
         self.assertIn("site_url", opts)
         self.assertIn("site_logo", opts)
-
         # No input keys by default
         self.assertNotIn("content", opts)
 

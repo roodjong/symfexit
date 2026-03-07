@@ -1,10 +1,11 @@
 from functools import update_wrapper
 
-from constance import config
 from django.contrib import admin
 from django.urls.resolvers import URLResolver
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
+
+from symfexit.tenants.models import Client
 
 
 class TenantAdminSite(admin.AdminSite):
@@ -14,18 +15,31 @@ class TenantAdminSite(admin.AdminSite):
 
     @property
     def site_header(self):
-        # Text to put in each page's <div id="site-name">.
-        return format_lazy(_("{site_title} Administration"), site_title=config.SITE_TITLE)
+        tenant = self.get_active_tenant()
+        site_title = tenant.site_title if tenant else "Membersite"
+        return format_lazy(_("{site_title} Administration"), site_title=site_title)
 
     @property
     def site_title(self):
-        # Text to put at the end of each page's <title>.
-        return format_lazy(_("{site_title} site admin"), site_title=config.SITE_TITLE)
+        tenant = self.get_active_tenant()
+        site_title = tenant.site_title if tenant else "Membersite"
+        return format_lazy(_("{site_title} site admin"), site_title=site_title)
 
     @property
     def index_title(self):
-        # Text to put at the top of the admin index page.
-        return format_lazy(_("{site_title} administration"), site_title=config.SITE_TITLE)
+        tenant = self.get_active_tenant()
+        site_title = tenant.site_title if tenant else "Membersite"
+        return format_lazy(_("{site_title} administration"), site_title=site_title)
+
+    def get_active_tenant(self):
+        # Try to get tenant from request if available
+        import threading
+
+        request = getattr(threading.local(), "request", None)
+        if request and hasattr(request, "tenant"):
+            return request.tenant
+        # Fallback: get first tenant
+        return Client.objects.first()
 
     def get_urls(self) -> list[URLResolver]:
         from django.apps import apps  # noqa: PLC0415

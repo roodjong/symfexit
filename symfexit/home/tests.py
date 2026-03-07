@@ -1,4 +1,4 @@
-from constance import config
+from symfexit.tenants.models import Client
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.urls import reverse
@@ -27,7 +27,9 @@ class HomePageTest(FastTenantTestCase):
             title="Test title",
             content="Test body",
         )
-        config.HOMEPAGE_CURRENT = hp.id
+        tenant = Client.objects.get(schema_name=self.tenant.schema_name)
+        tenant.homepage_current = hp.id
+        tenant.save()
         response = self.client.get("/")
         self.assertContains(response, "Test body")
 
@@ -58,7 +60,9 @@ class HomePageAdminTest(FastTenantTestCase):
             title="Test title",
             content="Test body",
         )
-        config.HOMEPAGE_CURRENT = hp.id
+        tenant = Client.objects.get(schema_name=self.tenant.schema_name)
+        tenant.homepage_current = hp.id
+        tenant.save()
         response = self.client.get(reverse("admin:home_homepage_change", args=[hp.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Change current homepage")
@@ -96,7 +100,8 @@ class HomePageAdminTest(FastTenantTestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(config.HOMEPAGE_CURRENT, hp.id)
+        tenant = Client.objects.get(schema_name=self.tenant.schema_name)
+        self.assertEqual(tenant.homepage_current, hp.id)
         response = self.client.get("/")
         self.assertContains(response, "Test body2")
 
@@ -116,7 +121,9 @@ class HomePageAdminTest(FastTenantTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "<script>alert('XSS')</script>")
 
-        config.HOMEPAGE_CURRENT = hp.id
+        tenant = Client.objects.get(schema_name=self.tenant.schema_name)
+        tenant.homepage_current = hp.id
+        tenant.save()
 
         response = self.client.get("/")
         self.assertNotContains(response, "<script>alert('XSS')</script>")

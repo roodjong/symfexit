@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 
-from constance import config
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
@@ -93,7 +92,11 @@ class Command(BaseCommand):
         self.create_documents(work_groups[0])
         # Not creating email templates and layouts
         home = HomePage.objects.create(title="Welcome Home", content="<h1>Home</h1>")
-        config.HOMEPAGE_CURRENT = home.pk  # set it to the default home page.
+        # Set homepage_current for the tenant
+        tenant = Client.objects.first()
+        if tenant:
+            tenant.homepage_current = home.pk
+            tenant.save()
         self.stdout.write(self.style.SUCCESS("Sample objects for all major models created."))
 
         CreatePermissionGroupsCommand().handle()

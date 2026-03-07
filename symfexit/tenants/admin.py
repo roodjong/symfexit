@@ -12,5 +12,13 @@ class DomainInline(admin.TabularInline):
 
 @admin.register(Client, site=global_admin)
 class ClientAdmin(TenantAdminMixin, admin.ModelAdmin):
-    list_display = ("name",)
+    list_display = ("name", "site_title", "logo_image", "main_site", "homepage_current")
+    fields = (
+        "name",
+        "site_title",
+        "logo_image",
+        "main_site",
+        "homepage_current",
+        "payment_tiers_json",
+    )
     inlines = (DomainInline,)

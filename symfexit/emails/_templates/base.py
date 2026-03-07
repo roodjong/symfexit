@@ -3,7 +3,6 @@ import urllib.parse
 from dataclasses import dataclass
 from typing import ClassVar, TypedDict, TypeVar
 
-from constance import config
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.root import settings
@@ -30,15 +29,20 @@ class BaseEmailComponent[T]:
         self.context = {**self.get_context_values(), **context}
 
     @classmethod
-    def get_base_context(cls):
+    def get_base_context(cls, request=None):
         """Content that is global and for every email the same."""
+        tenant = getattr(request, "tenant", None) if request else None
+        site_title = tenant.site_title if tenant else getattr(settings, "SITE_TITLE", None)
+        main_site = tenant.main_site if tenant else getattr(settings, "MAIN_SITE", None)
+        logo_image = tenant.logo_image if tenant else getattr(settings, "LOGO_IMAGE", None)
+        media_url = getattr(settings, "MEDIA_URL", "/media/")
         return [
-            ("site_title", _("Main title of this site"), config.SITE_TITLE),
-            ("site_url", _("Main site of the organisation"), config.MAIN_SITE),
+            ("site_title", _("Main title of this site"), site_title),
+            ("site_url", _("Main site of the organisation"), main_site),
             (
                 "site_logo",
                 _("Organisation logo"),
-                f"{config.MAIN_SITE}/{settings.MEDIA_URL}{config.LOGO_IMAGE}",
+                f"{main_site}{media_url}{logo_image}",
             ),
         ]
 

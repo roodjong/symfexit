@@ -1,5 +1,4 @@
 import bleach
-from constance import config
 from django.contrib import admin
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
@@ -24,7 +23,9 @@ class HomePageAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, form_url=""):
         obj = HomePage.objects.filter(id=object_id)[0]
-        if config.HOMEPAGE_CURRENT == obj.pk:
+        tenant = getattr(request, "tenant", None)
+        homepage_id = tenant.homepage_current if tenant else None
+        if homepage_id == obj.pk:
             return super().change_view(
                 request,
                 object_id,
@@ -49,7 +50,10 @@ class HomePageAdmin(admin.ModelAdmin):
 
     def response_change(self, request, obj):
         if "_setcurrent" in request.POST:
-            config.HOMEPAGE_CURRENT = obj.pk
+            tenant = getattr(request, "tenant", None)
+            if tenant:
+                tenant.homepage_current = obj.pk
+                tenant.save()
             self.message_user(request, _("This is now the current homepage."))
             request.POST = request.POST.copy()
             request.POST["_continue"] = True
