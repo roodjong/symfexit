@@ -14,7 +14,7 @@ class EventsAdmin(admin.ModelAdmin):
         if attendees.exists():
             # Wrap each attendee in <li> and all in <ul>
             items = "".join(f"<li>{user}</li>" for user in attendees)
-            return format_html(f'<ul style="margin:unset; padding: unset;">{items}</ul>')
+            return format_html('<ul style="margin:unset; padding: unset;">{}</ul>', items)
         return "-"
 
     attendees_display.short_description = "Attendees"

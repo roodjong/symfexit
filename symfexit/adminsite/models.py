@@ -91,6 +91,10 @@ class WellKnownPermissionGroup(models.Model):
                         Permission.objects.get(codename="change_membershipapplication"),
                         Permission.objects.get(codename="delete_membershipapplication"),
                         Permission.objects.get(codename="view_membershipapplication"),
+                        Permission.objects.get(codename="add_event"),
+                        Permission.objects.get(codename="change_event"),
+                        Permission.objects.get(codename="delete_event"),
+                        Permission.objects.get(codename="view_event"),
                     ]
                 )
                 flags.members_become_staff = True
