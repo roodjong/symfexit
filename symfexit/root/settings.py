@@ -124,6 +124,10 @@ MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = setting(development=True, production=False, testing=False)
 
+ALLOW_DUMMY_PAYMENTS_IN_PRODUCTION = setting_from_env(
+    "ALLOW_DUMMY_PAYMENTS_IN_PRODUCTION", development=True, production=False, testing=True
+)
+
 RUN_TASKS_SYNC = setting_from_env(
     "RUN_TASKS_SYNC", development=False, production=False, testing=True
 )
