@@ -179,7 +179,9 @@ class Account(models.Model):
             defaults={
                 "name": _("Accounts Receivable"),
                 "description": _(
-                    "Accounts receivable represents money owed by entities to the firm on the sale of products or services on credit. In RGS this is mapped to BVorDebHad (13011). See: https://www.boekhoudplaza.nl/rgs_rekeningen/BVorDebHad&KB=R&kzB=SVC/Debiteuren.htm"
+                    "Accounts receivable represents money owed by entities to the firm on the sale of products or services on credit. In RGS this is mapped to BVorDebHad (13011). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/BVorDebHad&KB=R&kzB=SVC/Debiteuren.htm"
                 ),
                 "credit_balance": False,
             },
@@ -197,7 +199,9 @@ class Account(models.Model):
             defaults={
                 "name": _("Revenue"),
                 "description": _(
-                    "Membership revenue balance account. In RGS this is mapped to WLbeLbvLbv (82811). See: https://www.boekhoudplaza.nl/rgs_rekeningen/WLbeLbvLbv&KB=R&kzB=SVC&rgsv=WLbeLbvLbv/Ledenbetalingen_inclusief_reeds_betaalde_voorschotten.htm"
+                    "Membership revenue balance account. In RGS this is mapped to WLbeLbvLbv (82811). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/WLbeLbvLbv&KB=R&kzB=SVC&rgsv=WLbeLbvLbv/Ledenbetalingen_inclusief_reeds_betaalde_voorschotten.htm"
                 ),
                 "credit_balance": True,
             },
@@ -217,7 +221,9 @@ class Account(models.Model):
                 "description": _(
                     "Expense account for waived (forgiven) payment obligations. "
                     "When a payment is waived, the debt is written off against this account. "
-                    "In RGS this is mapped to WBedVkkAdd (45661)."
+                    "In RGS this is mapped to WBedVkkAdd (45661). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/WBedVkkAdd&KB=R&kzB=SVC/Afboeking_dubieuze_debiteuren.htm"
                 ),
                 "credit_balance": False,
             },
@@ -234,7 +240,9 @@ class Account(models.Model):
             defaults={
                 "name": _("Bank"),
                 "description": _(
-                    "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba (10201). See: https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/Rekening_courant_bank_tegoeden_bij_banken.htm"
+                    "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba (10201). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/Rekening_courant_bank_tegoeden_bij_banken.htm"
                 ),
                 "credit_balance": False,
             },
