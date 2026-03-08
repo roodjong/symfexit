@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 08:58+0100\n"
+"POT-Creation-Date: 2026-03-08 10:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,31 +17,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/payments/admin.py:163
+#: symfexit/payments/admin.py:169
+msgid "Paid payment obligation"
+msgstr "Betaalde betalingsverplichting"
+
+#: symfexit/payments/admin.py:170
+msgid "Paid payment obligations"
+msgstr "Betaalde betalingsverplichtingen"
+
+#: symfexit/payments/admin.py:225
 msgid "status"
 msgstr "status"
 
-#: symfexit/payments/admin.py:167
+#: symfexit/payments/admin.py:229
 msgid "Active"
 msgstr "Actief"
 
-#: symfexit/payments/admin.py:167
+#: symfexit/payments/admin.py:229
 msgid "Cancelled"
 msgstr "Geannuleerd"
 
-#: symfexit/payments/admin.py:167
+#: symfexit/payments/admin.py:229
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/payments/admin.py:273
+#: symfexit/payments/admin.py:345
 msgid "User has not setup full address yet"
 msgstr "Gebruiker heeft nog geen volledig adres ingesteld"
 
-#: symfexit/payments/apps.py:12
+#: symfexit/payments/apps.py:28
 msgid "Payments"
 msgstr "Betalingen"
 
-#: symfexit/payments/apps.py:31
+#: symfexit/payments/apps.py:50
 msgid ""
 "Payment obligations haven't been generated recently. Make sure the "
 "generate_obligations command is scheduled."
@@ -51,154 +59,158 @@ msgstr ""
 
 #: symfexit/payments/dummy/templates/payments_dummy/dummy_pay.html:2
 #, python-format
-msgid " Fake this payment for %(price)s cents. "
-msgstr " Nepbetaling doen voor %(price)s cent. "
+msgid " Fake this payment for EUR %(price)s. "
+msgstr " Nepbetaling doen voor EUR %(price)s. "
 
 #: symfexit/payments/dummy/templates/payments_dummy/dummy_pay.html:6
 msgid "Fake pay"
 msgstr "Nepbetaling doen"
 
-#: symfexit/payments/models.py:46
+#: symfexit/payments/models.py:50
 msgid "Day"
 msgstr "Dag"
 
-#: symfexit/payments/models.py:47
+#: symfexit/payments/models.py:51
 msgid "Week"
 msgstr "Week"
 
-#: symfexit/payments/models.py:48
+#: symfexit/payments/models.py:52
 msgid "Month"
 msgstr "Maand"
 
-#: symfexit/payments/models.py:49
+#: symfexit/payments/models.py:53
 msgid "Year"
 msgstr "Jaar"
 
-#: symfexit/payments/models.py:54
+#: symfexit/payments/models.py:58
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/payments/models.py:55
+#: symfexit/payments/models.py:59
 msgid "name"
 msgstr "naam"
 
-#: symfexit/payments/models.py:56
+#: symfexit/payments/models.py:60
 msgid "address"
 msgstr "adres"
 
-#: symfexit/payments/models.py:57
+#: symfexit/payments/models.py:61
 msgid "city"
 msgstr "stad"
 
-#: symfexit/payments/models.py:58
+#: symfexit/payments/models.py:62
 msgid "postal code"
 msgstr "postcode"
 
-#: symfexit/payments/models.py:62
+#: symfexit/payments/models.py:66
 msgid "billing address"
 msgstr "Factuuradres"
 
-#: symfexit/payments/models.py:63
+#: symfexit/payments/models.py:67
 msgid "billing addresses"
 msgstr "factuuradressen"
 
-#: symfexit/payments/models.py:39
-msgid "Created"
-msgstr "Gemaakt"
+#: symfexit/payments/models.py:132 symfexit/payments/models.py:163
+msgid ""
+"Assets and expenses are increased with debits, decreased with credits. "
+"Liabilities, equity, and income are increased with credits, decreased with "
+"debits. Tick this if the account increases with credits. This makes sure the "
+"balance is shown correctly."
+msgstr ""
+"Activa en kosten nemen toe met debet, af met credit. Passiva, eigen vermogen "
+"en inkomsten nemen toe met credit, af met debet. Vink dit aan als de "
+"rekening toeneemt met credit. Dit zorgt ervoor dat het saldo correct wordt "
+"weergegeven."
 
-#: symfexit/payments/models.py:40
-msgid "Pending"
-msgstr "Wachtend"
-
-#: symfexit/payments/models.py:41
-msgid "Paid"
-msgstr "Betaald"
-
-#: symfexit/payments/models.py:42
-msgid "Failed"
-msgstr "Mislukt"
-
-#: symfexit/payments/models.py:44
-msgid "Expired"
-msgstr "Verlopen"
-
-#: symfexit/payments/models.py:52
-msgid "payment status"
-msgstr "betaalstatus"
-
-#: symfexit/payments/models.py:59 symfexit/payments/models.py:95
-msgid "order"
-msgstr "betalingsopdracht"
-
-#: symfexit/payments/models.py:63
-#, python-brace-format
-msgid "Payment for {order}"
-msgstr "Betaling voor {order}"
-
-#: symfexit/payments/models.py:133
+#: symfexit/payments/models.py:137
 msgid "general ledger"
 msgstr "grootboek"
 
-#: symfexit/payments/models.py:176
+#: symfexit/payments/models.py:180
 msgid "Accounts Receivable"
 msgstr "Debiteuren"
 
-#: symfexit/payments/models.py:96
-msgid "orders"
-msgstr "betalingsopdrachten"
-
-#: symfexit/payments/models.py:99
+#: symfexit/payments/models.py:182
 #, python-brace-format
-msgid "{description} for {price:.02f}"
-msgstr "{description} voor {price:.02f}"
+msgid ""
+"Accounts receivable represents money owed by entities to the firm on the "
+"sale of products or services on credit. In RGS this is mapped to BVorDebHad "
+"(13011). See: {rgs_url}"
+msgstr ""
+"Debiteuren vertegenwoordigt geld dat entiteiten verschuldigd zijn aan de "
+"organisatie voor de verkoop van producten of diensten op krediet. In RGS is "
+"dit gekoppeld aan BVorDebHad (13011). Zie: {rgs_url}"
 
-#: symfexit/payments/models.py:107 symfexit/payments/models.py:148
-msgid "external identifier"
-msgstr "extern kenmerk"
+#: symfexit/payments/models.py:200
+msgid "Revenue"
+msgstr "Omzet"
 
-#: symfexit/payments/models.py:211
+#: symfexit/payments/models.py:202
+#, python-brace-format
+msgid ""
+"Membership revenue balance account. In RGS this is mapped to WLbeLbvLbv "
+"(82811). See: {rgs_url}"
+msgstr ""
+"Balansrekening voor lidmaatschapsomzet. In RGS is dit gekoppeld aan "
+"WLbeLbvLbv (82811). Zie: {rgs_url}"
+
+#: symfexit/payments/models.py:220
+msgid "Waived Payments"
+msgstr "Kwijtgescholden betalingen"
+
+#: symfexit/payments/models.py:222
+#, python-brace-format
+msgid ""
+"Expense account for waived (forgiven) payment obligations. When a payment is "
+"waived, the debt is written off against this account. In RGS this is mapped "
+"to WBedVkkAdd (45661). See: {rgs_url}"
+msgstr ""
+"Kostenrekening voor kwijtgescholden (vergeven) betalingsverplichtingen. "
+"Wanneer een betaling wordt kwijtgescholden, wordt de schuld afgeboekt tegen "
+"deze rekening. In RGS is dit gekoppeld aan WBedVkkAdd (45661). Zie: {rgs_url}"
+
+#: symfexit/payments/models.py:241
 msgid "Bank"
 msgstr "Bank"
 
-#: symfexit/payments/models.py:213
+#: symfexit/payments/models.py:243
+#, python-brace-format
 msgid ""
 "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba "
-"(10201). See: https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/"
-"Rekening_courant_bank_tegoeden_bij_banken.htm"
+"(10201). See: {rgs_url}"
 msgstr ""
 "Bankrekening (rekening-courant). In RGS is dit gekoppeld aan BLimBanRba "
-"(10201). Zie: https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/"
-"Rekening_courant_bank_tegoeden_bij_banken.htm"
+"(10201). Zie: {rgs_url}"
 
-#: symfexit/payments/models.py:243
+#: symfexit/payments/models.py:275
 msgid "Subscription"
 msgstr "Abonnement"
 
-#: symfexit/payments/models.py:247
+#: symfexit/payments/models.py:279
 msgid "enabled"
 msgstr "ingeschakeld"
 
-#: symfexit/payments/models.py:248 symfexit/payments/models.py:316
+#: symfexit/payments/models.py:280 symfexit/payments/models.py:356
 msgid "product sku"
 msgstr "product-SKU"
 
-#: symfexit/payments/models.py:249 symfexit/payments/models.py:317
+#: symfexit/payments/models.py:281 symfexit/payments/models.py:357
 msgid "product name"
 msgstr "productnaam"
 
-#: symfexit/payments/models.py:253
+#: symfexit/payments/models.py:285
 msgid "created at"
 msgstr "gemaakt op"
 
-#: symfexit/payments/models.py:254
+#: symfexit/payments/models.py:286
 msgid "updated at"
 msgstr "bijgewerkt op"
 
-#: symfexit/payments/models.py:282 symfexit/payments/models.py:322
+#: symfexit/payments/models.py:314 symfexit/payments/models.py:362
 msgid "How many of the period unit before the subscription repeats."
 msgstr "Hoeveel periode-eenheden voordat het abonnement herhaalt."
 
-#: symfexit/payments/models.py:329
+#: symfexit/payments/models.py:369
 msgid "cancelled at"
 msgstr "geannuleerd op"
 
@@ -245,7 +257,8 @@ msgstr "Je bent niet gemachtigd om bestellingen te annuleren."
 #: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:29
 #, python-format
 msgid "Are you sure you want to cancel the order \"%(escaped_object)s\"?"
-msgstr "Weet je zeker dat je de bestelling \"%(escaped_object)s\" wil annuleren?"
+msgstr ""
+"Weet je zeker dat je de bestelling \"%(escaped_object)s\" wil annuleren?"
 
 #: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:30
 msgid ""
