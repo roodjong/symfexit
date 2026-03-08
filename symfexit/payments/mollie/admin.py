@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from symfexit.payments.mollie.models import MollieSettings
 
 

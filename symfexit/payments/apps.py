@@ -55,7 +55,10 @@ class PaymentsConfig(AppConfig):
         return []
 
     def get_app_admin_urls(self, admin_site):
-        from symfexit.payments.admin import load_product_info, get_or_create_billing_address  # noqa: PLC0415
+        from symfexit.payments.admin import (  # noqa: PLC0415
+            get_or_create_billing_address,
+            load_product_info,
+        )
 
         return [
             path(
