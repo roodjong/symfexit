@@ -69,9 +69,6 @@ def _get_order_inline():
 
     return OrderInline
 
-#     # autocomplete_fields = ("address",)
-#     exclude = ()
-
 
 class IsActiveFilter(SimpleListFilter):
     title = _("is registered")
