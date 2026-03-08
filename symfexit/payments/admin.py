@@ -1,8 +1,6 @@
 import zoneinfo
 from datetime import timedelta
 
-from django.utils import timezone
-
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
@@ -11,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.payments.models import (

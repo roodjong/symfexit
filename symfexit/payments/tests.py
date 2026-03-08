@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from unittest.mock import patch
 from uuid import uuid4
@@ -9,7 +9,6 @@ from symfexit.members.admin import Member
 from symfexit.payments.models import (
     Account,
     BillingAddress,
-    Order,
     PaymentObligation,
     PeriodUnit,
     Product,
