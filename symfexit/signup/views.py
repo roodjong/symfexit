@@ -8,7 +8,6 @@ from django.views.generic import FormView
 
 from symfexit.emails._templates.emails.membership_application import MembershipApplicationEmail
 from symfexit.emails._templates.render import send_email
-from symfexit.payments.models import Order
 from symfexit.payments.registry import payments_registry
 from symfexit.signup.forms import SignupForm
 from symfexit.signup.models import MembershipApplication
@@ -41,11 +40,11 @@ class MemberSignup(FormView):
 
 
 def member_signup_pay(request, application_id):
-    provider = payments_registry.get_main()
+    default_provider = payments_registry.get_default_instance()
     application = MembershipApplication.get_or_404(application_id)
-    subscription = application.get_or_create_subscription()
-    return provider.start_subscription_flow(
-        request, subscription, reverse("signup:return", args=[application.eid])
+    order, obligation = application.get_or_create_order(default_provider)
+    return order.paid_using.start_payment_flow(
+        request, obligation, reverse("signup:return", args=[application.eid])
     )
 
 
@@ -53,10 +52,10 @@ def member_signup_pay_retry(request, application_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     application = MembershipApplication.get_or_404(application_id)
-    provider = payments_registry.get_main()
-    subscription = application.get_or_create_subscription()
-    return provider.start_subscription_flow(
-        request, subscription, reverse("signup:return", args=[application.eid])
+    default_provider = payments_registry.get_default_instance()
+    order, obligation = application.get_or_create_order(default_provider)
+    return order.paid_using.start_payment_flow(
+        request, obligation, reverse("signup:return", args=[application.eid])
     )
 
 
@@ -66,6 +65,6 @@ def return_view(request, application_id):
     if order is None:
         logger.warning(f"Order not found for application {application_id}")
         raise Http404()
-    if order.payment_status == Order.Status.CANCELLED:
+    if not order.payment_set.exists():
         return render(request, "signup/cancelled.html", {"application": application})
     return render(request, "signup/return.html")

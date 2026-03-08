@@ -1,19 +1,15 @@
 from django.db import models
 
-from symfexit.payments.models import Order
 
+class MollieSettings(models.Model):
+    payment_provider = models.OneToOneField(
+        "payments.PaymentProvider",
+        on_delete=models.CASCADE,
+        related_name="mollie_settings",
+    )
+    api_key = models.CharField(max_length=255, blank=True)
+    test_api_key = models.CharField(max_length=255, blank=True)
+    live_mode = models.BooleanField(default=False)
 
-# Create your models here.
-class MolliePayment(models.Model):
-    id = models.AutoField(primary_key=True)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    payment_id = models.CharField(max_length=100)
-    body = models.JSONField()
-
-    class Meta:
-        indexes = [
-            models.Index(fields=["payment_id"]),
-        ]
-
-    def __str__(self) -> str:
-        return f"{self.order} - {self.payment_id}"
+    def __str__(self):
+        return f"Mollie settings (live mode: {self.live_mode})"

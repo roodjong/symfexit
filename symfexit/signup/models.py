@@ -6,7 +6,11 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
-from symfexit.payments.models import Order
+from symfexit.payments.models import (
+    BillingAddress,
+    Order,
+    PaymentProvider,
+)
 
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)
 
@@ -40,7 +44,22 @@ class MembershipApplication(models.Model):
         null=True,
         blank=True,
     )
-    payment_amount = models.IntegerField(_("payment amount in cents"))  # in cents
+    payment_amount_euros = models.DecimalField(_("payment amount"), max_digits=8, decimal_places=2)
+
+    membership_type = models.ForeignKey(
+        "membership.MembershipType",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership type"),
+    )
+    membership_tier = models.ForeignKey(
+        "membership.MembershipTier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership tier"),
+    )
 
     status = models.CharField(
         _("status"), max_length=10, choices=Status.choices, default=Status.CREATED
@@ -51,6 +70,7 @@ class MembershipApplication(models.Model):
         Order,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         verbose_name=_("subscription order"),
     )
 
@@ -78,6 +98,41 @@ class MembershipApplication(models.Model):
         id = hashids.decode(eid)[0]
         return get_object_or_404(MembershipApplication, id=id)
 
+    def get_or_create_order(self, default_provider: PaymentProvider):
+        if self._order is not None:
+            obligation = self._order.get_or_create_next_payment_obligation(timezone="UTC")
+            return self._order, obligation
+
+        if self.membership_tier is not None:
+            product = self.membership_tier.product
+            price_euros = product.price_euros
+        elif self.membership_type is not None:
+            # Custom amount: use the dedicated custom amount product
+            product = self.membership_type.custom_amount_product
+            price_euros = self.payment_amount_euros
+        else:
+            # Legacy fallback: should not happen for new applications
+            raise ValueError("MembershipApplication has no membership_type set")
+
+        billing_address = BillingAddress.objects.create(
+            user=None,
+            name=f"{self.first_name} {self.last_name}",
+            address=self.address,
+            city=self.city,
+            postal_code=self.postal_code,
+        )
+
+        order, obligation = Order.objects.create_with_obligation(
+            product=product,
+            billing_address=billing_address,
+            price_euros=price_euros,
+            paid_using=default_provider,
+        )
+
+        self._order = order
+        self.save()
+        return order, obligation
+
     def create_user(self):
         try:
             user = User.objects.create_user(
@@ -94,6 +149,9 @@ class MembershipApplication(models.Model):
                 raise DuplicateEmailError from e
             else:
                 raise e
+        user.membership_type = self.membership_type
+        user.membership_tier = self.membership_tier
+        user.save()
         self.user = user
         if self.preferred_group:
             user.groups.add(self.preferred_group)

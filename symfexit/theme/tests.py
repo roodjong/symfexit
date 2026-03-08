@@ -24,7 +24,9 @@ def npm_available():
         import subprocess  # noqa: PLC0415
 
         subprocess.check_call(
-            ["npm", "install"], cwd=settings.SYMFEXIT_DIR / "theme" / "static_src"
+            ["npm", "install"],
+            cwd=settings.SYMFEXIT_DIR / "theme" / "static_src",
+            stdout=subprocess.DEVNULL,
         )
         is_npm_available = True
         return True

@@ -25,23 +25,42 @@
 
   <div class="basis-96 grow-0 shrink-0">
     <h1 class="font-header text-5xl mb-8">{% translate 'Contribution' %}</h1>
-    {% for subscription in subscriptions %}
-    <div class="bg-primary text-white p-4 mb-4">
-      <h2 class="font-header text-3xl">{{ subscription.name }}</h2>
-      <p class="text-lg">{{ subscription.description }}</p>
-      <p class="text-lg">€{{ subscription.amount }}</p>
-    </div>
-    {% endfor %}
-    {% if current_membership is None %}
+    {% if active_order %}
+      <p class="mb-4">
+        {% blocktranslate with amount=active_order.product_price_euros period=subscription_period provider=payment_provider %}
+          Your contribution is automatically debited every {{ period }} via direct debit through {{ provider }}. Your contribution amount is €&nbsp;{{ amount }}.
+        {% endblocktranslate %}
+      </p>
+      <ul class="list-disc pl-5 mb-6 space-y-1">
+        <li>{% translate 'Cancel subscription' %}</li>
+        <li>{% translate 'Different bank account' %}</li>
+        <li>{% translate 'Adjust amount' %}</li>
+      </ul>
+      {% if payments %}
+        <h2 class="font-header text-3xl mb-4">{% translate 'Payment history' %}</h2>
+        <table class="w-full">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left py-2">{% translate 'Date' %}</th>
+              <th class="text-right py-2">{% translate 'Amount' %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in payments %}
+              <tr class="border-b">
+                <td class="py-2">{{ payment.paid_at|date:"d-m-Y" }}</td>
+                <td class="text-right py-2">&euro;&nbsp;{{ payment.amount_euros|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% else %}
       <p class="pb-2">{% translate 'Setup your membership payments now' %}</p>
-      <form method="post" action="{% url 'members:payment-start' %}">
-        {% csrf_token %}
-        <input
-          class="bg-primary text-white p-3 cursor-pointer"
-          type="submit"
-          value="{% translate 'Start subscription' %}"
-        />
-      </form>
+      <a
+        class="bg-primary text-white p-3 cursor-pointer inline-block"
+        href="{% url 'members:membership-selection' %}"
+      >{% translate 'Start subscription' %}</a>
     {% endif %}
 
   </div>

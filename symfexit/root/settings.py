@@ -124,13 +124,17 @@ MOLLIE_API_KEY = setting_from_env("MOLLIE_API_KEY", production=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = setting(development=True, production=False, testing=False)
 
+ALLOW_DUMMY_PAYMENTS_IN_PRODUCTION = setting_from_env(
+    "ALLOW_DUMMY_PAYMENTS_IN_PRODUCTION", development=True, production=False, testing=True
+)
+
 RUN_TASKS_SYNC = setting_from_env(
     "RUN_TASKS_SYNC", development=False, production=False, testing=True
 )
 
 ALLOWED_HOSTS = setting(development=["*"], production=os.getenv("ALLOWED_HOSTS", "").split(","))
 
-if DEBUG:
+if SYMFEXIT_ENV == "development":
     CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
 else:
     CSRF_TRUSTED_ORIGINS = []
@@ -199,6 +203,7 @@ TENANT_APPS = [
     "symfexit.payments.apps.PaymentsConfig",
     "symfexit.payments.dummy.apps.PaymentsDummyConfig",
     "symfexit.payments.mollie.apps.PaymentsMollieConfig",
+    "symfexit.payments.waived.apps.PaymentsWaivedConfig",
     "symfexit.documents.apps.DocumentsConfig",
     "symfexit.home.apps.HomeConfig",
     "symfexit.signup.apps.SignupConfig",

@@ -75,8 +75,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("cadre"), default=False, help_text=_("Designates whether the member is a cadre member.")
     )
     extra_information = models.TextField(_("Extra information"), blank=True)
-    member_type = models.CharField(
-        _("membership type"), default=MemberType.MEMBER, choices=MemberType
+    member_type = models.CharField(_("member type"), default=MemberType.MEMBER, choices=MemberType)
+    membership_type = models.ForeignKey(
+        "membership.MembershipType",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership type"),
+    )
+    membership_tier = models.ForeignKey(
+        "membership.MembershipTier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("membership tier"),
     )
 
     is_staff = models.BooleanField(
