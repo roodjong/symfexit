@@ -41,16 +41,19 @@ class PaymentsRegistry:
                 pass
         raise RuntimeError("No available payment processor found")
 
-    def get_default_instance(self):
+    def get_instance_for_provider(self, provider: "symfexit.payments.models.PaymentProvider"):
+        processor = self.get(provider.type)
+        if not processor:
+            raise RuntimeError(f"Payment processor {provider.type} not found in registry")
+        return processor.get_instance(provider)
+
+    def get_default_provider(self):
         from symfexit.payments.models import PaymentProvider  # noqa: PLC0415
 
         provider = PaymentProvider.objects.filter(default=True).first()
         if not provider:
             raise RuntimeError("No default payment provider configured")
-        processor = self.get(provider.type)
-        if not processor:
-            raise RuntimeError(f"Payment processor {provider.type} not found in registry")
-        return processor.get_instance(provider)
+        return provider
 
     def initialize(self):
         for _, processor in self._registry:

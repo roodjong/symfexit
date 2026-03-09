@@ -32,7 +32,10 @@ class MemberSignup(FormView):
         context = super().get_context_data(**kwargs)
 
         membership_types = MembershipType.objects.filter(enabled=True).prefetch_related(
-            Prefetch("tiers", queryset=MembershipTier.objects.filter(enabled=True).select_related("product"))
+            Prefetch(
+                "tiers",
+                queryset=MembershipTier.objects.filter(enabled=True).select_related("product"),
+            )
         )
 
         tiers_data = {}
@@ -51,7 +54,9 @@ class MemberSignup(FormView):
             tiers_data[mt.pk] = {
                 "tiers": tiers_list,
                 "allow_custom_amount": mt.allow_custom_amount,
-                "minimum_custom_amount_euros": str(mt.custom_amount_product.price_euros) if mt.custom_amount_product else None,
+                "minimum_custom_amount_euros": str(mt.custom_amount_product.price_euros)
+                if mt.custom_amount_product
+                else None,
             }
 
         context["tiers_json"] = json.dumps(tiers_data)
@@ -75,10 +80,11 @@ class MemberSignup(FormView):
 
 
 def member_signup_pay(request, application_id):
-    default_provider = payments_registry.get_default_instance()
+    default_provider = payments_registry.get_default_provider()
     application = MembershipApplication.get_or_404(application_id)
     order, obligation = application.get_or_create_order(default_provider)
-    return order.paid_using.start_payment_flow(
+    instance = payments_registry.get_instance_for_provider(order.paid_using)
+    return instance.start_payment_flow(
         request, obligation, reverse("signup:return", args=[application.eid])
     )
 
@@ -87,9 +93,10 @@ def member_signup_pay_retry(request, application_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     application = MembershipApplication.get_or_404(application_id)
-    default_provider = payments_registry.get_default_instance()
+    default_provider = payments_registry.get_default_provider()
     order, obligation = application.get_or_create_order(default_provider)
-    return order.paid_using.start_payment_flow(
+    instance = payments_registry.get_instance_for_provider(order.paid_using)
+    return instance.start_payment_flow(
         request, obligation, reverse("signup:return", args=[application.eid])
     )
 

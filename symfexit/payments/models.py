@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
 from symfexit.members.admin import Member
+from symfexit.payments.registry import PaymentProcessor
 
 hashids = Hashids(min_length=8, salt=settings.SECRET_KEY)
 
@@ -538,3 +539,8 @@ class PaymentProvider(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_processor(self) -> Optional["PaymentProcessor"]:
+        from symfexit.payments.registry import payments_registry  # noqa: PLC0415
+
+        return payments_registry.get(self.type)

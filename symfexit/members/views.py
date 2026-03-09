@@ -45,7 +45,7 @@ class MemberData(LoginRequiredMixin, TemplateView):
 
         payments = []
         subscription_period = ""
-        payment_provider = ""
+        payment_provider = _("an unknown provider")
         if active_order:
             payment_qs = (
                 Payment.objects.filter(order=active_order)
@@ -60,7 +60,8 @@ class MemberData(LoginRequiredMixin, TemplateView):
                 active_order.subscription_period,
                 active_order.subscription_period_unit,
             )
-            payment_provider = payments_registry.get_main().name()
+            if active_order.paid_using:
+                payment_provider = active_order.paid_using.get_processor().name()
 
         return render(
             request,
@@ -182,15 +183,17 @@ def _start_payment(request):
         )
         return redirect("members:memberdata")
 
-    _order, obligation = Order.objects.create_with_obligation(
+    default_provider = payments_registry.get_default_provider()
+    order, obligation = Order.objects.create_with_obligation(
         product=product,
         billing_address=billing_address,
         for_user=user,
         price_euros=price_euros,
+        paid_using=default_provider,
     )
 
-    provider = payments_registry.get_main()
-    return provider.start_payment_flow(request, obligation, reverse("members:memberdata"))
+    instance = payments_registry.get_instance_for_provider(order.paid_using)
+    return instance.start_payment_flow(request, obligation, reverse("members:memberdata"))
 
 
 def payment_start(request):
