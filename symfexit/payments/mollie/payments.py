@@ -91,7 +91,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         absolute_return_url = request.build_absolute_uri(return_url)
 
         amount_str = f"{obligation.amount_euros:.2f}"
-        description = f"Order {obligation.order.id} - {obligation.order.product_name}"
+        description = self.mollie_settings.format_description(obligation)
 
         payment_data = {
             "amount": {
@@ -162,22 +162,24 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         webhook_url = self.mollie_settings.webhook_base_url.rstrip("/") + webhook_path
 
         amount_str = f"{obligation.amount_euros:.2f}"
-        description = f"Order {obligation.order.id} - {obligation.order.product_name}"
+        description = self.mollie_settings.format_description(obligation)
 
-        payment = client.payments.create({
-            "amount": {
-                "currency": "EUR",
-                "value": amount_str,
-            },
-            "description": description,
-            "webhookUrl": webhook_url,
-            "sequenceType": "recurring",
-            "customerId": mollie_customer.mollie_customer_id,
-            "metadata": {
-                "obligation_id": str(obligation.id),
-                "order_id": str(obligation.order.id),
-            },
-        })
+        payment = client.payments.create(
+            {
+                "amount": {
+                    "currency": "EUR",
+                    "value": amount_str,
+                },
+                "description": description,
+                "webhookUrl": webhook_url,
+                "sequenceType": "recurring",
+                "customerId": mollie_customer.mollie_customer_id,
+                "metadata": {
+                    "obligation_id": str(obligation.id),
+                    "order_id": str(obligation.order.id),
+                },
+            }
+        )
 
         MolliePayment.objects.create(
             obligation=obligation,

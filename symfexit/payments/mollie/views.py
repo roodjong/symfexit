@@ -44,9 +44,7 @@ def mollie_webhook(request):
 
 def _create_payment_if_needed(obligation: PaymentObligation):
     with transaction.atomic():
-        locked_obligation = (
-            PaymentObligation.objects.select_for_update().get(pk=obligation.pk)
-        )
+        locked_obligation = PaymentObligation.objects.select_for_update().get(pk=obligation.pk)
 
         if Payment.objects.filter(obligation=locked_obligation).exists():
             return

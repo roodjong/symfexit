@@ -183,7 +183,9 @@ class MollieStartPaymentFlowTest(TestCase):
         request.META["SERVER_PORT"] = "80"
         return request
 
-    def _mock_payment(self, payment_id="tr_new123", checkout_url="https://www.mollie.com/checkout/test"):
+    def _mock_payment(
+        self, payment_id="tr_new123", checkout_url="https://www.mollie.com/checkout/test"
+    ):
         mock = MagicMock()
         mock.__getitem__ = lambda s, k: payment_id if k == "id" else None
         mock.checkout_url = checkout_url
@@ -207,7 +209,9 @@ class MollieStartPaymentFlowTest(TestCase):
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
             instance = MollieProcessorInstance(self.mollie_settings)
-            response = instance.start_payment_flow(self._make_request(), self.obligation, "/return/")
+            response = instance.start_payment_flow(
+                self._make_request(), self.obligation, "/return/"
+            )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "https://www.mollie.com/checkout/test")
@@ -241,7 +245,9 @@ class MollieStartPaymentFlowTest(TestCase):
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
             instance = MollieProcessorInstance(self.mollie_settings)
-            response = instance.start_payment_flow(self._make_request(), self.obligation, "/return/")
+            response = instance.start_payment_flow(
+                self._make_request(), self.obligation, "/return/"
+            )
 
         # Redirects to return URL, not Mollie checkout
         self.assertEqual(response.status_code, 302)
@@ -265,7 +271,9 @@ class MollieStartPaymentFlowTest(TestCase):
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
             instance = MollieProcessorInstance(self.mollie_settings)
-            response = instance.start_payment_flow(self._make_request(), self.obligation, "/return/")
+            response = instance.start_payment_flow(
+                self._make_request(), self.obligation, "/return/"
+            )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "https://www.mollie.com/checkout/test")
@@ -296,7 +304,9 @@ class MollieStartPaymentFlowTest(TestCase):
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
             instance = MollieProcessorInstance(self.mollie_settings)
-            response = instance.start_payment_flow(self._make_request(), self.obligation, "/return/")
+            response = instance.start_payment_flow(
+                self._make_request(), self.obligation, "/return/"
+            )
 
         self.assertEqual(response.status_code, 302)
 

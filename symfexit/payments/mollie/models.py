@@ -17,9 +17,27 @@ class MollieSettings(models.Model):
         blank=True,
         help_text="Base URL for webhooks when no request is available (e.g. https://example.com)",
     )
+    payment_description = models.CharField(
+        max_length=255,
+        default="{product_name} - {member_number}",
+        help_text="Template for payment description. Available variables: {order_id}, {product_name}, {amount}, {member_number}",
+    )
 
     def __str__(self):
         return f"Mollie settings (live mode: {self.live_mode})"
+
+    def format_description(self, obligation):
+        user = obligation.order.ordered_for
+        member_number = str(user.member_identifier) if user else ""
+        return self.payment_description.format(
+            order_id=obligation.order.id,
+            product_name=obligation.order.product_name,
+            amount=f"{obligation.amount_euros:.2f}",
+            member_number=member_number,
+            first_name=user.first_name if user else "",
+            last_name=user.last_name if user else "",
+            full_name=user.get_full_name() if user else "",
+        )
 
     def get_mollie_client(self):
         client = Client()
