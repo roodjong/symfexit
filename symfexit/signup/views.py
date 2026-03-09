@@ -1,6 +1,9 @@
+import json
 import logging
 
+from django.conf import settings
 from django.contrib.auth import logout
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
@@ -8,6 +11,7 @@ from django.views.generic import FormView
 
 from symfexit.emails._templates.emails.membership_application import MembershipApplicationEmail
 from symfexit.emails._templates.render import send_email
+from symfexit.membership.models import MembershipTier, MembershipType
 from symfexit.payments.registry import payments_registry
 from symfexit.signup.forms import SignupForm
 from symfexit.signup.models import MembershipApplication
@@ -23,6 +27,37 @@ class MemberSignup(FormView):
     def dispatch(self, *args, initialgroup: str | None = None, **kwargs):
         self.initialgroup = initialgroup
         return super().dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        membership_types = MembershipType.objects.filter(enabled=True).prefetch_related(
+            Prefetch("tiers", queryset=MembershipTier.objects.filter(enabled=True).select_related("product"))
+        )
+
+        tiers_data = {}
+        for mt in membership_types:
+            tiers_list = []
+            for tier in mt.tiers.all():
+                tier: MembershipTier
+                tiers_list.append(
+                    {
+                        "pk": tier.pk,
+                        "name": tier.name,
+                        "price_cents": tier.price_cents(),
+                        "price_euros": str(tier.price_euros()),
+                    }
+                )
+            tiers_data[mt.pk] = {
+                "tiers": tiers_list,
+                "allow_custom_amount": mt.allow_custom_amount,
+                "minimum_custom_amount_euros": str(mt.custom_amount_product.price_euros) if mt.custom_amount_product else None,
+            }
+
+        context["tiers_json"] = json.dumps(tiers_data)
+        context["signup_available"] = bool(tiers_data)
+        context["development"] = settings.SYMFEXIT_ENV == "development"
+        return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
