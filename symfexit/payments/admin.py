@@ -391,7 +391,16 @@ class PaymentObligationPaymentInline(admin.TabularInline):
 @admin.register(PaymentObligation)
 class PaymentObligationAdmin(admin.ModelAdmin):
     readonly_fields = ("transaction", "order")
-    inlines = (PaymentObligationPaymentInline,)
+
+    def get_inlines(self, request, obj):
+        inlines = [PaymentObligationPaymentInline]
+        try:
+            from symfexit.payments.mollie.admin import MolliePaymentInline  # noqa: PLC0415
+
+            inlines.append(MolliePaymentInline)
+        except ImportError:
+            pass
+        return inlines
 
     def has_module_permission(self, request):
         return False

@@ -1,6 +1,7 @@
 from django.db import connection
 
-from symfexit.payments.models import Order
+from symfexit.payments.models import Order, PaymentObligation
+from symfexit.payments.registry import payments_registry
 from symfexit.worker import logger
 from symfexit.worker.registry import task_registry
 
@@ -27,3 +28,39 @@ def gen_obligations():
             logger.log(f"Order {order.id}: ERROR - {e}")
 
     logger.log(f"Processed {created} orders, {errors} errors")
+
+
+@task_registry.register("charge_obligations")
+def charge_obligations():
+    obligations = PaymentObligation.objects.filter(
+        payment__isnull=True,
+        order__paid_using__isnull=False,
+        order__ordered_for__isnull=False,
+        order__cancelled_at__isnull=True,
+    ).select_related(
+        "order__paid_using",
+        "order__ordered_for",
+    )
+
+    charged = 0
+    skipped = 0
+    errors = 0
+
+    for obligation in obligations.iterator():
+        try:
+            provider = obligation.order.paid_using
+            processor = payments_registry.get(provider.type)
+            if processor is None:
+                skipped += 1
+                continue
+
+            instance = processor.get_instance(provider)
+            if instance.charge_obligation(obligation):
+                charged += 1
+            else:
+                skipped += 1
+        except Exception:
+            errors += 1
+            logger.log(f"Obligation {obligation.id}: ERROR")
+
+    logger.log(f"Charged {charged}, skipped {skipped}, errors {errors}")

@@ -155,7 +155,14 @@ class MembershipApplication(models.Model):
         self.user = user
         if self.preferred_group:
             user.groups.add(self.preferred_group)
-        # self._subscription.user = user
-        # self._subscription.save()
+        if self._order is not None:
+            self._order.ordered_for = user
+            self._order.save(update_fields=["ordered_for"])
+            self._link_mollie_customer(user)
         self.save()
         return user
+
+    def _link_mollie_customer(self, user):
+        from symfexit.payments.mollie.payments import link_mollie_customer_to_user  # noqa: PLC0415
+
+        link_mollie_customer_to_user(self._order, user)

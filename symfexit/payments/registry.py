@@ -1,6 +1,7 @@
 import abc
 import bisect
 import logging
+from typing import Optional
 
 import symfexit
 
@@ -26,7 +27,7 @@ class PaymentsRegistry:
 
         return _register
 
-    def get(self, name):
+    def get(self, name) -> Optional["PaymentProcessor"]:
         return self._names.get(name)
 
     def get_main(self):
@@ -92,7 +93,9 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
         return None
 
     @abc.abstractmethod
-    def get_instance(self, provider: "symfexit.payments.models.PaymentProvider"):
+    def get_instance(
+        self, provider: "symfexit.payments.models.PaymentProvider"
+    ) -> "PaymentProcessorInstance":
         """Returns an instance of this payment processor for the given provider."""
         ...
 
@@ -105,3 +108,11 @@ class PaymentProcessorInstance(metaclass=abc.ABCMeta):
         Should return an HttpResponse (either a redirect or a rendered template).
         """
         ...
+
+    def charge_obligation(self, obligation) -> bool:
+        """Attempt to charge an unpaid obligation automatically (recurring).
+
+        Returns True if a charge was initiated, False if skipped (e.g. no mandate).
+        Raises on error.
+        """
+        return False

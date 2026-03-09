@@ -214,7 +214,9 @@ class BaseUserAdmin(admin.ModelAdmin):
     delete_confirmation_template = "admin/members/membership_cancellation_confirm.html"
 
     def get_inlines(self, request, obj=None):
-        return [_get_order_inline()]
+        from symfexit.payments.mollie.admin import MollieCustomerInline  # noqa: PLC0415
+
+        return [_get_order_inline(), MollieCustomerInline]
 
     def get_changeform_initial_data(self, request):
         return {"member_identifier": generate_member_number()}

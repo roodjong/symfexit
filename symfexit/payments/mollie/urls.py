@@ -1,5 +1,9 @@
-# from symfexit.payments.dummy.views import initiate_dummy
+from django.urls import path
+
+from symfexit.payments.mollie.views import mollie_webhook
 
 app_name = "payments_mollie"
 
-urlpatterns = []
+urlpatterns = [
+    path("webhook/", mollie_webhook, name="webhook"),
+]
