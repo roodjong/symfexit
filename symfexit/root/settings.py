@@ -239,6 +239,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "symfexit.root.urls"
 PUBLIC_SCHEMA_URLCONF = "symfexit.root.management_urls"
+LOGIN_REDIRECT_URL = "home:home"
 
 TEMPLATES = [
     {
