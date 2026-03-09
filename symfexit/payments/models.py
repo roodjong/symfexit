@@ -58,6 +58,7 @@ class BillingAddress(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=_("user"))
     name = models.CharField(_("name"), max_length=100)
+    email = models.EmailField(_("email address"), blank=True, default="")
     address = models.CharField(_("address"), max_length=100)
     city = models.CharField(_("city"), max_length=100)
     postal_code = models.CharField(_("postal code"), max_length=100)
@@ -85,6 +86,7 @@ class BillingAddress(models.Model):
             address = cls.objects.create(
                 user_id=user.id,
                 name=user.get_full_name(),
+                email=user.email,
                 address=user.address,
                 city=user.city,
                 postal_code=user.postal_code,

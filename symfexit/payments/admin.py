@@ -32,8 +32,8 @@ User = get_user_model()
 @admin.register(BillingAddress)
 class BillingAddressAdmin(admin.ModelAdmin):
     search_fields = ("id", "name")
-    list_display = ("id", "name", "address", "city")
-    fields = ("name", "address", "city", "postal_code", "user")
+    list_display = ("id", "name", "email", "address", "city")
+    fields = ("name", "email", "address", "city", "postal_code", "user")
 
     def has_change_permission(self, request, obj=None):
         return False

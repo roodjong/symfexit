@@ -114,7 +114,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         else:
             # Signup flow — create Mollie customer from billing address
             billing = obligation.ordered_for_billing_address
-            customer_id = _create_mollie_customer(client, billing.name, "")
+            customer_id = _create_mollie_customer(client, billing.name, billing.email)
 
         payment_data["customerId"] = customer_id
 

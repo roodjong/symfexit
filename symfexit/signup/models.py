@@ -117,6 +117,7 @@ class MembershipApplication(models.Model):
         billing_address = BillingAddress.objects.create(
             user=None,
             name=f"{self.first_name} {self.last_name}",
+            email=self.email,
             address=self.address,
             city=self.city,
             postal_code=self.postal_code,
