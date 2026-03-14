@@ -16,7 +16,6 @@ from collections import OrderedDict
 from pathlib import Path
 
 import dj_database_url
-from django.utils.translation import gettext_lazy as _
 
 from symfexit.root.utils import enable_if
 

@@ -33,7 +33,7 @@ class TenantAdminSite(admin.AdminSite):
 
     def get_active_tenant(self):
         # Try to get tenant from request if available
-        import threading
+        import threading  # noqa: PLC0415
 
         request = getattr(threading.local(), "request", None)
         if request and hasattr(request, "tenant"):

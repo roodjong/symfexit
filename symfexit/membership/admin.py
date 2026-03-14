@@ -2,11 +2,13 @@ from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
+from django.db import connection
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_tenants.utils import get_tenant_model
 
 from symfexit.membership.forms import PaymentTier, PaymentTierInfo
 from symfexit.membership.models import Membership
@@ -23,8 +25,6 @@ def save_new_tiers(tiers):
         }
         for x in tiers
     ]
-    from django_tenants.utils import get_tenant_model
-    from django.db import connection
 
     tenant_model = get_tenant_model()
     tenant = tenant_model.objects.get(schema_name=connection.schema_name)
@@ -57,8 +57,6 @@ class PaymentTiersAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         if not self.has_view_or_change_permission(request):
             raise PermissionDenied
-        from django_tenants.utils import get_tenant_model
-        from django.db import connection
 
         tenant_model = get_tenant_model()
         tenant = tenant_model.objects.get(schema_name=connection.schema_name)

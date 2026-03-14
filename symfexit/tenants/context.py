@@ -1,6 +1,3 @@
-from django.conf import settings
-
-
 def tenant_config(request):
     tenant = getattr(request, "tenant", None)
     if tenant:
