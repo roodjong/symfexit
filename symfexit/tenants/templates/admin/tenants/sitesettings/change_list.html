@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; {{ title }}
+  </div>
+{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+  {{ form.media }}
+  <fieldset class="module aligned">
+    <h2>{{ title }}</h2>
+    {% with config_rows=config_values %}
+      {% include "admin/tenants/includes/config_table.html" %}
+    {% endwith %}
+  </fieldset>
+  <div class="submit-row">
+    <input type="submit" value="{% translate 'Save' %}" class="default">
+  </div>
+</form>
+{% endblock %}

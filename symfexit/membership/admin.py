@@ -1,6 +1,5 @@
 import json
 
-from constance import config
 from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
@@ -14,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from symfexit.membership.forms import PaymentTier, PaymentTierInfo
 from symfexit.membership.models import Membership
 from symfexit.payments.models import Order
+from symfexit.tenants.config import config
 
 
 def save_new_tiers(tiers):
