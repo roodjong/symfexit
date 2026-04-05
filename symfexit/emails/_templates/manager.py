@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from symfexit.emails._templates.base import BaseEmailComponent, WrapperLayout
 from symfexit.emails._templates.emails.membership_application import MembershipApplicationEmail
 from symfexit.emails._templates.emails.password_request import PasswordResetEmail
+from symfexit.emails._templates.emails.signup_accepted import SignupAcceptedEmail
 from symfexit.emails._templates.layouts.base import BaseLayout
 
 if TYPE_CHECKING:
@@ -27,7 +28,11 @@ class BaseManager:
 
 
 class EmailTemplateManager(BaseManager):
-    _registry: list[type[BodyTemplate]] = [MembershipApplicationEmail, PasswordResetEmail]
+    _registry: list[type[BodyTemplate]] = [
+        MembershipApplicationEmail,
+        PasswordResetEmail,
+        SignupAcceptedEmail,
+    ]
 
 
 class EmailLayoutManager(BaseManager):

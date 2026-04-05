@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 15:02+0000\n"
+"POT-Creation-Date: 2026-03-07 08:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,65 +17,69 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/membership/admin.py:70
-msgid "Live settings updated successfully."
-msgstr "Huidige instellingen succesvol bijgewerkt."
-
-#: symfexit/membership/admin.py:77
-msgid "Failed to update live settings."
-msgstr "Kon huidige instellingen niet bijwerken."
-
-#: symfexit/membership/admin.py:86
-msgid "Payment Tiers"
-msgstr "Betaalschijven"
-
-#: symfexit/membership/admin.py:111
-msgid "payment tiers"
-msgstr "betaalschijven"
-
-#: symfexit/membership/admin.py:158
-msgid "is current"
-msgstr "is huidig"
-
-#: symfexit/membership/admin.py:172
-msgid "has user"
-msgstr "heeft een gebruiker"
-
 #: symfexit/membership/apps.py:8
 msgid "Membership"
 msgstr "Lidmaatschap"
 
-#: symfexit/membership/forms.py:8
-msgid "Pay anything enabled"
-msgstr "Maak zelf hoeveelheid bepalen mogelijk"
+#: symfexit/membership/models.py:7 symfexit/membership/models.py:51
+msgid "enabled"
+msgstr "ingeschakeld"
 
-#: symfexit/membership/forms.py:9
-msgid "Pay anything help text"
-msgstr "Help text voor zelf hoeveelheid bepalen"
-
-#: symfexit/membership/forms.py:10
-msgid "Pay more enabled"
-msgstr "Maak meer betalen mogelijk"
-
-#: symfexit/membership/forms.py:11
-msgid "Pay more help text"
-msgstr "Meer betalen help text"
-
-#: symfexit/membership/forms.py:21
-msgid "Help text"
-msgstr "Help text"
-
-#: symfexit/membership/forms.py:27
-msgid "Price per period (in €)"
-msgstr "Prijs per periode (in €)"
+#: symfexit/membership/models.py:8 symfexit/membership/models.py:52
+msgid "name"
+msgstr "naam"
 
 #: symfexit/membership/models.py:9
-msgid "membership"
-msgstr "lidmaatschap"
+msgid "description"
+msgstr "omschrijving"
 
 #: symfexit/membership/models.py:10
-msgid "memberships"
-msgstr "lidmaatschappen"
+msgid "slug"
+msgstr "slug"
+
+#: symfexit/membership/models.py:11
+msgid "allow custom amount"
+msgstr "aangepast bedrag toestaan"
+
+#: symfexit/membership/models.py:17
+msgid "custom amount product"
+msgstr "product voor aangepast bedrag"
+
+#: symfexit/membership/models.py:19
+msgid ""
+"Product used when a member chooses a custom amount. Required when custom "
+"amount is allowed."
+msgstr ""
+"Product dat wordt gebruikt wanneer een lid een aangepast bedrag kiest. "
+"Vereist wanneer een aangepast bedrag is toegestaan."
+
+#: symfexit/membership/models.py:22 symfexit/membership/models.py:58
+msgid "position"
+msgstr "positie"
+
+#: symfexit/membership/models.py:30
+msgid "This field is required when custom amount is allowed."
+msgstr "Dit veld is vereist wanneer een aangepast bedrag is toegestaan."
+
+#: symfexit/membership/models.py:37 symfexit/membership/models.py:49
+msgid "membership type"
+msgstr "lidmaatschapstype"
+
+#: symfexit/membership/models.py:38
+msgid "membership types"
+msgstr "lidmaatschapstypen"
+
+#: symfexit/membership/models.py:56
+msgid "product"
+msgstr "product"
+
+#: symfexit/membership/models.py:62
+msgid "membership tier"
+msgstr "lidmaatschapsschijf"
+
+#: symfexit/membership/models.py:63
+msgid "membership tiers"
+msgstr "lidmaatschapsschijven"
 
 #: symfexit/membership/templates/admin/membership/payment_tiers.html:32
 msgid "Save"

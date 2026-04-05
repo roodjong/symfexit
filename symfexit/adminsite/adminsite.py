@@ -12,6 +12,17 @@ class TenantAdminSite(admin.AdminSite):
         super().__init__(name)
         self.final_catch_all_view = False
 
+    def each_context(self, request):
+        from django.apps import apps  # noqa: PLC0415
+
+        context = super().each_context(request)
+        warnings = []
+        for app in apps.get_app_configs():
+            if hasattr(app, "get_admin_warnings"):
+                warnings.extend(app.get_admin_warnings(request))
+        context["admin_warnings"] = warnings
+        return context
+
     @property
     def site_header(self):
         # Text to put in each page's <div id="site-name">.

@@ -1,19 +1,31 @@
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from symfexit.payments.dummy.forms import FakePayForm
-from symfexit.payments.models import Order
+from symfexit.payments.models import Account, Payment, PaymentObligation, Transaction
 
 
-def initiate_dummy(request, order_id):
+def initiate_dummy(request, obligation_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     form = FakePayForm(request.POST)
-    order = Order.get_or_404(order_id)
+    obligation = get_object_or_404(PaymentObligation, id=obligation_id)
+    return_url = request.session.get(f"dummy_return_url_{obligation.id}", "/")
     if form.is_valid():
-        order.payment_status = form.cleaned_data["payment_status"]
-        if order.payment_status == Order.Status.PAID:
-            order.done_at = timezone.now()
-        order.save()
-        return HttpResponseRedirect(order.return_url)
-    raise form.errors
+        if form.cleaned_data["payment_status"] == "paid":
+            ar_account, _ = Account.get_accounts_receivable_account()
+            bank_account, _ = Account.get_bank_account()
+            transaction = Transaction.objects.create(
+                credit_account=ar_account,
+                debit_account=bank_account,
+                amount_cents=int(obligation.amount_euros * 100),
+            )
+            Payment.objects.create(
+                order=obligation.order,
+                obligation=obligation,
+                paid_at=timezone.now(),
+                transaction=transaction,
+            )
+        return HttpResponseRedirect(return_url)
+    raise ValueError(form.errors)

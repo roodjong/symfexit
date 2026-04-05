@@ -1,0 +1,138 @@
+{% extends "menupage.html" %}{% load i18n %} {% block main %}
+<div class="container mx-auto max-w-lg pt-8 p-2">
+  <h1 class="font-header text-5xl mb-6">{% translate 'Select your membership' %}</h1>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {% if form.membership_type.is_hidden %}
+    {{ form.membership_type }}
+    {% else %}
+    <div>
+      <label for="{{ form.membership_type.id_for_label }}" class="block font-bold mb-1">{{ form.membership_type.label }}</label>
+      {{ form.membership_type }}
+      {{ form.membership_type.errors }}
+    </div>
+    {% endif %}
+    <div class="payment-tier">
+      <label class="block font-bold mb-1">{{ form.payment_tier.label }}</label>
+      <div id="id_payment_tier">
+        {% for radio in form.payment_tier %}
+        <div>{{ radio }}</div>
+        {% endfor %}
+      </div>
+      {{ form.payment_tier.errors }}
+    </div>
+    <div class="pay-more mt-4">
+      <label for="{{ form.pay_more.id_for_label }}" class="block font-bold mb-1">{{ form.pay_more.label }}</label>
+      {{ form.pay_more }}
+      {{ form.pay_more.errors }}
+    </div>
+    <input
+      class="bg-primary text-white p-3 cursor-pointer"
+      type="submit"
+      value="{% translate 'Continue' %}"
+    />
+  </form>
+</div>
+<script>
+  const tiersData = {{ tiers_json|safe }};
+  const CUSTOM_VALUE = "custom";
+
+  const paymentTierContainer = document.getElementById('id_payment_tier');
+  const payMoreWrapper = document.querySelector('.pay-more');
+  const payMoreField = payMoreWrapper ? payMoreWrapper.querySelector('input') : null;
+
+  function buildTierRadios(typeId) {
+    const data = tiersData[typeId];
+    if (!data) return;
+
+    paymentTierContainer.innerHTML = '';
+    data.tiers.forEach(function(tier, index) {
+      const div = document.createElement('div');
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'payment_tier';
+      input.value = tier.pk;
+      input.id = 'id_payment_tier_' + index;
+      if (index === 0) input.checked = true;
+
+      const label = document.createElement('label');
+      label.htmlFor = input.id;
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(' ' + tier.name + ' (\u20ac' + tier.price_euros + ')'));
+      div.appendChild(label);
+      paymentTierContainer.appendChild(div);
+    });
+
+    if (data.allow_custom_amount) {
+      const div = document.createElement('div');
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'payment_tier';
+      input.value = CUSTOM_VALUE;
+      input.id = 'id_payment_tier_custom';
+
+      const label = document.createElement('label');
+      label.htmlFor = input.id;
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(' {% translate "I want to pay more, namely:" %}'));
+      div.appendChild(label);
+      paymentTierContainer.appendChild(div);
+    }
+
+    paymentTierContainer.querySelectorAll('input').forEach(function(input) {
+      input.addEventListener('change', onTierChange);
+    });
+
+    updatePayMoreVisibility();
+  }
+
+  function onTierChange(event) {
+    updatePayMoreVisibility();
+  }
+
+  function getSelectedTypeId() {
+    const hidden = document.querySelector('input[name="membership_type"][type="hidden"]');
+    if (hidden) return hidden.value;
+    const select = document.querySelector('select[name="membership_type"]');
+    return select ? select.value : null;
+  }
+
+  function updatePayMoreVisibility() {
+    if (!payMoreWrapper) return;
+    const typeId = getSelectedTypeId();
+    const data = typeId ? tiersData[typeId] : null;
+    const customAllowed = data && data.allow_custom_amount;
+
+    if (!customAllowed) {
+      payMoreWrapper.style.display = 'none';
+      payMoreField.setAttribute('disabled', 'disabled');
+      return;
+    }
+
+    payMoreWrapper.style.display = '';
+    const checked = paymentTierContainer.querySelector('input:checked');
+    if (checked && checked.value === CUSTOM_VALUE) {
+      payMoreField.removeAttribute('disabled');
+    } else {
+      payMoreField.setAttribute('disabled', 'disabled');
+    }
+  }
+
+  const membershipTypeSelect = document.querySelector('select[name="membership_type"]');
+  if (membershipTypeSelect) {
+    membershipTypeSelect.addEventListener('change', function(event) {
+      buildTierRadios(event.target.value);
+    });
+  }
+
+  if (paymentTierContainer) {
+    paymentTierContainer.querySelectorAll('input').forEach(function(input) {
+      input.addEventListener('change', onTierChange);
+    });
+  }
+
+  updatePayMoreVisibility();
+</script>
+{% endblock main %}

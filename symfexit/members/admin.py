@@ -28,12 +28,46 @@ from symfexit.members.models import LocalGroup, User, WorkGroup, generate_member
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")
 
-# class MembershipInline(admin.StackedInline):
-#     model = Membership
-#     extra = 0
 
-#     # autocomplete_fields = ("address",)
-#     exclude = ()
+def _get_order_inline():
+    from symfexit.payments.models import Order  # noqa: PLC0415
+
+    class OrderInline(admin.TabularInline):
+        model = Order
+        fields = (
+            "product_name",
+            "product_price_euros",
+            "created_at",
+            "cancelled_at",
+            "last_payment",
+        )
+        readonly_fields = (
+            "product_name",
+            "product_price_euros",
+            "created_at",
+            "cancelled_at",
+            "last_payment",
+        )
+        extra = 0
+        max_num = 0
+        can_delete = False
+        show_change_link = True
+        verbose_name = _("active order")
+        verbose_name_plural = _("active orders")
+
+        @admin.display(description=_("last payment"))
+        def last_payment(self, obj):
+            from django.utils.formats import date_format  # noqa: PLC0415
+
+            payment = obj.payment_set.order_by("-paid_at").first()
+            if payment:
+                return date_format(payment.paid_at, "DATETIME_FORMAT")
+            return "-"
+
+        def get_queryset(self, request):
+            return super().get_queryset(request).filter(cancelled_at__isnull=True)
+
+    return OrderInline
 
 
 class IsActiveFilter(SimpleListFilter):
@@ -92,7 +126,8 @@ class PermissionGroupFilter(SimpleListFilter):
 
 
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
-class UserAdmin(admin.ModelAdmin):
+@admin.register(User)
+class BaseUserAdmin(admin.ModelAdmin):
     add_form_template = "admin/auth/user/add_form.html"
     change_user_password_template = None
     fieldsets = (
@@ -103,6 +138,8 @@ class UserAdmin(admin.ModelAdmin):
                 "fields": (
                     "member_identifier",
                     "member_type",
+                    "membership_type",
+                    "membership_tier",
                     "first_name",
                     "last_name",
                     "email",
@@ -145,7 +182,14 @@ class UserAdmin(admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("last_login", "date_joined", "date_left", "is_active")
+    readonly_fields = (
+        "membership_type",
+        "membership_tier",
+        "last_login",
+        "date_joined",
+        "date_left",
+        "is_active",
+    )
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
@@ -157,6 +201,8 @@ class UserAdmin(admin.ModelAdmin):
         LocalGroupFilter,
         PermissionGroupFilter,
         "cadre",
+        "membership_type",
+        "membership_tier",
     )
 
     search_fields = ("first_name", "last_name", "email")
@@ -167,7 +213,8 @@ class UserAdmin(admin.ModelAdmin):
     )
     delete_confirmation_template = "admin/members/membership_cancellation_confirm.html"
 
-    # inlines = (MembershipInline,)
+    def get_inlines(self, request, obj=None):
+        return [_get_order_inline()]
 
     def get_changeform_initial_data(self, request):
         return {"member_identifier": generate_member_number()}
@@ -315,17 +362,46 @@ class UserAdmin(admin.ModelAdmin):
         context.update({"delete_is_cancel": True})
         return super().render_change_form(request, context, add, change, form_url, obj)
 
+    def delete_view(self, request, object_id, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+        obj = self.get_object(request, unquote(object_id))
+        if obj is not None:
+            extra_context["active_orders"] = obj.order_set.filter(cancelled_at__isnull=True)
+        return super().delete_view(request, object_id, extra_context)
+
     def delete_model(self, request, obj: User):
         obj.is_active = False
         obj.date_left = timezone.now()
         obj.save()
+        for order in obj.order_set.filter(cancelled_at__isnull=True):
+            order.cancel()
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class AbstractUserAdmin(BaseUserAdmin):
+    MEMBER_TYPE_MODEL_MAP = {
+        User.MemberType.MEMBER: "member",
+        User.MemberType.SUPPORT_MEMBER: "supportmember",
+    }
+
+    def has_add_permission(self, request):
+        return super(admin.ModelAdmin, self).has_add_permission(request)
 
     def has_delete_permission(self, request, obj: User = None):
         if obj is None:
-            return super().has_delete_permission(request, obj)
+            return super(admin.ModelAdmin, self).has_delete_permission(request, obj)
         if obj.date_left is not None:
             return False
-        return super().has_delete_permission(request, obj)
+        return super(admin.ModelAdmin, self).has_delete_permission(request, obj)
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -336,10 +412,29 @@ class UserAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj: User = None):
         if obj is None:
-            return super().has_change_permission(request, obj)
+            return super(admin.ModelAdmin, self).has_change_permission(request, obj)
         if obj.date_left is not None:
             return False
-        return super().has_change_permission(request, obj)
+        return super(admin.ModelAdmin, self).has_change_permission(request, obj)
+
+    def response_change(self, request, obj):
+        expected_model = self.MEMBER_TYPE_MODEL_MAP.get(obj.member_type)
+        current_model = self.model._meta.model_name
+
+        if (
+            expected_model
+            and current_model in self.MEMBER_TYPE_MODEL_MAP.values()
+            and current_model != expected_model
+        ):
+            if "_continue" in request.POST:
+                url = reverse(f"admin:members_{expected_model}_change", args=[obj.pk])
+            elif "_addanother" in request.POST:
+                url = reverse(f"admin:members_{expected_model}_add")
+            else:
+                url = reverse(f"admin:members_{expected_model}_changelist")
+            return HttpResponseRedirect(url)
+
+        return super().response_change(request, obj)
 
 
 # Proxy for a separate view with only members on the admin page
@@ -351,9 +446,14 @@ class Member(User):
 
 
 @admin.register(Member)
-class MemberAdmin(UserAdmin):
+class MemberAdmin(AbstractUserAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(member_type=User.MemberType.MEMBER)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.member_type = User.MemberType.MEMBER
+        super().save_model(request, obj, form, change)
 
 
 # Proxy for a separate view with only support members on the admin page
@@ -365,9 +465,14 @@ class SupportMember(User):
 
 
 @admin.register(SupportMember)
-class SupportMemberAdmin(UserAdmin):
+class SupportMemberAdmin(AbstractUserAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(member_type=User.MemberType.SUPPORT_MEMBER)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.member_type = User.MemberType.SUPPORT_MEMBER
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(LocalGroup)
@@ -394,7 +499,7 @@ class LocalGroupMember(User):
 
 
 @admin.register(LocalGroupMember)
-class LocalGroupMemberAdmin(UserAdmin):
+class LocalGroupMemberAdmin(AbstractUserAdmin):
     list_display = ("first_name", "last_name", "cadre")
     list_filter = (
         LocalGroupFilter,
@@ -402,6 +507,8 @@ class LocalGroupMemberAdmin(UserAdmin):
     )
     readonly_fields = [
         "member_identifier",
+        "membership_type",
+        "membership_tier",
         "first_name",
         "last_name",
         "email",
