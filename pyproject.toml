@@ -39,7 +39,7 @@ build-backend = "setuptools.build_meta"
 dev = [
     "beautifulsoup4>=4.13.5",
     "django-browser-reload>=1.17.0",
-    "ruff>=0.8.0",
+    "ruff>=0.15.10",
 ]
 
 prod = [
