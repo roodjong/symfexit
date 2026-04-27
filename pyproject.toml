@@ -47,6 +47,11 @@ prod = [
     "dotenv>=0.9.9",
 ]
 
+docs = [
+    "sphinx>=8.0",
+    "sphinx-autobuild>=2024.10",
+]
+
 [tool.black]
 line-length = 100
 target-version = ['py312']
