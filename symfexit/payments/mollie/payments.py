@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from symfexit.payments.mollie.admin import MollieSettingsInline
 from symfexit.payments.mollie.models import MollieCustomer, MolliePayment, MollieSettings
+from symfexit.payments.mollie.views import build_pending_url
 from symfexit.payments.registry import PaymentProcessor, PaymentProcessorInstance, payments_registry
 
 logger = logging.getLogger(__name__)
@@ -88,7 +89,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         client = self.mollie_settings.get_mollie_client()
 
         webhook_url = request.build_absolute_uri(reverse("payments_mollie:webhook"))
-        absolute_return_url = request.build_absolute_uri(return_url)
+        pending_url = build_pending_url(request, obligation, return_url)
 
         amount_str = f"{obligation.amount_euros:.2f}"
         description = self.mollie_settings.format_description(obligation)
@@ -129,11 +130,11 @@ class MollieProcessorInstance(PaymentProcessorInstance):
                 mollie_customer_id=customer_id,
             )
 
-            return HttpResponseRedirect(absolute_return_url)
+            return HttpResponseRedirect(pending_url)
 
         # First payment — user goes through checkout to create mandate
         payment_data["sequenceType"] = "first"
-        payment_data["redirectUrl"] = absolute_return_url
+        payment_data["redirectUrl"] = pending_url
 
         payment = client.payments.create(payment_data)
 

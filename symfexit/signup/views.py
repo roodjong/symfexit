@@ -107,6 +107,8 @@ def return_view(request, application_id):
     if order is None:
         logger.warning(f"Order not found for application {application_id}")
         raise Http404()
-    if not order.payment_set.exists():
+    if order.cancelled_at is not None:
         return render(request, "signup/cancelled.html", {"application": application})
+    if not order.payment_set.exists():
+        return render(request, "signup/open.html", {"application": application})
     return render(request, "signup/return.html")

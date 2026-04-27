@@ -10,6 +10,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
+from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
@@ -515,6 +516,17 @@ class PaymentObligation(models.Model):
         if self.amount_euros is None:
             self.amount_euros = self.order.product_price_euros
         super().save(*args, **kwargs)
+
+    @property
+    def eid(self):
+        return hashids.encode(self.id)
+
+    eid.fget.short_description = _("external identifier")
+
+    @classmethod
+    def get_or_404(cls, eid):
+        id = hashids.decode(eid)[0]
+        return get_object_or_404(PaymentObligation, id=id)
 
 
 class Payment(models.Model):

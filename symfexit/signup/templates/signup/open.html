@@ -18,14 +18,17 @@
         Inschrijven bij {{ config.SITE_TITLE }}
       </h2>
       <p>
-        Je hebt je betaling geanulleerd. Om je inschrijving af te ronden moet je
-        voldoen aan de contributie.
+        Je betaling wordt nog verwerkt. Zodra deze is afgerond ontvang je een
+        bevestiging per e-mail.
+      </p>
+      <p>
+        Heb je de betaling nog niet voltooid? Dan kan je hieronder alsnog
+        betalen.
       </p>
       <form action="{% url "signup:retry" application.eid %}" method="POST">
         {% csrf_token %}
         <p>
-          Klik <input type="submit" class="text-primary inline cursor-pointer" value="hier" /> om terug te gaan naar de betaalpagina zodat je alsnog kan
-          betalen
+          Klik <input type="submit" class="text-primary inline cursor-pointer" value="hier" /> om terug te gaan naar de betaalpagina.
         </p>
       </form>
     </div>
