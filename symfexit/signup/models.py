@@ -160,6 +160,7 @@ class MembershipApplication(models.Model):
             self._order.ordered_for = user
             self._order.save(update_fields=["ordered_for"])
             self._link_mollie_customer(user)
+            self._reconcile_signup_overpayment(user)
         self.save()
         return user
 
@@ -167,3 +168,8 @@ class MembershipApplication(models.Model):
         from symfexit.payments.mollie.payments import link_mollie_customer_to_user  # noqa: PLC0415
 
         link_mollie_customer_to_user(self._order, user)
+
+    def _reconcile_signup_overpayment(self, user):
+        from symfexit.payments.services import reconcile_signup_overpayment_to_user  # noqa: PLC0415
+
+        reconcile_signup_overpayment_to_user(self._order, user)

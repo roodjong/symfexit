@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
 
@@ -576,7 +577,7 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment for order {self.order.id} made at {self.paid_at}"
+        return f"Payment for order {self.order.id} made at {date_format(self.paid_at, 'DATETIME_FORMAT')}"
 
 
 class PaymentProvider(models.Model):

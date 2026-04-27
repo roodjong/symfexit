@@ -4,7 +4,7 @@ import traceback
 
 from django.apps import apps
 from django.conf import settings
-from django.db import connection, models
+from django.db import connection, models, transaction
 from django.utils import timezone
 
 
@@ -42,7 +42,8 @@ class TaskRegistry:
         kwargs = DBUnpickler(io.BytesIO(task.kwargs)).load()
         logger.clear()
         try:
-            self._registry[task.name](*args, **kwargs)
+            with transaction.atomic():
+                self._registry[task.name](*args, **kwargs)
         except Exception as e:
             task.status = Task.Status.EXCEPTION
             logoutput = logger.get_output()

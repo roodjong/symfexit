@@ -429,3 +429,24 @@ class TestGeneratePaymentObligations(TestCase):
         count_after_second = PaymentObligation.objects.count()
 
         self.assertEqual(count_after_first, count_after_second)
+
+    @patch("symfexit.payments.tasks.connection")
+    def test_now_override_advances_to_future_period(self, mock_connection):
+        """Override 'now' to a future date — the next obligation lands in that period."""
+        from datetime import date as date_cls  # noqa: PLC0415
+
+        mock_connection.tenant = FakeTenant()
+        self._create_order()
+
+        # First run with current time creates the current quarter's obligation.
+        gen_obligations()
+        first_obligation = PaymentObligation.objects.first()
+
+        # Now run with an override well into the future to roll forward.
+        future = date_cls(2099, 6, 15)
+        gen_obligations(now=future)
+
+        # A second obligation should exist for a later period.
+        self.assertEqual(PaymentObligation.objects.count(), 2)
+        new = PaymentObligation.objects.exclude(pk=first_obligation.pk).get()
+        self.assertGreaterEqual((new.year, new.period), (first_obligation.year, first_obligation.period))

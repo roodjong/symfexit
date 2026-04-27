@@ -8,6 +8,36 @@ from symfexit.payments.models import Account, Payment, PaymentObligation, Transa
 logger = logging.getLogger(__name__)
 
 
+def reconcile_signup_overpayment_to_user(order, user) -> int:
+    """Move any over-payment recorded on a signup order's obligations into the
+    new user's credit account.
+
+    During signup the order has no `ordered_for`, so `record_receipt` records
+    the full received amount as a Payment against the obligation (because there
+    was no user to credit at the time). After the user is created, this walks
+    the order's obligations and, for any with negative outstanding (i.e.
+    over-paid), creates an adjusting Transaction `debit AR / credit
+    user.credit_account` for the surplus.
+
+    Returns the total cents moved to the user's credit account.
+    """
+    ar_account, _ = Account.get_accounts_receivable_account()
+    moved_cents = 0
+    for obligation in order.paymentobligation_set.all():
+        outstanding = obligation.outstanding_cents
+        if outstanding >= 0:
+            continue
+        surplus = -outstanding
+        credit_account = user.get_or_create_credit_account()
+        Transaction.objects.create(
+            credit_account=credit_account,
+            debit_account=ar_account,
+            amount_cents=surplus,
+        )
+        moved_cents += surplus
+    return moved_cents
+
+
 def apply_member_credit(obligation: PaymentObligation) -> Payment | None:
     """Apply any available member credit toward an obligation. Creates a
     credit-funded Payment up to the obligation's outstanding amount.
