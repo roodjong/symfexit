@@ -28,7 +28,7 @@ def npm_available():
         )
         is_npm_available = True
         return True
-    except (FileNotFoundError, subprocess.CalledProcessError):
+    except FileNotFoundError, subprocess.CalledProcessError:
         is_npm_available = False
         return False
 
