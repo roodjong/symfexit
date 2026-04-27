@@ -201,9 +201,9 @@ class UserAdmin(admin.ModelAdmin):
             ),
         ] + super().get_urls()
 
-    def lookup_allowed(self, lookup, value):
+    def lookup_allowed(self, lookup, value, request):
         # Don't allow lookups involving passwords.
-        return not lookup.startswith("password") and super().lookup_allowed(lookup, value)
+        return not lookup.startswith("password") and super().lookup_allowed(lookup, value, request)
 
     @method_decorator([sensitive_post_parameters(), csrf_protect])
     def add_view(self, request, form_url="", extra_context=None):
