@@ -49,6 +49,8 @@ class ConfigFormMixin:
             if schema.field_type == "image_field":
                 if value is False:
                     client.config[key] = ""
+                elif isinstance(value, str):
+                    client.config[key] = value
                 elif value:
                     name = default_storage.save(value.name, value)
                     client.config[key] = name
