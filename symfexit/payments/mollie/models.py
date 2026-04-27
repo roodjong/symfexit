@@ -68,6 +68,7 @@ class MolliePayment(models.Model):
     mollie_customer_id = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default="open")
+    processed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Mollie payment {self.mollie_payment_id} ({self.status})"

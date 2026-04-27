@@ -164,6 +164,7 @@ class BaseUserAdmin(admin.ModelAdmin):
             },
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined", "date_left")}),
+        (_("Finances"), {"fields": ("credit_balance_display",)}),
         # ("Membership", {"fields": ("subscription_set",)}),
     )
     add_fieldsets = (
@@ -189,11 +190,12 @@ class BaseUserAdmin(admin.ModelAdmin):
         "date_joined",
         "date_left",
         "is_active",
+        "credit_balance_display",
     )
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
-    list_display = ("email", "first_name", "last_name", "is_staff")
+    list_display = ("email", "first_name", "last_name", "is_staff", "credit_balance_display")
     list_filter = (
         "is_staff",
         "is_superuser",
@@ -230,6 +232,10 @@ class BaseUserAdmin(admin.ModelAdmin):
         if not obj:
             return self.add_fieldsets
         return super().get_fieldsets(request, obj)
+
+    @admin.display(description=_("credit balance"))
+    def credit_balance_display(self, obj):
+        return f"€{obj.credit_balance_cents / 100:.2f}"
 
     def get_form(self, request, obj=None, **kwargs):
         """

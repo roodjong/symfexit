@@ -32,8 +32,10 @@ def gen_obligations():
 
 @task_registry.register("charge_obligations")
 def charge_obligations():
+    # Note: no payment__isnull=True filter — an obligation can have a credit-funded
+    # Payment that still leaves an outstanding amount, which we want to charge here.
+    # The processor's charge_obligation must short-circuit on is_fully_paid.
     obligations = PaymentObligation.objects.filter(
-        payment__isnull=True,
         order__paid_using__isnull=False,
         order__ordered_for__isnull=False,
         order__cancelled_at__isnull=True,
@@ -48,6 +50,10 @@ def charge_obligations():
 
     for obligation in obligations.iterator():
         try:
+            if obligation.is_fully_paid:
+                skipped += 1
+                continue
+
             provider = obligation.order.paid_using
             processor = payments_registry.get(provider.type)
             if processor is None:

@@ -50,8 +50,9 @@ class PaymentsRegistry:
     def get_default_provider(self):
         from symfexit.payments.models import PaymentProvider  # noqa: PLC0415
 
-        provider = PaymentProvider.objects.filter(default=True).first()
+        provider = PaymentProvider.objects.filter(default=True, enabled=True).first()
         if not provider:
+            # TODO: Default to highest priority?
             raise RuntimeError("No default payment provider configured")
         return provider
 

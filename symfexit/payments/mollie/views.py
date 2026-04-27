@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 from urllib.parse import urlencode
 
 from django.db import transaction
@@ -14,14 +15,9 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 
-from symfexit.payments.models import (
-    Account,
-    Payment,
-    PaymentObligation,
-    Transaction,
-    hashids,
-)
+from symfexit.payments.models import PaymentObligation, hashids
 from symfexit.payments.mollie.models import MolliePayment
+from symfexit.payments.services import record_receipt
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +57,8 @@ def _refresh_from_mollie(mollie_payment: MolliePayment) -> None:
     mollie_payment.save(update_fields=["status"])
 
     if mollie_data.is_paid():
-        _create_payment_if_needed(obligation)
+        amount_cents = int(Decimal(mollie_data["amount"]["value"]) * 100)
+        _record_receipt(mollie_payment, amount_cents)
     elif mollie_payment.status == "canceled" and obligation.order.cancelled_at is None:
         obligation.order.cancel()
 
@@ -127,30 +124,13 @@ def payment_pending_status(request, obligation_eid):
     return JsonResponse({"done": latest.status != "open"})
 
 
-def _create_payment_if_needed(obligation: PaymentObligation):
+def _record_receipt(mollie_payment: MolliePayment, amount_cents: int) -> None:
+    """Idempotency wrapper around payments.services.record_receipt. Locks the
+    MolliePayment row so concurrent webhook + status-poll callers serialize."""
     with transaction.atomic():
-        locked_obligation = PaymentObligation.objects.select_for_update().get(pk=obligation.pk)
-
-        if Payment.objects.filter(obligation=locked_obligation).exists():
+        mp = MolliePayment.objects.select_for_update().get(pk=mollie_payment.pk)
+        if mp.processed_at is not None:
             return
-
-        ar_account, _ = Account.get_accounts_receivable_account()
-        credit_to = (
-            locked_obligation.order.paid_using.credit_to_account
-            if locked_obligation.order.paid_using
-            else Account.get_bank_account()[0]
-        )
-
-        t = Transaction.objects.create(
-            credit_account=ar_account,
-            debit_account=credit_to,
-            amount_cents=int(locked_obligation.amount_euros * 100),
-        )
-
-        Payment.objects.create(
-            order=locked_obligation.order,
-            obligation=locked_obligation,
-            paid_using=locked_obligation.order.paid_using,
-            paid_at=timezone.now(),
-            transaction=t,
-        )
+        record_receipt(mp.obligation, amount_cents)
+        mp.processed_at = timezone.now()
+        mp.save(update_fields=["processed_at"])

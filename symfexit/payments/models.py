@@ -10,6 +10,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
@@ -25,6 +26,12 @@ ACCOUNT_ACCOUNTS_RECEIVABLE = 13011
 ACCOUNT_REVENUE = 82811
 ACCOUNT_BANK = 10201
 ACCOUNT_WAIVED = 45661
+ACCOUNT_MEMBER_CREDIT = 16110
+
+# Codes that may appear on multiple Account rows (subsidiary ledgers).
+# Singleton getters like get_accounts_receivable_account rely on every other
+# code being unique, so the partial constraint on Account.code excludes these.
+SHARED_ACCOUNT_CODES = [ACCOUNT_MEMBER_CREDIT]
 
 
 def tigerbeetle_id():
@@ -158,7 +165,10 @@ class GeneralLedger(models.Model):
 
 class Account(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    code = models.PositiveIntegerField(unique=True)
+    # Singleton codes are indexed via the partial UniqueConstraint below.
+    # Member-credit codes share a value (ACCOUNT_MEMBER_CREDIT) and are looked
+    # up via Member.credit_account, not by code, so no extra index needed.
+    code = models.PositiveIntegerField()
     name = models.CharField()
     description = models.TextField()
     general_ledger = models.ForeignKey(GeneralLedger, on_delete=models.SET_NULL, null=True)
@@ -167,6 +177,15 @@ class Account(models.Model):
             "Assets and expenses are increased with debits, decreased with credits. Liabilities, equity, and income are increased with credits, decreased with debits. Tick this if the account increases with credits. This makes sure the balance is shown correctly."
         )
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["code"],
+                condition=~Q(code__in=SHARED_ACCOUNT_CODES),
+                name="account_code_unique_when_not_shared",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -478,6 +497,8 @@ class Order(models.Model):
 
         obligation = self.paymentobligation_set.filter(year=next_year, period=next_period).first()
         if obligation is None:
+            from symfexit.payments.services import apply_member_credit  # noqa: PLC0415
+
             ar_account, _ = Account.get_accounts_receivable_account()
             revenue_account, _ = Account.get_revenue_account()
             with transaction.atomic():
@@ -494,6 +515,7 @@ class Order(models.Model):
                     ordered_for_billing_address=self.ordered_for_billing_address,
                     transaction=t,
                 )
+                apply_member_credit(obligation)
         return obligation
 
 
@@ -522,6 +544,21 @@ class PaymentObligation(models.Model):
         return hashids.encode(self.id)
 
     eid.fget.short_description = _("external identifier")
+
+    @property
+    def outstanding_cents(self) -> int:
+        obligation_cents = int(self.amount_euros * 100)
+        paid_cents = (
+            Payment.objects.filter(obligation=self)
+            .aggregate(total=models.Sum("transaction__amount_cents"))
+            .get("total")
+            or 0
+        )
+        return obligation_cents - paid_cents
+
+    @property
+    def is_fully_paid(self) -> bool:
+        return self.outstanding_cents <= 0
 
     @classmethod
     def get_or_404(cls, eid):

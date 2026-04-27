@@ -90,6 +90,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         verbose_name=_("membership tier"),
     )
+    credit_account = models.OneToOneField(
+        "payments.Account",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("credit account"),
+    )
 
     is_staff = models.BooleanField(
         _("staff status"),
@@ -145,6 +153,30 @@ class User(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+    def get_or_create_credit_account(self):
+        from django.db import transaction  # noqa: PLC0415
+
+        from symfexit.payments.models import ACCOUNT_MEMBER_CREDIT, Account  # noqa: PLC0415
+
+        if self.credit_account_id is not None:
+            return self.credit_account
+        with transaction.atomic():
+            account = Account.objects.create(
+                code=ACCOUNT_MEMBER_CREDIT,
+                name=f"Member credit: {self.member_identifier}",
+                description=f"Credit balance for member {self.get_full_name()} ({self.email})",
+                credit_balance=True,
+            )
+            self.credit_account = account
+            self.save(update_fields=["credit_account"])
+        return account
+
+    @property
+    def credit_balance_cents(self) -> int:
+        if self.credit_account_id is None:
+            return 0
+        return self.credit_account.balance_cents()
 
     def set_staff_rights(self) -> bool:
         # Add/remove user to contact person permission group

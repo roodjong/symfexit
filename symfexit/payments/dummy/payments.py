@@ -28,8 +28,9 @@ class DummyProcessor(PaymentProcessor):
 class DummyProcessorInstance(PaymentProcessorInstance):
     def start_payment_flow(self, request, obligation, return_url):
         request.session[f"dummy_return_url_{obligation.id}"] = return_url
+        form = FakePayForm(initial={"amount_euros": obligation.amount_euros})
         return render(
             request,
             "payments_dummy/dummy_pay.html",
-            {"obligation": obligation, "form": FakePayForm()},
+            {"obligation": obligation, "form": form},
         )

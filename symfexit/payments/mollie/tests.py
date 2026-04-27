@@ -2,6 +2,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 from django.test import RequestFactory, TestCase
+from django.utils import timezone
 from django_tenants.test.cases import FastTenantTestCase
 from django_tenants.test.client import TenantClient
 
@@ -67,9 +68,10 @@ class MollieWebhookTest(TestCase):
 
         self.factory = RequestFactory()
 
-    def _make_mock_mollie_data(self, status, is_paid):
+    def _make_mock_mollie_data(self, status, is_paid, amount="10.00"):
+        data = {"status": status, "amount": {"currency": "EUR", "value": amount}}
         mock = MagicMock()
-        mock.__getitem__ = lambda s, k: status if k == "status" else None
+        mock.__getitem__ = lambda s, k: data.get(k)
         mock.is_paid.return_value = is_paid
         return mock
 
@@ -127,6 +129,87 @@ class MollieWebhookTest(TestCase):
 
         self.obligation.order.refresh_from_db()
         self.assertIsNotNone(self.obligation.order.cancelled_at)
+
+    def test_paid_marks_processed_at(self):
+        mock_client = MagicMock()
+        mock_client.payments.get.return_value = self._make_mock_mollie_data("paid", True)
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            self._post_webhook("tr_test123")
+
+        self.mollie_payment.refresh_from_db()
+        self.assertIsNotNone(self.mollie_payment.processed_at)
+
+    def test_partial_payment(self):
+        """Mollie reports €4 paid against a €10 obligation — Payment for €4, no surplus."""
+        mock_client = MagicMock()
+        mock_client.payments.get.return_value = self._make_mock_mollie_data(
+            "paid", True, amount="4.00"
+        )
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            self._post_webhook("tr_test123")
+
+        payment = Payment.objects.get(obligation=self.obligation)
+        self.assertEqual(payment.transaction.amount_cents, 400)
+
+    def test_overpayment_credits_user_account(self):
+        """Mollie reports €15 paid against €10 obligation — €10 to obligation, €5 to credit."""
+        mock_client = MagicMock()
+        mock_client.payments.get.return_value = self._make_mock_mollie_data(
+            "paid", True, amount="15.00"
+        )
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            self._post_webhook("tr_test123")
+
+        payment = Payment.objects.get(obligation=self.obligation)
+        self.assertEqual(payment.transaction.amount_cents, 1000)
+
+        self.user.refresh_from_db()
+        self.assertIsNotNone(self.user.credit_account)
+        # Surplus transaction credits the user's credit account
+        from symfexit.payments.models import Transaction  # noqa: PLC0415
+
+        credit_txs = Transaction.objects.filter(credit_account=self.user.credit_account)
+        self.assertEqual(credit_txs.count(), 1)
+        self.assertEqual(credit_txs.first().amount_cents, 500)
+
+    def test_overpayment_when_obligation_already_paid(self):
+        """Second Mollie payment of €5 against an already-paid obligation goes entirely to credit."""
+        from symfexit.payments.models import Account, Transaction  # noqa: PLC0415
+
+        # First payment fully covers the obligation.
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        first_tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1000
+        )
+        Payment.objects.create(
+            order=self.obligation.order,
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=first_tx,
+        )
+
+        mock_client = MagicMock()
+        mock_client.payments.get.return_value = self._make_mock_mollie_data(
+            "paid", True, amount="5.00"
+        )
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            self._post_webhook("tr_test123")
+
+        # Only the original Payment exists (no Payment for the surplus).
+        self.assertEqual(Payment.objects.filter(obligation=self.obligation).count(), 1)
+
+        # Surplus is parked in user's credit account.
+        self.user.refresh_from_db()
+        self.assertIsNotNone(self.user.credit_account)
+        credit_txs = Transaction.objects.filter(credit_account=self.user.credit_account)
+        self.assertEqual(credit_txs.count(), 1)
+        self.assertEqual(credit_txs.first().amount_cents, 500)
 
     def test_unknown_payment_id_returns_200(self):
         response = self._post_webhook("tr_unknown")
@@ -342,6 +425,68 @@ class MollieStartPaymentFlowTest(TestCase):
         self.assertEqual(MollieCustomer.objects.count(), 1)
         mock_client.customers.create.assert_not_called()
 
+    def test_fully_paid_obligation_skips_mollie_and_redirects(self):
+        """Obligation already covered (e.g. by member credit) — no Mollie call, no MolliePayment row."""
+        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
+        from symfexit.payments.models import Account, Payment, Transaction  # noqa: PLC0415
+
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1550
+        )
+        Payment.objects.create(
+            order=self.obligation.order,
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=tx,
+        )
+
+        mock_client = MagicMock()
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            instance = MollieProcessorInstance(self.mollie_settings)
+            response = instance.start_payment_flow(
+                self._make_request(), self.obligation, "/return/"
+            )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/return/", response.url)
+        mock_client.payments.create.assert_not_called()
+        self.assertFalse(MolliePayment.objects.exists())
+
+    def test_partial_outstanding_charges_remainder(self):
+        """€10 already paid via credit on €15.50 obligation — Mollie charges €5.50 remainder."""
+        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
+        from symfexit.payments.models import Account, Payment, Transaction  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_partial")
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1000
+        )
+        Payment.objects.create(
+            order=self.obligation.order,
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=tx,
+        )
+
+        mock_client = MagicMock()
+        mock_client.payments.create.return_value = self._mock_payment()
+        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
+            _make_mock_mandates([{"status": "valid"}])
+        )
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            instance = MollieProcessorInstance(self.mollie_settings)
+            instance.start_payment_flow(self._make_request(), self.obligation, "/return/")
+
+        call_args = mock_client.payments.create.call_args[0][0]
+        self.assertEqual(call_args["amount"]["value"], "5.50")
+
 
 class LinkMollieCustomerTest(TestCase):
     def setUp(self):
@@ -556,6 +701,242 @@ class ChargeObligationsTest(TestCase):
 
         self.assertFalse(MolliePayment.objects.exists())
 
+    def test_charges_outstanding_remainder_after_credit(self):
+        """A €4 credit-funded Payment exists; cron charges the remaining €6."""
+        from symfexit.payments.models import Account, Payment, Transaction  # noqa: PLC0415
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_partial")
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=400
+        )
+        Payment.objects.create(
+            order=self.obligation.order,
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=tx,
+        )
+
+        mock_payment = MagicMock()
+        mock_payment.__getitem__ = lambda s, k: "tr_remainder" if k == "id" else None
+
+        mock_client = MagicMock()
+        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
+            _make_mock_mandates([{"status": "valid"}])
+        )
+        mock_client.payments.create.return_value = mock_payment
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            charge_obligations()
+
+        call_args = mock_client.payments.create.call_args[0][0]
+        self.assertEqual(call_args["amount"]["value"], "6.00")
+
+    def test_skips_fully_paid_obligation(self):
+        """Obligation already fully paid (e.g. by member credit) — no Mollie call."""
+        from symfexit.payments.models import Account, Payment, Transaction  # noqa: PLC0415
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_done")
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1000
+        )
+        Payment.objects.create(
+            order=self.obligation.order,
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=tx,
+        )
+
+        mock_client = MagicMock()
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            charge_obligations()
+
+        mock_client.payments.create.assert_not_called()
+
+
+class ReconcileMolliePaymentsTest(TestCase):
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.provider = PaymentProvider.objects.create(
+            name="Mollie Test", type="mollie", default=True,
+        )
+        self.mollie_settings = MollieSettings.objects.create(
+            payment_provider=self.provider, test_api_key="test_xxx",
+        )
+
+        self.user = Member.objects.create_user(email="reconcile@example.com")
+        self.billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="test-reconcile",
+            name="Reconcile Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+
+        self.order = product.order(for_user=self.user, billing_address=self.billing_address)
+        self.order.paid_using = self.provider
+        self.order.save()
+        self.obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+
+    def _make_mollie_payment(self, mollie_id, status, age_minutes):
+        from datetime import timedelta  # noqa: PLC0415
+
+        mp = MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id=mollie_id,
+            status=status,
+        )
+        # Force created_at backwards so the reconciler picks up "old" rows.
+        MolliePayment.objects.filter(pk=mp.pk).update(
+            created_at=timezone.now() - timedelta(minutes=age_minutes),
+        )
+        mp.refresh_from_db()
+        return mp
+
+    def _mock_mollie_data(self, status, is_paid, amount="10.00"):
+        mock = MagicMock()
+        payload = {"status": status, "amount": {"currency": "EUR", "value": amount}}
+        mock.__getitem__ = lambda s, k: payload.get(k)
+        mock.is_paid.return_value = is_paid
+        return mock
+
+    def test_reconciler_promotes_stale_open_to_paid(self):
+        from symfexit.payments.mollie.tasks import reconcile_mollie_payments  # noqa: PLC0415
+
+        mp = self._make_mollie_payment("tr_stale", status="open", age_minutes=10)
+
+        client = MagicMock()
+        client.payments.get.return_value = self._mock_mollie_data("paid", True)
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=client):
+            reconcile_mollie_payments()
+
+        mp.refresh_from_db()
+        self.assertEqual(mp.status, "paid")
+        self.assertIsNotNone(mp.processed_at)
+        self.assertTrue(Payment.objects.filter(obligation=self.obligation).exists())
+
+    def test_reconciler_skips_recent_open(self):
+        from symfexit.payments.mollie.tasks import reconcile_mollie_payments  # noqa: PLC0415
+
+        self._make_mollie_payment("tr_recent", status="open", age_minutes=1)
+
+        with patch.object(MollieSettings, "get_mollie_client") as mocked:
+            reconcile_mollie_payments()
+
+        mocked.assert_not_called()
+
+    def test_reconciler_skips_terminal_status(self):
+        from symfexit.payments.mollie.tasks import reconcile_mollie_payments  # noqa: PLC0415
+
+        self._make_mollie_payment("tr_done", status="paid", age_minutes=30)
+
+        with patch.object(MollieSettings, "get_mollie_client") as mocked:
+            reconcile_mollie_payments()
+
+        mocked.assert_not_called()
+
+
+class BackfillProcessedAtMigrationTest(TestCase):
+    """Sanity check that future MolliePayments with terminal status created
+    pre-migration get backfilled — exercised here by stamping processed_at=None
+    on a paid row and verifying a refresh doesn't re-record receipt."""
+
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.provider = PaymentProvider.objects.create(
+            name="Mollie Test", type="mollie", default=True,
+        )
+        self.mollie_settings = MollieSettings.objects.create(
+            payment_provider=self.provider, test_api_key="test_xxx",
+        )
+        self.user = Member.objects.create_user(email="legacy@example.com")
+        self.billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="test-legacy",
+            name="Legacy Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+
+        self.order = product.order(for_user=self.user, billing_address=self.billing_address)
+        self.order.paid_using = self.provider
+        self.order.save()
+        self.obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+
+    def test_processed_marker_blocks_double_record(self):
+        """A paid MolliePayment with processed_at set must not re-create receipt rows."""
+        from symfexit.payments.models import Account, Transaction  # noqa: PLC0415
+        from symfexit.payments.mollie.views import _refresh_from_mollie  # noqa: PLC0415
+
+        # Simulate a row processed under old code: Payment exists, processed_at is set
+        # (representing what the new backfill migration produces).
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        first_tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1000
+        )
+        Payment.objects.create(
+            order=self.obligation.order,
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=first_tx,
+        )
+        mp = MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_legacy",
+            status="paid",
+            processed_at=timezone.now(),
+        )
+
+        client = MagicMock()
+        client.payments.get.return_value = self._mock_data()
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=client):
+            _refresh_from_mollie(mp)
+
+        # Still exactly one Payment, no phantom credit transaction.
+        self.assertEqual(Payment.objects.filter(obligation=self.obligation).count(), 1)
+        self.user.refresh_from_db()
+        self.assertIsNone(self.user.credit_account)
+
+    def _mock_data(self):
+        mock = MagicMock()
+        payload = {"status": "paid", "amount": {"currency": "EUR", "value": "10.00"}}
+        mock.__getitem__ = lambda s, k: payload.get(k)
+        mock.is_paid.return_value = True
+        return mock
+
 
 class MolliePendingViewTest(FastTenantTestCase):
     def setUp(self):
@@ -627,10 +1008,11 @@ class MolliePendingViewTest(FastTenantTestCase):
         response = self.client.get("/mollie/pending/not-a-real-eid/status/")
         self.assertEqual(response.status_code, 404)
 
-    def _mock_mollie_client(self, status, is_paid):
+    def _mock_mollie_client(self, status, is_paid, amount="10.00"):
         client = MagicMock()
         data = MagicMock()
-        data.__getitem__ = lambda s, k: status if k == "status" else None
+        payload = {"status": status, "amount": {"currency": "EUR", "value": amount}}
+        data.__getitem__ = lambda s, k: payload.get(k)
         data.is_paid.return_value = is_paid
         client.payments.get.return_value = data
         return client

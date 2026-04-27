@@ -86,12 +86,16 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         self.mollie_settings = mollie_settings
 
     def start_payment_flow(self, request, obligation, return_url):
+        # Already paid (e.g. fully covered by member credit) — nothing for Mollie to charge.
+        if obligation.is_fully_paid:
+            return HttpResponseRedirect(request.build_absolute_uri(return_url))
+
         client = self.mollie_settings.get_mollie_client()
 
         webhook_url = request.build_absolute_uri(reverse("payments_mollie:webhook"))
         pending_url = build_pending_url(request, obligation, return_url)
 
-        amount_str = f"{obligation.amount_euros:.2f}"
+        amount_str = f"{obligation.outstanding_cents / 100:.2f}"
         description = self.mollie_settings.format_description(obligation)
 
         payment_data = {
@@ -147,6 +151,9 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         return HttpResponseRedirect(payment.checkout_url)
 
     def charge_obligation(self, obligation):
+        if obligation.is_fully_paid:
+            return False
+
         user = obligation.order.ordered_for
 
         try:
@@ -162,7 +169,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         webhook_path = reverse("payments_mollie:webhook")
         webhook_url = self.mollie_settings.webhook_base_url.rstrip("/") + webhook_path
 
-        amount_str = f"{obligation.amount_euros:.2f}"
+        amount_str = f"{obligation.outstanding_cents / 100:.2f}"
         description = self.mollie_settings.format_description(obligation)
 
         payment = client.payments.create(

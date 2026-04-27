@@ -109,6 +109,7 @@ def return_view(request, application_id):
         raise Http404()
     if order.cancelled_at is not None:
         return render(request, "signup/cancelled.html", {"application": application})
-    if not order.payment_set.exists():
+    obligations = list(order.paymentobligation_set.all())
+    if not obligations or any(not o.is_fully_paid for o in obligations):
         return render(request, "signup/open.html", {"application": application})
     return render(request, "signup/return.html")

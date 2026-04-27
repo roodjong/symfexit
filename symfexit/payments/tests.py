@@ -68,6 +68,159 @@ class TestBalance(TestCase):
         self.assertEqual(expenses_account.balance_cents(), 700)
 
 
+class TestObligationOutstanding(TestCase):
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.user = Member.objects.create_user(email="outstanding@example.com")
+        self.billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="test-outstanding",
+            name="Outstanding Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+        order = product.order(for_user=self.user, billing_address=self.billing_address)
+        self.obligation = order.get_or_create_next_payment_obligation(timezone="UTC")
+
+    def _record_payment(self, amount_cents):
+        from symfexit.payments.models import Payment  # noqa: PLC0415
+
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=amount_cents
+        )
+        return Payment.objects.create(
+            order=self.obligation.order,
+            obligation=self.obligation,
+            paid_at=datetime(2026, 1, 1, tzinfo=UTC),
+            transaction=tx,
+        )
+
+    def test_no_payments_outstanding_is_full(self):
+        self.assertEqual(self.obligation.outstanding_cents, 1000)
+        self.assertFalse(self.obligation.is_fully_paid)
+
+    def test_partial_payment(self):
+        self._record_payment(400)
+        self.assertEqual(self.obligation.outstanding_cents, 600)
+        self.assertFalse(self.obligation.is_fully_paid)
+
+    def test_fully_paid_via_multiple_payments(self):
+        self._record_payment(400)
+        self._record_payment(600)
+        self.assertEqual(self.obligation.outstanding_cents, 0)
+        self.assertTrue(self.obligation.is_fully_paid)
+
+    def test_overpaid_is_negative_and_still_fully_paid(self):
+        self._record_payment(1500)
+        self.assertEqual(self.obligation.outstanding_cents, -500)
+        self.assertTrue(self.obligation.is_fully_paid)
+
+
+class TestMemberCreditBalance(TestCase):
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        self.user = Member.objects.create_user(email="creditbal@example.com")
+
+    def test_no_credit_account_returns_zero(self):
+        self.assertIsNone(self.user.credit_account)
+        self.assertEqual(self.user.credit_balance_cents, 0)
+
+    def test_credit_balance_reflects_account_movements(self):
+        bank_account, _ = Account.get_bank_account()
+        credit_account = self.user.get_or_create_credit_account()
+        # Customer overpaid €5: bank debited, credit account credited (liability up)
+        Transaction.objects.create(
+            credit_account=credit_account, debit_account=bank_account, amount_cents=500
+        )
+        self.assertEqual(self.user.credit_balance_cents, 500)
+
+        # Apply €3 of credit toward an invoice: credit account debited (liability down)
+        ar_account, _ = Account.get_accounts_receivable_account()
+        Transaction.objects.create(
+            credit_account=ar_account, debit_account=credit_account, amount_cents=300
+        )
+        self.assertEqual(self.user.credit_balance_cents, 200)
+
+
+class TestApplyMemberCredit(TestCase):
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.user = Member.objects.create_user(email="apply@example.com")
+        self.billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        self.product = Product.objects.create(
+            enabled=True,
+            sku="test-apply",
+            name="Apply Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=self.product, period_unit=PeriodUnit.MONTH, period=1)
+        self.order = self.product.order(
+            for_user=self.user, billing_address=self.billing_address
+        )
+
+    def _credit_user(self, cents):
+        bank_account, _ = Account.get_bank_account()
+        credit_account = self.user.get_or_create_credit_account()
+        Transaction.objects.create(
+            credit_account=credit_account,
+            debit_account=bank_account,
+            amount_cents=cents,
+        )
+
+    def test_no_credit_no_payment_applied(self):
+        obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+        self.assertEqual(obligation.outstanding_cents, 1000)
+        from symfexit.payments.models import Payment  # noqa: PLC0415
+
+        self.assertFalse(Payment.objects.filter(obligation=obligation).exists())
+
+    def test_credit_partially_applied(self):
+        self._credit_user(400)  # €4 credit; obligation €10
+        obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+        self.assertEqual(obligation.outstanding_cents, 600)
+        self.assertEqual(self.user.credit_balance_cents, 0)
+
+    def test_credit_fully_covers_obligation(self):
+        self._credit_user(1500)  # €15 credit; obligation €10
+        obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+        self.assertEqual(obligation.outstanding_cents, 0)
+        self.assertTrue(obligation.is_fully_paid)
+        # €5 of credit remains for the next obligation
+        self.assertEqual(self.user.credit_balance_cents, 500)
+
+    def test_signup_user_gets_no_credit_application(self):
+        """Order with no ordered_for: apply_member_credit is a no-op."""
+        no_user_order = self.product.order(
+            for_user=None, billing_address=self.billing_address
+        )
+        obligation = no_user_order.get_or_create_next_payment_obligation(timezone="UTC")
+        self.assertEqual(obligation.outstanding_cents, 1000)
+
+
 class TestNextPeriod(TestCase):
     def test_next_period_quarter(self):
         product = Product.objects.create(
