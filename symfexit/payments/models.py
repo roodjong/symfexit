@@ -107,7 +107,7 @@ class Order(models.Model):
     eid.fget.short_description = _("external identifier")
 
     @classmethod
-    def get_or_404(cls, eid) -> "Order":
+    def get_or_404(cls, eid) -> Order:
         id = hashids.decode(eid)[0]
         return get_object_or_404(cls, id=id)
 
@@ -148,7 +148,7 @@ class Subscription(models.Model):
     eid.fget.short_description = _("external identifier")
 
     @classmethod
-    def get_or_404(cls, eid) -> "Subscription":
+    def get_or_404(cls, eid) -> Subscription:
         id = hashids.decode(eid)[0]
         return get_object_or_404(cls, id=id)
 
