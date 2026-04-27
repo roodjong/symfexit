@@ -13,7 +13,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version:
-          - '3.13'
+          - '3.14'
     steps:
     - uses: actions/checkout@v6
     - name: Install the latest version of uv and set the Python version

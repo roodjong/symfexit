@@ -22,7 +22,7 @@ jobs:
       uses: astral-sh/setup-uv@v7
       with:
         enable-cache: true
-        python-version: '3.13'
+        python-version: '3.14'
     - name: Build docs
       run: |
         uv run --frozen --group docs sphinx-build docs docs/_build/html
