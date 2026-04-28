@@ -120,7 +120,9 @@ class MollieWebhookTest(TestCase):
         self.mollie_payment.refresh_from_db()
         self.assertEqual(self.mollie_payment.status, "failed")
 
-    def test_canceled_cancels_order(self):
+    def test_canceled_does_not_cancel_order(self):
+        """A canceled checkout attempt records the status but leaves the order
+        active so the user (or charge_obligations) can retry."""
         mock_client = MagicMock()
         mock_client.payments.get.return_value = self._make_mock_mollie_data("canceled", False)
 
@@ -128,7 +130,10 @@ class MollieWebhookTest(TestCase):
             self._post_webhook("tr_test123")
 
         self.obligation.order.refresh_from_db()
-        self.assertIsNotNone(self.obligation.order.cancelled_at)
+        self.assertIsNone(self.obligation.order.cancelled_at)
+        self.mollie_payment.refresh_from_db()
+        self.assertEqual(self.mollie_payment.status, "canceled")
+        self.assertFalse(Payment.objects.filter(obligation=self.obligation).exists())
 
     def test_paid_marks_processed_at(self):
         mock_client = MagicMock()
@@ -1041,7 +1046,9 @@ class MolliePendingViewTest(FastTenantTestCase):
         self.assertEqual(mollie_payment.status, "paid")
         self.assertTrue(Payment.objects.filter(obligation=self.obligation).exists())
 
-    def test_status_refresh_cancels_order_when_canceled(self):
+    def test_status_refresh_does_not_cancel_order_when_canceled(self):
+        """A canceled checkout marks status=canceled but leaves the order
+        active; the front-end stops polling but the user can retry."""
         MolliePayment.objects.create(
             obligation=self.obligation, mollie_payment_id="tr_cancel", status="open"
         )
@@ -1050,7 +1057,7 @@ class MolliePendingViewTest(FastTenantTestCase):
             response = self.client.get(self._status_url())
         self.assertEqual(response.json(), {"done": True})
         self.obligation.order.refresh_from_db()
-        self.assertIsNotNone(self.obligation.order.cancelled_at)
+        self.assertIsNone(self.obligation.order.cancelled_at)
 
     def test_status_returns_done_after_webhook(self):
         """Webhook already updated status — no Mollie call needed."""

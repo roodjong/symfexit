@@ -100,7 +100,7 @@ class MembershipApplication(models.Model):
 
     def get_or_create_order(self, default_provider: PaymentProvider):
         if self._order is not None:
-            obligation = self._order.get_or_create_next_payment_obligation(timezone="UTC")
+            obligation = self._order.get_or_create_next_payment_obligation()
             return self._order, obligation
 
         if self.membership_tier is not None:

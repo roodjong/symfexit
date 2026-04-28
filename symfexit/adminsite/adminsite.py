@@ -18,9 +18,10 @@ class TenantAdminSite(admin.AdminSite):
 
         context = super().each_context(request)
         warnings = []
-        for app in apps.get_app_configs():
-            if hasattr(app, "get_admin_warnings"):
-                warnings.extend(app.get_admin_warnings(request))
+        if request.user.is_authenticated and request.user.is_staff:
+            for app in apps.get_app_configs():
+                if hasattr(app, "get_admin_warnings"):
+                    warnings.extend(app.get_admin_warnings(request))
         context["admin_warnings"] = warnings
         return context
 

@@ -59,8 +59,10 @@ def _refresh_from_mollie(mollie_payment: MolliePayment) -> None:
     if mollie_data.is_paid():
         amount_cents = int(Decimal(mollie_data["amount"]["value"]) * 100)
         _record_receipt(mollie_payment, amount_cents)
-    elif mollie_payment.status == "canceled" and obligation.order.cancelled_at is None:
-        obligation.order.cancel()
+    # A `canceled` Mollie status only means this checkout attempt was
+    # abandoned — the obligation stays outstanding so the user can retry
+    # (or `charge_obligations` can re-attempt once a mandate exists).
+    # Subscription-level cancellation goes through Order.cancel() in admin.
 
 
 @csrf_exempt

@@ -290,7 +290,10 @@ class OrderAdmin(admin.ModelAdmin):
         return actions
 
     def save_formset(self, request, form, formset, change):
+        from symfexit.payments.services import apply_member_credit  # noqa: PLC0415
+
         instances = formset.save(commit=False)
+        new_obligations = []
         for instance in instances:
             if isinstance(instance, PaymentObligation) and not instance.pk:
                 ar_account, _ = Account.get_accounts_receivable_account()
@@ -307,6 +310,8 @@ class OrderAdmin(admin.ModelAdmin):
                         *order._calculate_next_period(instance.year, instance.period),
                         timezone=zoneinfo.ZoneInfo(request.tenant.payments_timezone),
                     ) - timedelta(seconds=1)
+                instance.save()
+                new_obligations.append(instance)
             elif isinstance(instance, Payment) and not instance.pk:
                 ar_account, _ = Account.get_accounts_receivable_account()
                 credit_to = (
@@ -314,14 +319,26 @@ class OrderAdmin(admin.ModelAdmin):
                     if instance.paid_using
                     else Account.get_bank_account()[0]
                 )
+                # Book only the still-outstanding amount; member credit and
+                # prior payments may have already settled part of the obligation.
+                amount_cents = instance.obligation.outstanding_cents if instance.obligation else 0
+                if amount_cents <= 0:
+                    continue
                 transaction = Transaction.objects.create(
                     credit_account=ar_account,
                     debit_account=credit_to,
-                    amount_cents=int(instance.order.product_price_euros * 100),
+                    amount_cents=amount_cents,
                 )
                 instance.transaction = transaction
-            instance.save()
+                instance.save()
+            else:
+                instance.save()
         formset.save_m2m()
+
+        # Run after the formset finishes so any new obligations see prior
+        # payments saved earlier in the same formset.
+        for obligation in new_obligations:
+            apply_member_credit(obligation)
 
 
 def load_product_info(request, product_id=None):
@@ -429,10 +446,15 @@ class PaymentObligationAdmin(admin.ModelAdmin):
                     if instance.paid_using
                     else Account.get_bank_account()[0]
                 )
+                # Book only the outstanding amount; member credit / prior
+                # payments may have already settled part of this obligation.
+                amount_cents = obligation.outstanding_cents
+                if amount_cents <= 0:
+                    continue
                 transaction = Transaction.objects.create(
                     credit_account=ar_account,
                     debit_account=credit_to,
-                    amount_cents=int(obligation.amount_euros * 100),
+                    amount_cents=amount_cents,
                 )
                 instance.transaction = transaction
                 instance.order = obligation.order

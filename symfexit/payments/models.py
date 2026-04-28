@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import models, transaction
+from django.db import IntegrityError, connection, models, transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.formats import date_format
@@ -54,6 +54,19 @@ def tigerbeetle_id():
 
 def default_bank_account_uuid():
     return Account.get_bank_account()[0].id
+
+
+def _tenant_payments_timezone() -> str:
+    """Resolve the active tenant's payments timezone, falling back to UTC.
+
+    Used as the default for obligation period calculations when callers don't
+    pass an explicit timezone. Falls back to UTC outside tenant context (e.g.
+    in unit tests that don't use FastTenantTestCase).
+    """
+    tenant = getattr(connection, "tenant", None)
+    if tenant is None:
+        return "UTC"
+    return getattr(tenant, "payments_timezone", "UTC")
 
 
 class PeriodUnit(models.TextChoices):
@@ -105,6 +118,10 @@ class BillingAddress(models.Model):
 
 class Transaction(models.Model):
     id = models.UUIDField(primary_key=True, default=tigerbeetle_id, editable=False)
+    # FKs use db_constraint=False + DO_NOTHING so the ledger is immutable
+    # against Account changes: even if an Account is removed by a future
+    # migration, historical Transactions retain their account_id values.
+    # `get_credit_account()` / `get_debit_account()` tolerate the orphan case.
     credit_account = models.ForeignKey(
         "payments.account",
         on_delete=models.DO_NOTHING,
@@ -356,7 +373,7 @@ class OrderManager(models.Manager):
         billing_address,
         for_user=None,
         price_euros=None,
-        timezone="UTC",
+        timezone=None,
     ):
         order = self.create(
             product=product,
@@ -468,9 +485,11 @@ class Order(models.Model):
         self.cancelled_at = datetime.now(tz=zoneinfo.ZoneInfo("UTC"))
         self.save(update_fields=["cancelled_at"])
 
-    def get_or_create_next_payment_obligation(self, *, timezone, now: datetime = None):
+    def get_or_create_next_payment_obligation(self, *, timezone=None, now: datetime = None):
         if self.cancelled_at is not None:
             return None
+        if timezone is None:
+            timezone = _tenant_payments_timezone()
         timezone = zoneinfo.ZoneInfo(timezone)
         if now is None:
             now = datetime.now(tz=timezone)
@@ -502,29 +521,35 @@ class Order(models.Model):
 
             ar_account, _ = Account.get_accounts_receivable_account()
             revenue_account, _ = Account.get_revenue_account()
-            with transaction.atomic():
-                t = Transaction.objects.create(
-                    credit_account=revenue_account,
-                    debit_account=ar_account,
-                    amount_cents=int(self.product_price_euros * 100),
-                )
-                obligation = PaymentObligation.objects.create(
-                    order=self,
-                    year=next_year,
-                    period=next_period,
-                    pay_before=pay_before,
-                    ordered_for_billing_address=self.ordered_for_billing_address,
-                    transaction=t,
-                )
-                apply_member_credit(obligation)
+            try:
+                with transaction.atomic():
+                    t = Transaction.objects.create(
+                        credit_account=revenue_account,
+                        debit_account=ar_account,
+                        amount_cents=int(self.product_price_euros * 100),
+                    )
+                    obligation = PaymentObligation.objects.create(
+                        order=self,
+                        year=next_year,
+                        period=next_period,
+                        pay_before=pay_before,
+                        ordered_for_billing_address=self.ordered_for_billing_address,
+                        transaction=t,
+                    )
+            except IntegrityError:
+                # Another caller won the race for this (order, year, period).
+                # Re-fetch and use theirs; skip apply_member_credit since the
+                # winner will have run it.
+                return self.paymentobligation_set.get(year=next_year, period=next_period)
+            apply_member_credit(obligation)
         return obligation
 
 
 class PaymentObligation(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
-    year = models.IntegerField(null=True, blank=True)
-    period = models.IntegerField(null=True, blank=True)
+    year = models.IntegerField()
+    period = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     pay_before = models.DateTimeField()
     amount_euros = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
@@ -532,8 +557,16 @@ class PaymentObligation(models.Model):
         BillingAddress, on_delete=models.PROTECT, null=False, blank=False
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "year", "period"],
+                name="paymentobligation_unique_per_period",
+            ),
+        ]
+
     def __str__(self):
-        return f"Payment obligation for order {self.order.id} for year {self.year} period {self.period}"
+        return f"Payment obligation for order {self.order.id} for year {self.year} {self.order.subscription_period_unit} {self.period + 1}"
 
     def save(self, *args, **kwargs):
         if self.amount_euros is None:

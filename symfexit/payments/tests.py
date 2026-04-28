@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
 from decimal import Decimal
-from unittest.mock import patch
 from uuid import uuid4
 
 from django.test import TestCase
+from django_tenants.test.cases import FastTenantTestCase
 
 from symfexit.members.admin import Member
 from symfexit.payments.models import (
@@ -370,12 +370,9 @@ class TestNextPeriod(TestCase):
         self.assertEqual(next_payment_obligation.period, 2)  # Week 3
 
 
-class FakeTenant:
-    payments_timezone = "UTC"
-
-
-class TestGeneratePaymentObligations(TestCase):
+class TestGeneratePaymentObligations(FastTenantTestCase):
     def setUp(self):
+        super().setUp()
         self.user = Member.objects.create_user(email="testuser@example.com")
         self.billing_address = BillingAddress.objects.create(
             user=self.user,
@@ -399,27 +396,21 @@ class TestGeneratePaymentObligations(TestCase):
             order.cancel()
         return order
 
-    @patch("symfexit.payments.tasks.connection")
-    def test_creates_obligations_for_active_orders(self, mock_connection):
-        mock_connection.tenant = FakeTenant()
+    def test_creates_obligations_for_active_orders(self):
         order = self._create_order()
 
         gen_obligations()
 
         self.assertTrue(PaymentObligation.objects.filter(order=order).exists())
 
-    @patch("symfexit.payments.tasks.connection")
-    def test_skips_cancelled_orders(self, mock_connection):
-        mock_connection.tenant = FakeTenant()
+    def test_skips_cancelled_orders(self):
         order = self._create_order(cancelled=True)
 
         gen_obligations()
 
         self.assertFalse(PaymentObligation.objects.filter(order=order).exists())
 
-    @patch("symfexit.payments.tasks.connection")
-    def test_idempotent(self, mock_connection):
-        mock_connection.tenant = FakeTenant()
+    def test_idempotent(self):
         self._create_order()
 
         gen_obligations()
@@ -430,12 +421,10 @@ class TestGeneratePaymentObligations(TestCase):
 
         self.assertEqual(count_after_first, count_after_second)
 
-    @patch("symfexit.payments.tasks.connection")
-    def test_now_override_advances_to_future_period(self, mock_connection):
+    def test_now_override_advances_to_future_period(self):
         """Override 'now' to a future date — the next obligation lands in that period."""
         from datetime import date as date_cls  # noqa: PLC0415
 
-        mock_connection.tenant = FakeTenant()
         self._create_order()
 
         # First run with current time creates the current quarter's obligation.

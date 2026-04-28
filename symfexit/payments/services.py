@@ -1,11 +1,14 @@
 import logging
 
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
 from symfexit.payments.models import Account, Payment, PaymentObligation, Transaction
 
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 
 def reconcile_signup_overpayment_to_user(order, user) -> int:
@@ -48,16 +51,20 @@ def apply_member_credit(obligation: PaymentObligation) -> Payment | None:
     user = obligation.order.ordered_for
     if user is None or user.credit_account_id is None:
         return None
-    credit_cents = user.credit_balance_cents
-    apply_cents = min(credit_cents, obligation.outstanding_cents)
-    if apply_cents <= 0:
-        return None
 
     ar_account, _ = Account.get_accounts_receivable_account()
     with transaction.atomic():
+        # Lock the user row so concurrent callers (cron + webhook + admin)
+        # serialize on the same credit balance and can't both consume it.
+        locked_user = User.objects.select_for_update().get(pk=user.pk)
+        credit_cents = locked_user.credit_balance_cents
+        apply_cents = min(credit_cents, obligation.outstanding_cents)
+        if apply_cents <= 0:
+            return None
+
         tx = Transaction.objects.create(
             credit_account=ar_account,
-            debit_account=user.credit_account,
+            debit_account=locked_user.credit_account,
             amount_cents=apply_cents,
         )
         payment = Payment.objects.create(
@@ -91,22 +98,31 @@ def record_receipt(obligation: PaymentObligation, amount_cents: int) -> Payment 
 
     ar_account, _ = Account.get_accounts_receivable_account()
 
-    if user is not None:
-        applied = max(0, min(amount_cents, obligation.outstanding_cents))
-        surplus = amount_cents - applied
-    else:
-        # Signup flow — no user to credit. Record the full receipt against the
-        # obligation; reconciliation happens when the user is linked.
-        if amount_cents > obligation.outstanding_cents:
-            logger.warning(
-                "Receipt of %s cents on obligation %s with no user to credit",
-                amount_cents,
-                obligation.id,
-            )
-        applied = amount_cents
-        surplus = 0
-
     with transaction.atomic():
+        # Lock the obligation row so concurrent receipts (e.g. two distinct
+        # MolliePayments racing, or webhook + manual admin entry) read a
+        # consistent `outstanding_cents` and don't double-apply.
+        locked_obligation = PaymentObligation.objects.select_for_update().get(pk=obligation.pk)
+
+        if user is not None:
+            applied = max(0, min(amount_cents, locked_obligation.outstanding_cents))
+            surplus = amount_cents - applied
+        else:
+            # Signup flow — no user to credit yet. Book the full receipt against
+            # the obligation (so its `outstanding_cents` may go negative);
+            # `reconcile_signup_overpayment_to_user` later moves the negative
+            # balance into the new user's credit account once they're created.
+            applied = amount_cents
+            surplus = 0
+            if amount_cents > locked_obligation.outstanding_cents:
+                logger.info(
+                    "Signup receipt of %s cents on obligation %s exceeds outstanding by %s; "
+                    "surplus will be reconciled to user credit on signup completion",
+                    amount_cents,
+                    locked_obligation.id,
+                    amount_cents - locked_obligation.outstanding_cents,
+                )
+
         payment = None
         if applied > 0:
             tx = Transaction.objects.create(
@@ -116,7 +132,7 @@ def record_receipt(obligation: PaymentObligation, amount_cents: int) -> Payment 
             )
             payment = Payment.objects.create(
                 order=order,
-                obligation=obligation,
+                obligation=locked_obligation,
                 paid_using=order.paid_using,
                 paid_at=timezone.now(),
                 transaction=tx,
