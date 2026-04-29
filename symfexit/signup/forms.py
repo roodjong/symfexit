@@ -28,22 +28,78 @@ def birthday_years():
     return range(timezone.now().year - 40, timezone.now().year - 5)
 
 
+class AutocompleteSelectDateWidget(forms.SelectDateWidget):
+    day_autocomplete = "bday-day"
+    month_autocomplete = "bday-month"
+    year_autocomplete = "bday-year"
+
+    def get_context(self, name, value, attrs=None):
+        context = super().get_context(name, value, attrs)
+
+        for widget in context["widget"]["subwidgets"]:
+            if widget["name"] == "birth_date_day":
+                widget["attrs"]["autocomplete"] = self.day_autocomplete
+            elif widget["name"] == "birth_date_month":
+                widget["attrs"]["autocomplete"] = self.month_autocomplete
+            elif widget["name"] == "birth_date_year":
+                widget["attrs"]["autocomplete"] = self.year_autocomplete
+
+        return context
+
+
 class SignupForm(forms.Form):
     template_name_div = "signup/forms/div.html"
     required_css_class = "required"
 
-    first_name = forms.CharField(label="Voornaam", max_length=100)
-    last_name = forms.CharField(label="Achternaam", max_length=100)
-    email = two_wide(forms.EmailField(label="E-mailadres"))
-    phone_number = two_wide(forms.CharField(label="Telefoonnummer", max_length=100))
-    birth_date = two_wide(
-        forms.DateField(
-            label="Geboortedatum", widget=forms.SelectDateWidget(years=birthday_years())
+    first_name = forms.CharField(
+        label="Voornaam",
+        max_length=100,
+        widget=forms.TextInput(attrs={"autocomplete": "given-name"}),
+    )
+    last_name = forms.CharField(
+        label="Achternaam",
+        max_length=100,
+        widget=forms.TextInput(attrs={"autocomplete": "family-name"}),
+    )
+    email = two_wide(
+        forms.EmailField(
+            label="E-mailadres",
+            widget=forms.TextInput(attrs={"autocomplete": "email"}),
         )
     )
-    address = two_wide(forms.CharField(label="Adres", max_length=100))
-    city = two_wide(forms.CharField(label="Plaats", max_length=100))
-    postal_code = two_wide(forms.CharField(label="Postcode", max_length=100))
+    phone_number = two_wide(
+        forms.CharField(
+            label="Telefoonnummer",
+            max_length=20,
+            widget=forms.TextInput(attrs={"autocomplete": "tel"}),
+        )
+    )
+    birth_date = two_wide(
+        forms.DateField(
+            label="Geboortedatum", widget=AutocompleteSelectDateWidget(years=birthday_years())
+        )
+    )
+    address = two_wide(
+        forms.CharField(
+            label="Adres",
+            max_length=100,
+            widget=forms.TextInput(attrs={"autocomplete": "street-address"}),
+        )
+    )
+    city = two_wide(
+        forms.CharField(
+            label="Plaats",
+            max_length=100,
+            widget=forms.TextInput(attrs={"autocomplete": "address-level2"}),
+        )
+    )
+    postal_code = two_wide(
+        forms.CharField(
+            label="Postcode",
+            max_length=7,
+            widget=forms.TextInput(attrs={"autocomplete": "postal"}),
+        )
+    )
 
     preferred_group = two_wide(
         forms.ModelChoiceField(
@@ -89,7 +145,6 @@ class SignupForm(forms.Form):
     privacy_check = with_classes(
         forms.BooleanField(
             label="Ik heb het privacybeleid gelezen en ik ga daarmee akkoord.",
-            required=True,
         ),
         ["checkmark"],
     )
