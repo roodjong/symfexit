@@ -13,7 +13,7 @@
         // Commented out because it causes an error:
         // GPG error: https://dl.yarnpkg.com/debian stable InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 62D54FD4003F6525
 
-		"ghcr.io/devcontainers/features/node:1": {}
+		"ghcr.io/devcontainers/features/node:2": {}
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
