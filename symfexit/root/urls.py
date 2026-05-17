@@ -21,6 +21,7 @@ from django.http import HttpResponse
 from django.urls import include, path
 
 # from symfexit.adminsite.admin import admin_site
+from symfexit.root.export_views import ExportFieldSelectionView
 from symfexit.root.utils import enable_if
 from symfexit.root.views import CustomPasswordResetView
 
@@ -65,6 +66,11 @@ urlpatterns = (
         path("", include("symfexit.documents.urls")),
         path("", include("symfexit.signup.urls")),
         path("mollie/", include("symfexit.payments.mollie.urls")),
+        path(
+            "admin/<str:app_label>/<str:model_name>/export/",
+            ExportFieldSelectionView.as_view(),
+            name="export_field_selection",
+        ),
         path("admin/", admin.site.urls),
         path("accounts/", include("django.contrib.auth.urls")),
         path("fp/", include("django_drf_filepond.urls")),

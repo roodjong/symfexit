@@ -1,0 +1,370 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+.export-form {
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+.field-selection {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+}
+
+.field-selection h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--body-fg, #333);
+}
+
+.selection-controls {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.selection-controls button {
+    margin-right: 10px;
+    padding: 6px 15px;
+    background: var(--primary, #417690);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.selection-controls button:hover {
+    opacity: 0.9;
+}
+
+.field-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.field-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.field-checkbox input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.field-checkbox label {
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+}
+
+.expandable-field-group {
+    grid-column: 1 / -1;
+    border-left: 3px solid var(--primary, #417690);
+    padding: 15px;
+    margin: 10px 0;
+    background: var(--darkened-bg, #f9f9f9);
+    border-radius: 4px;
+}
+
+.expandable-field-header {
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--primary, #417690);
+    font-size: 15px;
+}
+
+.expandable-options {
+    margin: 10px 0;
+    padding: 12px;
+    background: white;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 4px;
+}
+
+.expandable-options label {
+    font-size: 14px;
+}
+
+.related-fields {
+    display: none;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.related-fields.visible {
+    display: grid;
+}
+
+.related-field-item {
+    display: flex;
+    align-items: center;
+}
+
+.related-field-item input[type="checkbox"] {
+    margin-right: 6px;
+}
+
+.related-field-item label {
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Nested expandable fields */
+.nested-expandable-field {
+    grid-column: 1 / -1;
+    border-left: 3px solid var(--secondary, #79aec8);
+    padding: 12px;
+    margin: 8px 0;
+    background: var(--darkened-bg, #f5f5f5);
+    border-radius: 4px;
+}
+
+.nested-expandable-header {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--secondary, #79aec8);
+    font-size: 14px;
+}
+
+.nested-expandable-options {
+    margin: 8px 0;
+    padding: 10px;
+    background: white;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 4px;
+}
+
+.nested-related-fields {
+    display: none;
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.nested-related-fields.visible {
+    display: grid;
+}
+
+.nested-field-item {
+    display: flex;
+    align-items: center;
+}
+
+.nested-field-item input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.nested-field-item label {
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.format-selection {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+}
+
+.format-selection h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.format-options {
+    display: flex;
+    gap: 25px;
+}
+
+.format-option {
+    display: flex;
+    align-items: center;
+}
+
+.format-option input[type="radio"] {
+    margin-right: 8px;
+}
+
+.format-option label {
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.submit-row {
+    padding: 15px 20px;
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    text-align: right;
+}
+
+.submit-row input[type="submit"] {
+    padding: 10px 30px;
+    font-size: 14px;
+    font-weight: bold;
+    background: var(--primary, #417690);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-row input[type="submit"]:hover {
+    background: var(--primary-dark, #2e5568);
+}
+
+.export-info {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #e8f4f8;
+    border-left: 4px solid var(--primary, #417690);
+    border-radius: 4px;
+}
+
+.export-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:'|add:app_label|add:'_'|add:model_name_url|add:'_changelist' %}">{{ model_name }}</a>
+    &rsaquo; {% translate "Export" %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="export-form">
+    <h1>{{ title }}</h1>
+    
+    <div class="export-info">
+        <p><strong>{% translate "Objects to export:" %}</strong> {{ object_count }}</p>
+        <p>{% translate "Select the fields you want to include in the export." %}</p>
+    </div>
+    
+    <form method="post" id="export-form">
+        {% csrf_token %}
+        
+        <div class="field-selection">
+            <h3>{% translate "Select Fields" %}</h3>
+            
+            <div class="selection-controls">
+                <button type="button" onclick="selectAll()">{% translate "Select All" %}</button>
+                <button type="button" onclick="deselectAll()">{% translate "Deselect All" %}</button>
+            </div>
+            
+            <div class="field-checkboxes">
+                {% for field in field_choices %}
+                    {% if field.is_expandable %}
+                        {# Use recursive template for expandable fields #}
+                        {% with field_id=field.name container_class="expandable-field-group" header_class="expandable-field-header" options_class="expandable-options" related_class="related-fields" %}
+                            {% include "admin/_expandable_field_group.html" %}
+                        {% endwith %}
+                    {% else %}
+                        {# Regular field checkbox #}
+                        <div class="field-checkbox">
+                            <input type="checkbox" id="field_{{ field.name }}" name="fields" value="{{ field.name }}">
+                            <label for="field_{{ field.name }}">{{ field.label }}</label>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="format-selection">
+            <h3>{% translate "Export Format" %}</h3>
+            <div class="format-options">
+                <div class="format-option">
+                    <input type="radio" id="format_csv" name="format" value="csv" checked>
+                    <label for="format_csv">CSV ({% translate "Comma-separated values" %})</label>
+                </div>
+                <div class="format-option">
+                    <input type="radio" id="format_excel" name="format" value="excel">
+                    <label for="format_excel">Excel (.xlsx)</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Export' %}">
+        </div>
+    </form>
+</div>
+
+<script>
+// Generic function to toggle related fields visibility
+function toggleRelatedFields(checkboxId, containerId) {
+    const checkbox = document.getElementById(checkboxId);
+    const container = document.getElementById(containerId);
+    
+    if (checkbox.checked) {
+        container.classList.add('visible');
+    } else {
+        container.classList.remove('visible');
+        // Uncheck all checkboxes within the container
+        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.checked = false;
+        });
+    }
+}
+
+// Select all checkboxes
+function selectAll() {
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = true;
+    });
+    // Show all related fields
+    document.querySelectorAll('.related-fields').forEach(el => {
+        el.classList.add('visible');
+    });
+    document.querySelectorAll('.nested-related-fields').forEach(el => {
+        el.classList.add('visible');
+    });
+}
+
+// Deselect all checkboxes
+function deselectAll() {
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+    // Hide all related fields
+    document.querySelectorAll('.related-fields').forEach(el => {
+        el.classList.remove('visible');
+    });
+    document.querySelectorAll('.nested-related-fields').forEach(el => {
+        el.classList.remove('visible');
+    });
+}
+
+// Form validation
+document.getElementById('export-form').addEventListener('submit', function(e) {
+    const checkedFields = document.querySelectorAll('input[name="fields"]:checked');
+    if (checkedFields.length === 0) {
+        e.preventDefault();
+        alert('{% translate "Please select at least one field to export." %}');
+    }
+});
+</script>
+{% endblock %}

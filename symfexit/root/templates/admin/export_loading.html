@@ -1,0 +1,132 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% trans "Exporting..." %}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f8f8f8;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #417690;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            color: #333;
+            margin: 0.5rem 0;
+        }
+        .error {
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <p class="message">{% trans "Generating your export..." %}</p>
+    </div>
+    <script>
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken');
+        
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('download', 'true');
+        formData.append('format', '{{ export_format }}');
+        const fields = {{ selected_fields_json|safe }};
+        fields.forEach(function(field) {
+            formData.append('fields', field);
+        });
+        
+        // Fetch the file
+        fetch('{{ export_url }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Export generation failed');
+            }
+            // Get filename from Content-Disposition header
+            const disposition = response.headers.get('Content-Disposition');
+            let filename = 'export.csv';
+            if (disposition) {
+                // Match quoted or unquoted filename
+                const filenameMatch = disposition.match(/filename="([^"]+)"|filename=([^;\s]+)/);
+                if (filenameMatch) {
+                    // Use group 1 (quoted) or group 2 (unquoted)
+                    filename = filenameMatch[1] || filenameMatch[2];
+                }
+            }
+            return response.blob().then(blob => ({ blob, filename }));
+        })
+        .then(({ blob, filename }) => {
+            // Create download link and trigger download
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            // Redirect after download
+            setTimeout(() => {
+                window.location.href = '{{ changelist_url }}';
+            }, 500);
+        })
+        .catch(error => {
+            document.querySelector('.spinner').style.display = 'none';
+            document.querySelector('.message').textContent = '{% trans "Error generating export. Please try again." %}';
+            document.querySelector('.message').classList.add('error');
+            console.error('Export error:', error);
+            
+            // Show link back to changelist
+            setTimeout(() => {
+                window.location.href = '{{ changelist_url }}';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

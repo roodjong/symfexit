@@ -1,0 +1,50 @@
+{% load i18n %}
+{# Recursive template for expandable field groups - handles any nesting level #}
+<div class="{{ container_class }}">
+    <div class="{{ header_class }}">
+        {{ field.label }}
+    </div>
+    
+    <div class="{{ options_class }}">
+        <div class="field-checkbox">
+            <input type="checkbox" 
+                   id="count_{{ field_id }}" 
+                   name="fields" 
+                   value="{{ field.count_field }}">
+            <label for="count_{{ field_id }}">
+                {% translate "Count" %}
+            </label>
+        </div>
+        
+        <div class="field-checkbox">
+            <input type="checkbox" 
+                   id="expand_toggle_{{ field_id }}" 
+                   onchange="toggleRelatedFields('expand_toggle_{{ field_id }}', 'related_{{ field_id }}')">
+            <label for="expand_toggle_{{ field_id }}">
+                {% translate "Select attributes" %}
+            </label>
+        </div>
+    </div>
+    
+    <div class="{{ related_class }}" id="related_{{ field_id }}">
+        {% for related_field in field.expandable_info.fields %}
+            {% if related_field.is_expandable %}
+                {# Recursively render nested expandable fields #}
+                {% with field=related_field field_id=field_id|add:"_"|add:related_field.name container_class="nested-expandable-field" header_class="nested-expandable-header" options_class="nested-expandable-options" related_class="nested-related-fields" %}
+                    {% include "admin/_expandable_field_group.html" %}
+                {% endwith %}
+            {% else %}
+                {# Regular field item #}
+                <div class="{% if '_' in field_id %}nested-field-item{% else %}related-field-item{% endif %}">
+                    <input type="checkbox" 
+                           id="field_{{ field_id }}_{{ related_field.name }}" 
+                           name="fields" 
+                           value="{{ related_field.full_name }}">
+                    <label for="field_{{ field_id }}_{{ related_field.name }}">
+                        {{ related_field.label }}
+                    </label>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

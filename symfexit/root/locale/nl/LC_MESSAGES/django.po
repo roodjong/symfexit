@@ -1,39 +1,134 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Dutch translations for Symfexit Export functionality
+# Copyright (C) 2026
+# This file is distributed under the same license as the Symfexit package.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Symfexit 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-14 22:07+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2026-05-17 23:34+0200\n"
+"PO-Revision-Date: 2026-05-17 13:40+0200\n"
+"Last-Translator: \n"
+"Language-Team: Dutch\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/root/settings.py:149
-msgid "Main title of this site"
-msgstr "Hoofdtitel van de site"
+#: export_builder.py:242 export_mixin.py:177
+msgid "count"
+msgstr "aantal"
 
-#: symfexit/root/settings.py:150
-msgid "Organisation logo"
-msgstr "Logo van de organisatie"
+#: export_mixin.py:102
+msgid "Export selected data"
+msgstr "Exporteer geselecteerde gegevens"
 
-#: symfexit/root/settings.py:151
-msgid "Main site of the organisation"
-msgstr "Hoofdsite van de organisatie"
+#: export_mixin.py:124
+msgid "You don't have permission to export data."
+msgstr "Je hebt geen toestemming om gegevens te exporteren."
 
-#: symfexit/root/settings.py:154
-msgid "Current home page (configure this on the home pages admin)"
-msgstr "Huidige homepage (stel in op de home pages admin)"
+#: export_mixin.py:133
+msgid "No objects selected for export."
+msgstr "Geen objecten geselecteerd voor export."
 
-#: symfexit/root/settings.py:158
-msgid "JSON with payment tiers (configure this on the membership admin)"
-msgstr "JSON met betalingstiers (stel in op lidmaatschap admin)"
+#: export_mixin.py:255
+msgid "Yes"
+msgstr "Ja"
+
+#: export_mixin.py:255
+msgid "No"
+msgstr "Nee"
+
+#: export_views.py:126
+#, python-format
+msgid "Export %(model)s"
+msgstr "Exporteer %(model)s"
+
+#: templates/admin/_expandable_field_group.html:15
+msgid "Count"
+msgstr "Aantal"
+
+#: templates/admin/_expandable_field_group.html:24
+msgid "Select attributes"
+msgstr "Selecteer attributen"
+
+#: templates/admin/export_field_selection.html:252
+msgid "Home"
+msgstr "Home"
+
+#: templates/admin/export_field_selection.html:254
+#: templates/admin/export_field_selection.html:311
+msgid "Export"
+msgstr "Exporteer"
+
+#: templates/admin/export_field_selection.html:263
+msgid "Objects to export:"
+msgstr "Objecten om te exporteren:"
+
+#: templates/admin/export_field_selection.html:264
+msgid "Select the fields you want to include in the export."
+msgstr "Selecteer de velden die je wilt opnemen in de export."
+
+#: templates/admin/export_field_selection.html:271
+msgid "Select Fields"
+msgstr "Selecteer velden"
+
+#: templates/admin/export_field_selection.html:274
+msgid "Select All"
+msgstr "Alles selecteren"
+
+#: templates/admin/export_field_selection.html:275
+msgid "Deselect All"
+msgstr "Alles deselecteren"
+
+#: templates/admin/export_field_selection.html:297
+msgid "Export Format"
+msgstr "Exportformaat"
+
+#: templates/admin/export_field_selection.html:301
+msgid "Comma-separated values"
+msgstr "Kommagescheiden waarden"
+
+#: templates/admin/export_field_selection.html:366
+msgid "Please select at least one field to export."
+msgstr "Selecteer ten minste één veld om te exporteren."
+
+#: templates/admin/export_loading.html:5
+msgid "Exporting..."
+msgstr "Exporteren..."
+
+#: templates/admin/export_loading.html:48
+msgid "Generating your export..."
+msgstr "Je export wordt gegenereerd..."
+
+#: templates/admin/export_loading.html:121
+msgid "Error generating export. Please try again."
+msgstr "Fout bij het genereren van de export. Probeer het opnieuw."
+
+#~ msgid "Show all related items (one row each)"
+#~ msgstr "Toon alle gerelateerde items (één rij per item)"
+
+#~ msgid "Select attributes (creates row per item)"
+#~ msgstr "Selecteer attributen (maakt rij per item)"
+
+#~ msgid "Count only"
+#~ msgstr "Alleen aantal"
+
+#~ msgid "Expand to show"
+#~ msgstr "Uitklappen om te tonen"
+
+#~ msgid "Main title of this site"
+#~ msgstr "Hoofdtitel van de site"
+
+#~ msgid "Organisation logo"
+#~ msgstr "Logo van de organisatie"
+
+#~ msgid "Main site of the organisation"
+#~ msgstr "Hoofdsite van de organisatie"
+
+#~ msgid "Current home page (configure this on the home pages admin)"
+#~ msgstr "Huidige homepage (stel in op de home pages admin)"
+
+#~ msgid "JSON with payment tiers (configure this on the membership admin)"
+#~ msgstr "JSON met betalingstiers (stel in op lidmaatschap admin)"
