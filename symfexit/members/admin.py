@@ -24,6 +24,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from symfexit.adminsite.admin import GroupFlagsInline
 from symfexit.members.models import LocalGroup, User, WorkGroup, generate_member_number
+from symfexit.root.export_mixin import ExportMixin
 
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")
@@ -92,9 +93,31 @@ class PermissionGroupFilter(SimpleListFilter):
 
 
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(ExportMixin, admin.ModelAdmin):
     add_form_template = "admin/auth/user/add_form.html"
     change_user_password_template = None
+
+    # Export configuration
+    export_fields = [
+        "member_identifier",
+        "email",
+        "first_name",
+        "last_name",
+        "phone_number",
+        "address",
+        "postal_code",
+        "city",
+        "cadre",
+        "member_type",
+        "is_active",
+        "groups",
+        "date_joined",
+    ]
+
+    export_model_config = [
+        ("groups", ["name"]),
+    ]
+
     fieldsets = (
         (None, {"fields": ("password",)}),
         (
