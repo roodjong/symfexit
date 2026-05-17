@@ -42,7 +42,7 @@ dev = [
 ]
 
 prod = [
-    "uvicorn>=0.46.0",
+    "uvicorn>=0.47.0",
     "dotenv>=0.9.9",
 ]
 
