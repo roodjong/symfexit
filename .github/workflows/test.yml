@@ -58,8 +58,8 @@ jobs:
       run: |
         sudo apt install gettext
         uv run --frozen python manage.py makemessages --locale nl --ignore .venv
-        grep -zP --include="*.po" --files-with-matches --recursive "#, fuzzy\nmsgid \"[^\"]" symfexit && exit 1 || echo "No fuzzy translations found."
-        grep -zP --include="*.po" --files-with-matches --recursive "msgstr \"\"\n\n" symfexit && exit 1 || echo "No untranslated strings found."
+        if [[ $(find symfexit/ -name '*.po' -exec msgattrib --untranslated {} \;) ]]; then exit 1 else echo "No untranslated strings found." fi
+        if [[ $(find symfexit/ -name '*.po' -exec msgattrib --only-fuzzy {} \;) ]]; then exit 1 else echo "No fuzzy translations found." fi
     - name: Run migrate for fixtures
       run: |
         uv run --frozen python manage.py migrate
