@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 15:39+0100\n"
+"POT-Creation-Date: 2026-05-19 11:33+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -186,7 +186,8 @@ msgstr ""
 
 #: symfexit/documents/views.py:541
 msgid "Cannot add a folder to a folder that is in the trashcan"
-msgstr "Het is niet mogelijk een map te verplaatsen naar een map in de prullenbak"
+msgstr ""
+"Het is niet mogelijk een map te verplaatsen naar een map in de prullenbak"
 
 #: symfexit/documents/views.py:550 symfexit/documents/views.py:658
 #: symfexit/documents/views.py:712
