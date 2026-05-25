@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from tinymce.models import HTMLField
@@ -38,6 +39,17 @@ class EmailLayout(models.Model):
 
 class EmailTemplate(models.Model):
     id = models.AutoField(primary_key=True)
+
+    language = models.CharField(
+        _("preferred language"),
+        max_length=10,
+        choices=settings.LANGUAGES + [("*", _("Fallback for all languages"))],
+        default="*",
+        blank=False,
+        null=False,
+        help_text=_("User's preferred interface language"),
+    )
+
     layout = models.ForeignKey(
         "EmailLayout",
         on_delete=models.SET_NULL,
@@ -48,12 +60,11 @@ class EmailTemplate(models.Model):
     )
     template = models.CharField(
         _("template"),
-        unique=True,
         blank=False,
+        null=False,
         max_length=80,
         choices=EmailTemplateManager.get_as_choices(),
     )
-    # we could add language as well and make template + language a unique key
 
     from_email = models.EmailField(_("from email"))
     subject = models.TextField(_("subject"))
@@ -65,5 +76,13 @@ class EmailTemplate(models.Model):
         help_text=_("Text body is used for people who don't allow html in their emails."),
     )
 
+    class Meta:
+        unique_together = (
+            "template",
+            "language",
+        )  # ensure that for each template and language combination, there is only one entry
+
     def __str__(self) -> str:
-        return f"{self.template}: {self.subject}"
+        return (
+            f"{EmailTemplateManager.find(self.template).label} - ({self.language}): {self.subject}"
+        )

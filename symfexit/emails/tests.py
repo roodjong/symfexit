@@ -13,6 +13,8 @@ from symfexit.emails._templates.base import (
 )
 from symfexit.emails._templates.manager import EmailTemplateManager
 from symfexit.emails._templates.render import send_email
+from symfexit.emails.admin import EmailLayoutForm, EmailTemplateForm
+from symfexit.emails.models import EmailTemplate
 from symfexit.tenants.test import override_config
 
 BASE_CONTEXT = {
@@ -183,3 +185,77 @@ class EmailComponentTests(TestCase):
             assert t.subject_template
             assert t.html_template
             assert t.text_template
+
+
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    LANGUAGE_CODE="nl-NL",
+)
+class EmailLanguageFallbackTests(TestCase):
+    def setUp(self):
+        EmailTemplate.objects.filter(template="test_lang").delete()
+
+        class TestLangEmail(BodyTemplate):
+            code = "test_lang"
+            label = "Test"
+            subject_template = "Subject"
+            html_template = "Body"
+            text_template = "Text"
+
+        self.template_class = TestLangEmail
+
+        # Create test templates
+        for lang, subject in [("en-US", "EN-US"), ("en", "EN"), ("nl", "NL"), ("*", "Fallback")]:
+            EmailTemplate.objects.create(
+                template="test_lang",
+                language=lang,
+                from_email="test@example.com",
+                subject=subject,
+                body=f"Body {subject}",
+                text_body=f"Text {subject}",
+            )
+
+    def _send_and_check(self, lang, expected_subject):
+        """Helper to send email and check the result."""
+        send_email(self.template_class({}), recipient_list=["user@example.com"], lang=lang)
+        self.assertEqual(mail.outbox[-1].subject, expected_subject)
+
+    def test_exact_match(self):
+        self._send_and_check("en-US", "EN-US")
+
+    def test_region_fallback(self):
+        self._send_and_check("en-GB", "EN")  # en-GB → en
+
+    def test_generic_fallback(self):
+        self._send_and_check("fr", "Fallback")  # fr → *
+
+    def test_none_uses_generic(self):
+        self._send_and_check(None, "Fallback")
+
+    def test_priority_order(self):
+        self._send_and_check("en-US", "EN-US")
+        self._send_and_check("en-GB", "EN")
+        EmailTemplate.objects.filter(language__in=["en-US", "en"]).delete()
+        self._send_and_check("en-GB", "Fallback")
+
+
+class EmailAdminFormTests(TestCase):
+    def test_email_template_form_requires_template_identifier(self):
+        form = EmailTemplateForm(
+            data={
+                "language": "en",
+                "from_email": "test@example.com",
+                "subject": "Test",
+                "body": "<p>Test</p>",
+                "text_body": "Test",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("body", form.errors)
+
+    def test_email_layout_form_requires_template_identifier(self):
+        form = EmailLayoutForm(
+            data={"name": "Test", "body": "<div>{{ content }}</div>", "text_body": "{{ content }}"}
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("body", form.errors)

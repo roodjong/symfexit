@@ -1,5 +1,6 @@
 import urllib.parse
 
+from django.conf import settings
 from django.core.mail import send_mail
 from django.template import Context, Template
 
@@ -45,7 +46,41 @@ def send_email(  # noqa: PLR0913
     if isinstance(recipient_list, str):
         recipient_list = [recipient_list]
 
-    db_email_template = EmailTemplate.objects.filter(template=email_template.code).first()
+    def get_email_template_by_lang(lang: str | None) -> EmailTemplate | None:
+        # Build list of language codes to try, in priority order
+        lang_codes = []
+
+        # 1. get preferred language given in the function
+        if lang:
+            lang_codes.append(lang)
+            # try fallback to language without region (e.g., 'en' instead of 'en-US')
+            if "-" in lang:
+                lang_codes.append(lang.split("-")[0])
+
+        # 2. fallback to the generic template, which is *
+        lang_codes.append("*")
+
+        # 3. fallback to the default application language
+        local_lang = settings.LANGUAGE_CODE
+        lang_codes.append(local_lang)
+        # try fallback to language without region (e.g., 'en' instead of 'en-US')
+        if "-" in local_lang:
+            lang_codes.append(local_lang.split("-")[0])
+
+        # Fetch all potential templates in a single query
+        email_templates = EmailTemplate.objects.filter(
+            template=email_template.code, language__in=lang_codes
+        )
+
+        # Return first match in priority order
+        for lang_code in lang_codes:
+            for template in email_templates:
+                if template.language == lang_code:
+                    return template
+
+        return None
+
+    db_email_template = get_email_template_by_lang(lang)
 
     rendered_subject, rendered_body, rendered_text_body = render_email(
         email_template, db_email_template
@@ -63,7 +98,7 @@ def send_email(  # noqa: PLR0913
 
 
 def render_email(
-    email_template: BodyTemplate, db_email_template: EmailTemplate
+    email_template: BodyTemplate, db_email_template: EmailTemplate | None
 ) -> tuple[str, str, str]:
     context = email_template.context
     title = render(
