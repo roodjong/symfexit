@@ -24,6 +24,14 @@ from symfexit.tenants.models import Client
 class Command(BaseCommand):
     help = "Create realistic sample objects for all major models."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "-y",
+            "--yes",
+            action="store_true",
+            help="Skip confirmation prompt",
+        )
+
     def handle(self, *args, **options):
         # Only allow fixture loading in DEBUG mode
         if not getattr(settings, "DEBUG", False):
@@ -35,10 +43,11 @@ class Command(BaseCommand):
                 "This will DELETE ALL DATA in the database for relevant models and reload fixtures."
             )
         )
-        confirm = input("Are you sure you want to continue? (yes/no): ").strip().lower()
-        if confirm != "yes":
-            self.stdout.write(self.style.ERROR("Aborted by user."))
-            return
+        if not options.get("yes"):
+            confirm = input("Are you sure you want to continue? (yes/no): ").strip().lower()
+            if confirm != "yes":
+                self.stdout.write(self.style.ERROR("Aborted by user."))
+                return
 
         self.delete_all_data()
 
