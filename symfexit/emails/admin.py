@@ -109,6 +109,15 @@ class EmailLayoutForm(forms.ModelForm):
         body = self.cleaned_data.get(body_key, "")
         text_body = self.cleaned_data.get(text_body_key, "")
 
+        if not template_identifier:
+            self._errors[body_key] = ErrorList(
+                [_("Template identifier is required to validate the body.")]
+            )
+            self._errors[text_body_key] = ErrorList(
+                [_("Template identifier is required to validate the text body.")]
+            )
+            return self.cleaned_data
+
         # get template by identifier: template_identifier
         template = EmailLayoutManager.find(template_identifier)
         ctx_dict = template.get_context_options()
@@ -144,6 +153,15 @@ class EmailTemplateForm(forms.ModelForm):
         subject = self.cleaned_data.get(subject_key, "")
         body = self.cleaned_data.get(body_key, "")
         text_body = self.cleaned_data.get(text_body_key, "")
+
+        if not template_identifier:
+            self._errors[body_key] = ErrorList(
+                [_("Template identifier is required to validate the body.")]
+            )
+            self._errors[text_body_key] = ErrorList(
+                [_("Template identifier is required to validate the text body.")]
+            )
+            return self.cleaned_data
 
         # get template by identifier: template_identifier
         template = EmailTemplateManager.find(template_identifier)
