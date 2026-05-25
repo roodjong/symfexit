@@ -16,6 +16,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 import dj_database_url
+from django.utils.translation import gettext_lazy as _
 
 from symfexit.root.utils import enable_if
 
@@ -282,6 +283,12 @@ USE_TZ = True
 USE_L10N = True
 
 LANGUAGE_CODE = setting_from_env("DEFAULT_LANGUAGE_CODE", production="nl-NL", development="nl-NL")
+
+LANGUAGES = [
+    ("nl", _("Dutch")),
+    ("en", _("English")),
+    # Add more languages as needed
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

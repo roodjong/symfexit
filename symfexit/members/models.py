@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, PermissionsMixin
@@ -77,6 +78,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     extra_information = models.TextField(_("Extra information"), blank=True)
     member_type = models.CharField(
         _("membership type"), default=MemberType.MEMBER, choices=MemberType
+    )
+    language = models.CharField(
+        _("preferred language"),
+        max_length=10,
+        choices=settings.LANGUAGES,
+        default=settings.LANGUAGE_CODE,
+        blank=True,
+        null=False,
+        help_text=_("User's preferred language for emails"),
     )
 
     is_staff = models.BooleanField(
