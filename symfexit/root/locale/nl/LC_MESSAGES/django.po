@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-14 22:07+0200\n"
+"POT-Creation-Date: 2026-05-25 17:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,22 +18,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/root/settings.py:149
-msgid "Main title of this site"
-msgstr "Hoofdtitel van de site"
+#: symfexit/root/settings.py:288
+msgid "Dutch"
+msgstr "Nederlands"
 
-#: symfexit/root/settings.py:150
-msgid "Organisation logo"
-msgstr "Logo van de organisatie"
+#: symfexit/root/settings.py:289
+msgid "English"
+msgstr "Engels"
 
-#: symfexit/root/settings.py:151
-msgid "Main site of the organisation"
-msgstr "Hoofdsite van de organisatie"
+#~ msgid "Main title of this site"
+#~ msgstr "Hoofdtitel van de site"
 
-#: symfexit/root/settings.py:154
-msgid "Current home page (configure this on the home pages admin)"
-msgstr "Huidige homepage (stel in op de home pages admin)"
+#~ msgid "Organisation logo"
+#~ msgstr "Logo van de organisatie"
 
-#: symfexit/root/settings.py:158
-msgid "JSON with payment tiers (configure this on the membership admin)"
-msgstr "JSON met betalingstiers (stel in op lidmaatschap admin)"
+#~ msgid "Main site of the organisation"
+#~ msgstr "Hoofdsite van de organisatie"
+
+#~ msgid "Current home page (configure this on the home pages admin)"
+#~ msgstr "Huidige homepage (stel in op de home pages admin)"
+
+#~ msgid "JSON with payment tiers (configure this on the membership admin)"
+#~ msgstr "JSON met betalingstiers (stel in op lidmaatschap admin)"
