@@ -8,6 +8,13 @@ from symfexit.emails._templates.manager import EmailLayoutManager, EmailTemplate
 class EmailLayout(models.Model):
     id = models.AutoField(primary_key=True)
 
+    name = models.CharField(
+        _("name"),
+        unique=True,
+        blank=False,
+        max_length=80,
+    )
+
     template = models.CharField(
         _("template"),
         unique=False,
@@ -26,7 +33,7 @@ class EmailLayout(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"{self.template}"
+        return f"{self.name}"
 
 
 class EmailTemplate(models.Model):
