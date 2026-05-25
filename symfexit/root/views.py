@@ -51,6 +51,7 @@ class MyPasswordResetForm(PasswordResetForm):
                 }
             ),
             recipient_list=[to_email],
+            lang=user.language,
         )
 
 
