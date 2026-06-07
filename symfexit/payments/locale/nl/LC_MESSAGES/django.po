@@ -234,7 +234,7 @@ msgstr "Jouw betaling wordt verwerkt"
 msgid ""
 "We're confirming your payment with Mollie. This usually takes just a few "
 "seconds."
-msgstr ""
+msgstr "Wij vragen Mollie om jouw betaling te bevestigen. Dit duurt enkele seconden."
 
 #: symfexit/payments/mollie/templates/payments_mollie/pending.html:17
 msgid "It's taking a bit longer than expected. Continuing anyway..."
