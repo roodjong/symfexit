@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-07 14:07+0200\n"
+"POT-Creation-Date: 2026-06-07 14:34+0200\n"
 "PO-Revision-Date: 2025-08-25 20:02+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -182,8 +182,8 @@ msgid "The passwords do not match"
 msgstr "De wachtwoorden komen niet overeen"
 
 #: symfexit/members/forms.py:130
-msgid "Select your membership"
-msgstr "Selecteer je lidmaatschap"
+msgid "Select your membership tier:"
+msgstr "Selecteer je lidmaatschaptype:"
 
 #: symfexit/members/forms.py:134 symfexit/members/forms.py:174
 #: symfexit/members/templates/members/membership_selection.html:79
@@ -212,8 +212,8 @@ msgid "This tier does not belong to the selected membership type."
 msgstr "Dit contributiebedrag hoort niet bij dit lidmaatschapstype"
 
 #: symfexit/members/models.py:61
-msgid "Members"
-msgstr "Leden"
+msgid "Member"
+msgstr "Lid"
 
 #: symfexit/members/models.py:62
 msgid "Support member"
@@ -272,16 +272,16 @@ msgid "membership tier"
 msgstr "lidmaatschapsschijf"
 
 #: symfexit/members/models.py:100
-msgid "credit balance"
-msgstr "krediet balans"
+msgid "credit account"
+msgstr "krediet account"
 
 #: symfexit/members/models.py:103
 msgid "preferred language"
-msgstr ""
+msgstr "voorkeurstaal"
 
 #: symfexit/members/models.py:109
 msgid "User's preferred language for emails"
-msgstr ""
+msgstr "voorkeurstaal van de gebruiker voor e-mails"
 
 #: symfexit/members/models.py:113
 msgid "staff status"
