@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 17:16+0200\n"
+"POT-Creation-Date: 2026-06-07 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,59 +73,51 @@ msgstr "De volgende sleutels zijn niet erkend: %s"
 msgid "Allowed keys:"
 msgstr "Toegestane sleutels:"
 
-#: symfexit/emails/admin.py:114 symfexit/emails/admin.py:159
-msgid "Template identifier is required to validate the body."
-msgstr "Sjabloon-identificatie is vereist om de inhoud te valideren."
-
-#: symfexit/emails/admin.py:117 symfexit/emails/admin.py:162
-msgid "Template identifier is required to validate the text body."
-msgstr "Sjabloon-identificatie is vereist om de tekstinhoud te valideren."
-
 #: symfexit/emails/apps.py:8
 msgid "Email templates"
 msgstr "E-mailsjablonen"
 
-#: symfexit/emails/models.py:14
+#: symfexit/emails/models.py:13
 msgid "name"
 msgstr "naam"
 
-#: symfexit/emails/models.py:21 symfexit/emails/models.py:63
+#: symfexit/emails/models.py:20 symfexit/emails/models.py:62
 msgid "template"
 msgstr "sjabloon"
 
-#: symfexit/emails/models.py:30 symfexit/emails/models.py:73
+#: symfexit/emails/models.py:29 symfexit/emails/models.py:72
 msgid "body"
 msgstr "inhoud"
 
-#: symfexit/emails/models.py:33 symfexit/emails/models.py:76
+#: symfexit/emails/models.py:32 symfexit/emails/models.py:75
 msgid "text body"
 msgstr "tekstinhoud"
 
-#: symfexit/emails/models.py:34 symfexit/emails/models.py:77
+#: symfexit/emails/models.py:33 symfexit/emails/models.py:76
 msgid "Text body is used for people who don't allow html in their emails."
 msgstr ""
 "Tekstinhoud wordt gebruikt voor mensen die geen HTML in hun e-mails toestaan."
 
-#: symfexit/emails/models.py:45
+#: symfexit/emails/models.py:44
 msgid "preferred language"
 msgstr "voorkeurstaal"
 
-#: symfexit/emails/models.py:47
-msgid "Fallback for all languages"
-msgstr "Standaardwaarde voor alle talen"
+#: symfexit/emails/models.py:46
+msgid "Fallback for missing languages"
+msgstr "Terugval voor missende talen"
 
-#: symfexit/emails/models.py:51
-msgid "User's preferred interface language"
-msgstr "Voorkeurstaal van de gebruiker voor de interface"
+#: symfexit/emails/models.py:50
+msgid "Receiver's preferred language"
+msgstr "Voorkeurstaal van de ontvanger"
 
-#: symfexit/emails/models.py:60
+#: symfexit/emails/models.py:59
 msgid "email layout"
 msgstr "e-mail lay-out"
 
-#: symfexit/emails/models.py:70
+#: symfexit/emails/models.py:69
 msgid "from email"
 msgstr "afzender"
 
-#: symfexit/emails/models.py:71
+#: symfexit/emails/models.py:70
 msgid "subject"
 msgstr "onderwerp"

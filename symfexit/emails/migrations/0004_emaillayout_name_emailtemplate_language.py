@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='emailtemplate',
             name='language',
-            field=models.CharField(choices=[('nl', 'Dutch'), ('en', 'English'), ('*', 'Fallback for all languages')], default='*', help_text="User's preferred interface language", max_length=10, verbose_name='preferred language'),
+            field=models.CharField(choices=[('nl', 'Dutch'), ('en', 'English'), ('*', 'Fallback for missing languages')], default='*', help_text="Receiver's preferred language", max_length=10, verbose_name='preferred language'),
         ),
         migrations.AlterField(
             model_name='emailtemplate',

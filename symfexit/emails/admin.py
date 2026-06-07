@@ -110,12 +110,7 @@ class EmailLayoutForm(forms.ModelForm):
         text_body = self.cleaned_data.get(text_body_key, "")
 
         if not template_identifier:
-            self._errors[body_key] = ErrorList(
-                [_("Template identifier is required to validate the body.")]
-            )
-            self._errors[text_body_key] = ErrorList(
-                [_("Template identifier is required to validate the text body.")]
-            )
+            # silently ignore validation if no template is selected
             return self.cleaned_data
 
         # get template by identifier: template_identifier
@@ -155,12 +150,7 @@ class EmailTemplateForm(forms.ModelForm):
         text_body = self.cleaned_data.get(text_body_key, "")
 
         if not template_identifier:
-            self._errors[body_key] = ErrorList(
-                [_("Template identifier is required to validate the body.")]
-            )
-            self._errors[text_body_key] = ErrorList(
-                [_("Template identifier is required to validate the text body.")]
-            )
+            # silently ignore validation if no template is selected
             return self.cleaned_data
 
         # get template by identifier: template_identifier
