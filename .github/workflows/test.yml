@@ -59,7 +59,7 @@ jobs:
         sudo apt install gettext
         uv run --frozen python manage.py makemessages --locale nl --ignore .venv
         find symfexit/ -name '*.po' -exec msgattrib --untranslated {} \;
-        find symfexit/ -name '*.po' -exec msgattrib --only-fuzzy {} \;)
+        find symfexit/ -name '*.po' -exec msgattrib --only-fuzzy {} \;
         grep -zP --include="*.po" --files-with-matches --recursive "#, fuzzy\nmsgid \"[^\"]" symfexit && exit 1 || echo "No fuzzy translations found."
         grep -zP --include="*.po" --files-with-matches --recursive "msgstr \"\"\n\n" symfexit && exit 1 || echo "No untranslated strings found."
         exit 0
