@@ -178,9 +178,7 @@ class TestApplyMemberCredit(TestCase):
             type=ProductType.SUBSCRIPTION,
         )
         Subscription.objects.create(product=self.product, period_unit=PeriodUnit.MONTH, period=1)
-        self.order = self.product.order(
-            for_user=self.user, billing_address=self.billing_address
-        )
+        self.order = self.product.order(for_user=self.user, billing_address=self.billing_address)
 
     def _credit_user(self, cents):
         bank_account, _ = Account.get_bank_account()
@@ -214,9 +212,7 @@ class TestApplyMemberCredit(TestCase):
 
     def test_signup_user_gets_no_credit_application(self):
         """Order with no ordered_for: apply_member_credit is a no-op."""
-        no_user_order = self.product.order(
-            for_user=None, billing_address=self.billing_address
-        )
+        no_user_order = self.product.order(for_user=None, billing_address=self.billing_address)
         obligation = no_user_order.get_or_create_next_payment_obligation(timezone="UTC")
         self.assertEqual(obligation.outstanding_cents, 1000)
 
@@ -438,4 +434,6 @@ class TestGeneratePaymentObligations(FastTenantTestCase):
         # A second obligation should exist for a later period.
         self.assertEqual(PaymentObligation.objects.count(), 2)
         new = PaymentObligation.objects.exclude(pk=first_obligation.pk).get()
-        self.assertGreaterEqual((new.year, new.period), (first_obligation.year, first_obligation.period))
+        self.assertGreaterEqual(
+            (new.year, new.period), (first_obligation.year, first_obligation.period)
+        )

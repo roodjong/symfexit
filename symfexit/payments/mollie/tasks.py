@@ -17,9 +17,8 @@ def reconcile_mollie_payments():
     we never heard about it (because delivery failed and they didn't return
     to the pending page)."""
     cutoff = timezone.now() - RECONCILE_THRESHOLD
-    stale = (
-        MolliePayment.objects.filter(status="open", created_at__lt=cutoff)
-        .select_related("obligation__order__paid_using__mollie_settings")
+    stale = MolliePayment.objects.filter(status="open", created_at__lt=cutoff).select_related(
+        "obligation__order__paid_using__mollie_settings"
     )
 
     refreshed = 0

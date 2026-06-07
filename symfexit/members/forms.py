@@ -204,7 +204,7 @@ class MembershipSelectionForm(forms.Form):
         elif payment_tier:
             try:
                 tier = MembershipTier.objects.get(pk=int(payment_tier))
-            except (MembershipTier.DoesNotExist, ValueError):
+            except MembershipTier.DoesNotExist, ValueError:
                 self.add_error("payment_tier", _("Invalid choice."))
                 return
             if tier.membership_type_id != membership_type.pk:

@@ -37,6 +37,4 @@ class Command(BaseCommand):
                 add_task("gen_obligations", now=now)
 
         suffix = f" (override now={now.isoformat()})" if now else ""
-        self.stdout.write(
-            self.style.SUCCESS(f"Queued for {tenants.count()} tenant(s){suffix}")
-        )
+        self.stdout.write(self.style.SUCCESS(f"Queued for {tenants.count()} tenant(s){suffix}"))

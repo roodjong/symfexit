@@ -773,10 +773,13 @@ class ReconcileMolliePaymentsTest(TestCase):
         Account.get_revenue_account()
 
         self.provider = PaymentProvider.objects.create(
-            name="Mollie Test", type="mollie", default=True,
+            name="Mollie Test",
+            type="mollie",
+            default=True,
         )
         self.mollie_settings = MollieSettings.objects.create(
-            payment_provider=self.provider, test_api_key="test_xxx",
+            payment_provider=self.provider,
+            test_api_key="test_xxx",
         )
 
         self.user = Member.objects.create_user(email="reconcile@example.com")
@@ -871,10 +874,13 @@ class BackfillProcessedAtMigrationTest(TestCase):
         Account.get_revenue_account()
 
         self.provider = PaymentProvider.objects.create(
-            name="Mollie Test", type="mollie", default=True,
+            name="Mollie Test",
+            type="mollie",
+            default=True,
         )
         self.mollie_settings = MollieSettings.objects.create(
-            payment_provider=self.provider, test_api_key="test_xxx",
+            payment_provider=self.provider,
+            test_api_key="test_xxx",
         )
         self.user = Member.objects.create_user(email="legacy@example.com")
         self.billing_address = BillingAddress.objects.create(

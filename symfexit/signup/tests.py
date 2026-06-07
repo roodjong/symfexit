@@ -28,7 +28,9 @@ class ReturnViewTest(FastTenantTestCase):
         Account.get_revenue_account()
 
         self.provider = PaymentProvider.objects.create(
-            name="Dummy", type="dummy", default=True,
+            name="Dummy",
+            type="dummy",
+            default=True,
         )
         self.product = Product.objects.create(
             enabled=True,
@@ -137,7 +139,9 @@ class CreateUserSignupOverpaymentTest(FastTenantTestCase):
         Account.get_revenue_account()
 
         self.provider = PaymentProvider.objects.create(
-            name="Dummy", type="dummy", default=True,
+            name="Dummy",
+            type="dummy",
+            default=True,
         )
         self.product = Product.objects.create(
             enabled=True,

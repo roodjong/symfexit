@@ -28,7 +28,9 @@ class DummyPayViewTest(FastTenantTestCase):
         Account.get_revenue_account()
 
         self.provider = PaymentProvider.objects.create(
-            name="Dummy", type="dummy", default=True,
+            name="Dummy",
+            type="dummy",
+            default=True,
         )
         self.user = Member.objects.create_user(email="dummy@example.com")
         self.billing_address = BillingAddress.objects.create(
