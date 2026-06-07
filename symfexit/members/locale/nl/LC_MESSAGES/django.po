@@ -182,41 +182,37 @@ msgid "The passwords do not match"
 msgstr "De wachtwoorden komen niet overeen"
 
 #: symfexit/members/forms.py:130
-#, fuzzy
-#| msgid "Select your membership"
-msgid "Select your membership tier:"
+msgid "Select your membership"
 msgstr "Selecteer je lidmaatschap"
 
 #: symfexit/members/forms.py:134 symfexit/members/forms.py:174
 #: symfexit/members/templates/members/membership_selection.html:79
 msgid "I want to pay more, namely:"
-msgstr ""
+msgstr "Ik wil meer betalen, namelijk"
 
 #: symfexit/members/forms.py:191
 msgid "This membership type does not allow a custom amount."
-msgstr ""
+msgstr "Dit lidmaatschapstype staat geen aangepast contributie bedrag toe"
 
 #: symfexit/members/forms.py:195
 msgid "Please enter an amount."
-msgstr ""
+msgstr "Voer een bedrag in."
 
 #: symfexit/members/forms.py:201
 #, python-format
 msgid "Please enter an amount of at least €%(amount).2f."
-msgstr ""
+msgstr "Voer een bedrag van minimaal €%(amount).2f in."
 
 #: symfexit/members/forms.py:208
 msgid "Invalid choice."
-msgstr ""
+msgstr "Ongeldige keuze"
 
 #: symfexit/members/forms.py:212
 msgid "This tier does not belong to the selected membership type."
-msgstr ""
+msgstr "Dit contributiebedrag hoort niet bij dit lidmaatschapstype"
 
 #: symfexit/members/models.py:61
-#, fuzzy
-#| msgid "Members"
-msgid "Member"
+msgid "Members"
 msgstr "Leden"
 
 #: symfexit/members/models.py:62
@@ -276,9 +272,7 @@ msgid "membership tier"
 msgstr "lidmaatschapsschijf"
 
 #: symfexit/members/models.py:100
-#, fuzzy
-#| msgid "credit balance"
-msgid "credit account"
+msgid "credit balance"
 msgstr "krediet balans"
 
 #: symfexit/members/models.py:103
