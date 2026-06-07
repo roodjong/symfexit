@@ -14,7 +14,6 @@ from symfexit.emails.models import EmailLayout, EmailTemplate
 from symfexit.events.models import Event
 from symfexit.home.models import HomePage
 from symfexit.members.models import LocalGroup, User, WorkGroup
-from symfexit.membership.models import Membership
 from symfexit.signup.models import MembershipApplication
 from symfexit.tenants.apps import ensure_single_tenant_if_enabled
 from symfexit.tenants.config import config
@@ -67,7 +66,6 @@ class Command(BaseCommand):
         User.objects.all().delete()
         LocalGroup.objects.all().delete()
         WorkGroup.objects.all().delete()
-        Membership.objects.all().delete()
         HomePage.objects.all().delete()
         self.stdout.write(self.style.SUCCESS("All relevant data deleted."))
 
@@ -157,7 +155,7 @@ class Command(BaseCommand):
                     address=f"{g + 1}{m + 1} Main St",
                     city="Cityville",
                     postal_code=f"{g + 1}{m + 1}2345",
-                    payment_amount=1000,
+                    payment_amount_euros=10,
                     preferred_group=group,
                 )
                 applications.append(app)
@@ -193,11 +191,6 @@ class Command(BaseCommand):
             # Add member number 3 to a workgroup
             workgroup.workgroup_contact_people.add(group_members[2])
         return local_groups, all_members, contact_people, workgroup_members
-
-    def create_memberships(self, all_members, now):
-        for user in all_members:
-            active_range = (now - timedelta(days=30), None)
-            Membership.objects.create(user=user, active_from_to=active_range)
 
     def create_events(self, board_members, contact_people, all_members, now):
         event_past = Event.objects.create(

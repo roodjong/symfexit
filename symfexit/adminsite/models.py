@@ -73,8 +73,6 @@ class WellKnownPermissionGroup(models.Model):
             case WellKnownPermissionGroup.WellKnownPermissionGroups.BOARD:
                 self.group.permissions.set(
                     [
-                        Permission.objects.get(codename="add_membership"),
-                        Permission.objects.get(codename="view_membership"),
                         Permission.objects.get(codename="add_localgroup"),
                         Permission.objects.get(codename="change_localgroup"),
                         Permission.objects.get(codename="delete_localgroup"),
