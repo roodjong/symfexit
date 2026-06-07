@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 08:58+0100\n"
+"POT-Creation-Date: 2026-06-07 13:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,17 +57,17 @@ msgstr ""
 msgid "position"
 msgstr "positie"
 
-#: symfexit/membership/models.py:30
-msgid "This field is required when custom amount is allowed."
-msgstr "Dit veld is vereist wanneer een aangepast bedrag is toegestaan."
-
-#: symfexit/membership/models.py:37 symfexit/membership/models.py:49
+#: symfexit/membership/models.py:26 symfexit/membership/models.py:49
 msgid "membership type"
 msgstr "lidmaatschapstype"
 
-#: symfexit/membership/models.py:38
+#: symfexit/membership/models.py:27
 msgid "membership types"
 msgstr "lidmaatschapstypen"
+
+#: symfexit/membership/models.py:38
+msgid "This field is required when custom amount is allowed."
+msgstr "Dit veld is vereist wanneer een aangepast bedrag is toegestaan."
 
 #: symfexit/membership/models.py:56
 msgid "product"
