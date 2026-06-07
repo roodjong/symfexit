@@ -172,6 +172,8 @@ EMAIL_URL = "127.0.0.1"
 EMAIL_PORT = 1025
 ```
 
+See the [README.md](symfexit/emails/README.md) in the emails directory for details on how the email system works.
+
 ## Localization
 
 All strings are currently in English by default, and have localizations to Dutch.
