@@ -1,7 +1,6 @@
 import abc
 import bisect
 import logging
-from typing import Optional
 
 import symfexit
 
@@ -27,7 +26,7 @@ class PaymentsRegistry:
 
         return _register
 
-    def get(self, name) -> Optional["PaymentProcessor"]:
+    def get(self, name) -> PaymentProcessor | None:
         return self._names.get(name)
 
     def get_main(self):
@@ -41,7 +40,7 @@ class PaymentsRegistry:
                 pass
         raise RuntimeError("No available payment processor found")
 
-    def get_instance_for_provider(self, provider: "symfexit.payments.models.PaymentProvider"):
+    def get_instance_for_provider(self, provider: symfexit.payments.models.PaymentProvider):
         processor = self.get(provider.type)
         if not processor:
             raise RuntimeError(f"Payment processor {provider.type} not found in registry")
@@ -88,7 +87,7 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
         """Returns whether this payment processor can be installed in this environment."""
         ...
 
-    def get_default_credit_account(self) -> "symfexit.payments.models.Account | None":
+    def get_default_credit_account(self) -> symfexit.payments.models.Account | None:
         """Returns the default credit-to account for this processor, or None for the bank account."""
         return None
 
@@ -98,8 +97,8 @@ class PaymentProcessor(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_instance(
-        self, provider: "symfexit.payments.models.PaymentProvider"
-    ) -> "PaymentProcessorInstance":
+        self, provider: symfexit.payments.models.PaymentProvider
+    ) -> PaymentProcessorInstance:
         """Returns an instance of this payment processor for the given provider."""
         ...
 

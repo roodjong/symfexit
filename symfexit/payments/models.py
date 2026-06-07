@@ -4,7 +4,6 @@ import time
 import uuid
 import zoneinfo
 from datetime import date, datetime, timedelta
-from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -144,10 +143,10 @@ class Transaction(models.Model):
         debit_account = self.get_debit_account() or self.debit_account_id
         return f"Transaction of €{self.amount_cents / 100:.2f} from {credit_account} to {debit_account}"
 
-    def get_credit_account(self) -> Optional["Account"]:
+    def get_credit_account(self) -> Account | None:
         return Account.objects.filter(id=self.credit_account_id).first()
 
-    def get_debit_account(self) -> Optional["Account"]:
+    def get_debit_account(self) -> Account | None:
         return Account.objects.filter(id=self.debit_account_id).first()
 
 
@@ -354,13 +353,14 @@ class Subscription(models.Model):
     period = models.IntegerField(
         help_text=_("How many of the period unit before the subscription repeats.")
     )
+
+    def __str__(self):
+        return f"Subscription for {self.product.name}"
+
     @classmethod
     def get_or_404(cls, eid) -> Order:
         id = hashids.decode(eid)[0]
         return get_object_or_404(cls, id=id)
-
-    def __str__(self):
-        return f"Subscription for {self.product.name}"
 
 
 def _weeks_for_year(year):
@@ -373,7 +373,7 @@ class OrderManager(models.Manager):
         self,
         *,
         product,
-        paid_using: "PaymentProvider",
+        paid_using: PaymentProvider,
         billing_address,
         for_user=None,
         price_euros=None,
@@ -629,7 +629,7 @@ class PaymentProvider(models.Model):
     def __str__(self):
         return self.name
 
-    def get_processor(self) -> Optional["PaymentProcessor"]:
+    def get_processor(self) -> PaymentProcessor | None:
         from symfexit.payments.registry import payments_registry  # noqa: PLC0415
 
         return payments_registry.get(self.type)

@@ -432,8 +432,8 @@ class MollieStartPaymentFlowTest(TestCase):
 
     def test_fully_paid_obligation_skips_mollie_and_redirects(self):
         """Obligation already covered (e.g. by member credit) — no Mollie call, no MolliePayment row."""
-        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
         from symfexit.payments.models import Account, Payment, Transaction  # noqa: PLC0415
+        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
 
         ar_account, _ = Account.get_accounts_receivable_account()
         bank_account, _ = Account.get_bank_account()
@@ -462,8 +462,8 @@ class MollieStartPaymentFlowTest(TestCase):
 
     def test_partial_outstanding_charges_remainder(self):
         """€10 already paid via credit on €15.50 obligation — Mollie charges €5.50 remainder."""
-        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
         from symfexit.payments.models import Account, Payment, Transaction  # noqa: PLC0415
+        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
 
         MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_partial")
         ar_account, _ = Account.get_accounts_receivable_account()
