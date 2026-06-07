@@ -354,6 +354,10 @@ class Subscription(models.Model):
     period = models.IntegerField(
         help_text=_("How many of the period unit before the subscription repeats.")
     )
+    @classmethod
+    def get_or_404(cls, eid) -> Order:
+        id = hashids.decode(eid)[0]
+        return get_object_or_404(cls, id=id)
 
     def __str__(self):
         return f"Subscription for {self.product.name}"
@@ -595,7 +599,7 @@ class PaymentObligation(models.Model):
         return self.outstanding_cents <= 0
 
     @classmethod
-    def get_or_404(cls, eid):
+    def get_or_404(cls, eid) -> Subscription:
         id = hashids.decode(eid)[0]
         return get_object_or_404(PaymentObligation, id=id)
 

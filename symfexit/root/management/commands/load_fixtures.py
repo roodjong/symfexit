@@ -67,6 +67,13 @@ class Command(BaseCommand):
 
         ensure_single_tenant_if_enabled(None)
 
+        # Set the tenant on the connection so config writes work
+        from django.db import connection  # noqa: PLC0415
+
+        tenant = Client.objects.first()
+        if tenant:
+            connection.set_tenant(tenant)
+
     def load_fixtures(self):
         now = timezone.now()
 
@@ -94,6 +101,7 @@ class Command(BaseCommand):
         # Not creating email templates and layouts
         home = HomePage.objects.create(title="Welcome Home", content="<h1>Home</h1>")
         config.HOMEPAGE_CURRENT = home.pk  # set it to the default home page.
+
         self.stdout.write(self.style.SUCCESS("Sample objects for all major models created."))
 
         CreatePermissionGroupsCommand().handle()

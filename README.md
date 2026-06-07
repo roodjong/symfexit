@@ -45,7 +45,7 @@ Of course, you can use other tools for working with Python, but the instructions
 1. Install uv following their instructions: https://docs.astral.sh/uv/getting-started/installation/
 2. Clone the repository: `git clone https://github.com/roodjong/symfexit.git`
 3. Change into the repository: `cd symfexit`
-4. Run `uv sync --python 3.13 --dev` to install the dependencies. `uv` will also install Python 3.13 for you. A virtual environment will be created at `.venv`.
+4. Run `uv sync --python 3.14 --dev` to install the dependencies. `uv` will also install Python 3.14 for you. A virtual environment will be created at `.venv`.
 5. Source the virtual environment: `source .venv/bin/activate` (this differs per shell, for example for fish it is `source .venv/bin/activate.fish`)
 
 You now have the Python environment set up.
