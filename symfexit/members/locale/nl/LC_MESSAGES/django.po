@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-07 14:34+0200\n"
-"PO-Revision-Date: 2025-08-25 20:02+0200\n"
+"POT-Creation-Date: 2026-06-07 16:23+0200\n"
+"PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -200,8 +200,8 @@ msgstr "Voer een bedrag in."
 
 #: symfexit/members/forms.py:201
 #, python-format
-msgid "Please enter an amount of at least €%(amount).2f."
-msgstr "Voer een bedrag van minimaal €%(amount).2f in."
+msgid "Please enter an amount of at least \\u20ac%(amount).2f."
+msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
 
 #: symfexit/members/forms.py:208
 msgid "Invalid choice."
