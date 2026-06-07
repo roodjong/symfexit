@@ -1,6 +1,9 @@
+import zoneinfo
+
 from django import forms
 from django.contrib import admin
 from django.core.files.storage import default_storage
+from django.forms import ValidationError
 from django.utils.formats import localize
 from django_tenants.admin import TenantAdminMixin
 
@@ -84,13 +87,21 @@ class ConfigFormMixin:
 class ClientConfigForm(ConfigFormMixin, forms.ModelForm):
     class Meta:
         model = Client
-        fields = ("name",)
+        fields = ("name", "payments_timezone")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         instance = kwargs.get("instance")
         config_data = instance.config if instance and instance.pk else {}
         self._init_config_fields(config_data)
+
+    def clean_payments_timezone(self):
+        value = self.cleaned_data["payments_timezone"]
+        try:
+            zoneinfo.ZoneInfo(value)
+        except Exception:
+            raise ValidationError("Invalid time zone") from None
+        return value
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -112,5 +123,5 @@ class GlobalClientAdmin(TenantAdminMixin, admin.ModelAdmin):
 
     def get_fieldsets(self, request, obj=None):
         return [
-            (None, {"fields": ("name",)}),
+            (None, {"fields": ("name", "payments_timezone")}),
         ]

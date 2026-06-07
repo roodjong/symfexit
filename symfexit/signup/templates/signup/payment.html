@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% load static l10n payments %} {% block body %}
+{% extends "base.html" %} {% load static l10n %} {% block body %}
 <div
   id="loginscreen"
   class="flex justify-center place-items-center flex-col pt-8"
@@ -26,7 +26,6 @@
         lidmaatschapsbedrag worden afgeschreven.
       </p>
       <div class="border-2 p-4 w-full">
-        <p>{% payment_start application.payable %}</p>
       </div>
     </div>
   </div>

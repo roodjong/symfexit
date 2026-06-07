@@ -1,13 +1,71 @@
+import calendar
+import os
+import time
+import uuid
+import zoneinfo
+from datetime import date, datetime, timedelta
+from uuid import uuid4
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import IntegrityError, connection, models, transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 from hashids import Hashids
+
+from symfexit.members.admin import Member
+from symfexit.payments.registry import PaymentProcessor
 
 hashids = Hashids(min_length=8, salt=settings.SECRET_KEY)
 
 User = get_user_model()
+
+ACCOUNT_ACCOUNTS_RECEIVABLE = 13011
+ACCOUNT_REVENUE = 82811
+ACCOUNT_BANK = 10201
+ACCOUNT_WAIVED = 45661
+ACCOUNT_MEMBER_CREDIT = 16110
+
+# Codes that may appear on multiple Account rows (subsidiary ledgers).
+# Singleton getters like get_accounts_receivable_account rely on every other
+# code being unique, so the partial constraint on Account.code excludes these.
+SHARED_ACCOUNT_CODES = [ACCOUNT_MEMBER_CREDIT]
+
+
+def tigerbeetle_id():
+    """A type of universal unique identifier utilising timestamps and randomness.
+
+    Similar to UUIDv7 but using recommendations from tigerbeetle
+    """
+    value = bytearray(6)
+    timestamp = int(time.time() * 1000)
+    value[0] = (timestamp >> 40) & 0xFF
+    value[1] = (timestamp >> 32) & 0xFF
+    value[2] = (timestamp >> 24) & 0xFF
+    value[3] = (timestamp >> 16) & 0xFF
+    value[4] = (timestamp >> 8) & 0xFF
+    value[5] = timestamp & 0xFF
+    # Fake UUID as it does not set the version/variant fields
+    return uuid.UUID(bytes=bytes(value + os.urandom(10)))
+
+
+def default_bank_account_uuid():
+    return Account.get_bank_account()[0].id
+
+
+def _tenant_payments_timezone() -> str:
+    """Resolve the active tenant's payments timezone, falling back to UTC.
+
+    Used as the default for obligation period calculations when callers don't
+    pass an explicit timezone. Falls back to UTC outside tenant context (e.g.
+    in unit tests that don't use FastTenantTestCase).
+    """
+    tenant = getattr(connection, "tenant", None)
+    if tenant is None:
+        return "UTC"
+    return getattr(tenant, "payments_timezone", "UTC")
 
 
 class PeriodUnit(models.TextChoices):
@@ -21,6 +79,7 @@ class BillingAddress(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=_("user"))
     name = models.CharField(_("name"), max_length=100)
+    email = models.EmailField(_("email address"), blank=True, default="")
     address = models.CharField(_("address"), max_length=100)
     city = models.CharField(_("city"), max_length=100)
     postal_code = models.CharField(_("postal code"), max_length=100)
@@ -33,78 +92,270 @@ class BillingAddress(models.Model):
     def __str__(self):
         return f"[{self.id}] {self.name}: {self.address}\n{self.postal_code}\n{self.city}"
 
+    @classmethod
+    def get_or_create_for_user(cls, user: Member):
+        address = (
+            user.billingaddress_set.filter(
+                address=user.address, city=user.city, postal_code=user.postal_code
+            )
+            .order_by("-created_at")
+            .first()
+        )
+        if not address:
+            if not (user.address and user.city and user.postal_code):
+                return None
+            address = cls.objects.create(
+                user_id=user.id,
+                name=user.get_full_name(),
+                email=user.email,
+                address=user.address,
+                city=user.city,
+                postal_code=user.postal_code,
+            )
+        return address
 
-class Payment(models.Model):
-    class Status(models.TextChoices):
-        INITIAL = "created", _("Created")
-        PENDING = "pending", _("Pending")
-        PAID = "paid", _("Paid")
-        FAILED = "failed", _("Failed")
-        CANCELLED = "cancelled", _("Cancelled")
-        EXPIRED = "expired", _("Expired")
 
-    id = models.AutoField(primary_key=True)
+class Transaction(models.Model):
+    id = models.UUIDField(primary_key=True, default=tigerbeetle_id, editable=False)
+    # FKs use db_constraint=False + DO_NOTHING so the ledger is immutable
+    # against Account changes: even if an Account is removed by a future
+    # migration, historical Transactions retain their account_id values.
+    # `get_credit_account()` / `get_debit_account()` tolerate the orphan case.
+    credit_account = models.ForeignKey(
+        "payments.account",
+        on_delete=models.DO_NOTHING,
+        db_constraint=False,
+        related_name="credit_transactions",
+    )
+    debit_account = models.ForeignKey(
+        "payments.account",
+        on_delete=models.DO_NOTHING,
+        db_constraint=False,
+        related_name="debit_transactions",
+    )
+    amount_cents = models.IntegerField()
+    # A journal entry can consist of many transactions. They are grouped using the "part_of" UUID (which is arbitrary)
+    part_of = models.UUIDField(default=tigerbeetle_id)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(
-        max_length=10,
-        choices=Status.choices,
-        default=Status.INITIAL,
-        verbose_name=_("payment status"),
-    )
-
-    order = models.ForeignKey(
-        "Order",
-        on_delete=models.RESTRICT,
-        null=False,
-        verbose_name=_("order"),
-    )
 
     def __str__(self):
-        return _("Payment for {order}").format(order=self.order)
+        credit_account = self.get_credit_account() or self.credit_account_id
+        debit_account = self.get_debit_account() or self.debit_account_id
+        return f"Transaction of €{self.amount_cents / 100:.2f} from {credit_account} to {debit_account}"
+
+    def get_credit_account(self) -> Account | None:
+        return Account.objects.filter(id=self.credit_account_id).first()
+
+    def get_debit_account(self) -> Account | None:
+        return Account.objects.filter(id=self.debit_account_id).first()
 
 
-class Order(models.Model):
-    """An order is a subscription instance.
-
-    When a subscription is started, we say the user "ordered" the subscription product.
-
-    The order will receive multiple payments, which fulfill the subscription payment structure.
-    """
-
-    id = models.AutoField(primary_key=True)
-
-    description = models.TextField(_("description"))
-    address = models.ForeignKey(
-        "BillingAddress", on_delete=models.PROTECT, verbose_name=_("billing address")
+class GeneralLedger(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    code = models.PositiveIntegerField(unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    credit_balance = models.BooleanField(
+        help_text=_(
+            "Assets and expenses are increased with debits, decreased with credits. Liabilities, equity, and income are increased with credits, decreased with debits. Tick this if the account increases with credits. This makes sure the balance is shown correctly."
+        )
     )
-
-    subscription = models.ForeignKey(
-        "Subscription",
-        on_delete=models.SET_NULL,
-        null=True,
-        verbose_name=_("subscription"),
-    )
-    price_per_period = models.IntegerField()  # in cents
-    period_quantity = models.IntegerField()
-    period_unit = models.CharField(max_length=5, choices=PeriodUnit.choices)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = _("order")
-        verbose_name_plural = _("orders")
+        verbose_name = _("general ledger")
 
     def __str__(self):
-        return _("{description} for {price:.02f}").format(
-            description=self.description, price=self.price / 100
+        return self.name
+
+    def balance_cents(self):
+        credit_balances = Transaction.objects.filter(credit_account__general_ledger=self).aggregate(
+            models.Sum("amount_cents", default=0)
+        )["amount_cents__sum"]
+        debit_balances = Transaction.objects.filter(debit_account__general_ledger=self).aggregate(
+            models.Sum("amount_cents", default=0)
+        )["amount_cents__sum"]
+        if self.credit_balance:
+            return credit_balances - debit_balances
+        else:
+            return debit_balances - credit_balances
+
+
+class Account(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    # Singleton codes are indexed via the partial UniqueConstraint below.
+    # Member-credit codes share a value (ACCOUNT_MEMBER_CREDIT) and are looked
+    # up via Member.credit_account, not by code, so no extra index needed.
+    code = models.PositiveIntegerField()
+    name = models.CharField()
+    description = models.TextField()
+    general_ledger = models.ForeignKey(GeneralLedger, on_delete=models.SET_NULL, null=True)
+    credit_balance = models.BooleanField(
+        help_text=_(
+            "Assets and expenses are increased with debits, decreased with credits. Liabilities, equity, and income are increased with credits, decreased with debits. Tick this if the account increases with credits. This makes sure the balance is shown correctly."
+        )
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["code"],
+                condition=~Q(code__in=SHARED_ACCOUNT_CODES),
+                name="account_code_unique_when_not_shared",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+    @classmethod
+    def get_accounts_receivable_account(cls):
+        """Money that has been invoiced, but not received yet.
+
+        In RGS this is mapped to BVorDebHad (13011).
+        See: https://www.boekhoudplaza.nl/rgs_rekeningen/BVorDebHad&KB=R&kzB=SVC/Debiteuren.htm
+        """
+        return cls.objects.get_or_create(
+            code=ACCOUNT_ACCOUNTS_RECEIVABLE,
+            defaults={
+                "name": _("Accounts Receivable"),
+                "description": _(
+                    "Accounts receivable represents money owed by entities to the firm on the sale of products or services on credit. In RGS this is mapped to BVorDebHad (13011). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/BVorDebHad&KB=R&kzB=SVC/Debiteuren.htm"
+                ),
+                "credit_balance": False,
+            },
         )
 
-    @property
-    def eid(self):
-        return hashids.encode(self.id)
+    @classmethod
+    def get_revenue_account(cls):
+        """Balance account where association revenue is collected.
 
-    eid.fget.short_description = _("external identifier")
+        In RGS this is mapped to WLbeLbvLbv (82811).
+        See: https://www.boekhoudplaza.nl/rgs_rekeningen/WLbeLbvLbv&KB=R&kzB=SVC&rgsv=WLbeLbvLbv/Ledenbetalingen_inclusief_reeds_betaalde_voorschotten.htm
+        """
+        return cls.objects.get_or_create(
+            code=ACCOUNT_REVENUE,
+            defaults={
+                "name": _("Revenue"),
+                "description": _(
+                    "Membership revenue balance account. In RGS this is mapped to WLbeLbvLbv (82811). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/WLbeLbvLbv&KB=R&kzB=SVC&rgsv=WLbeLbvLbv/Ledenbetalingen_inclusief_reeds_betaalde_voorschotten.htm"
+                ),
+                "credit_balance": True,
+            },
+        )
+
+    @classmethod
+    def get_waived_account(cls):
+        """Account for waived (forgiven) payment obligations.
+
+        In RGS this is mapped to WBedVkkAdd (45661).
+        See: https://www.boekhoudplaza.nl/rgs_rekeningen/WBedVkkAdd&KB=R&kzB=SVC/Afboeking_dubieuze_debiteuren.htm
+        """
+        return cls.objects.get_or_create(
+            code=ACCOUNT_WAIVED,
+            defaults={
+                "name": _("Waived Payments"),
+                "description": _(
+                    "Expense account for waived (forgiven) payment obligations. "
+                    "When a payment is waived, the debt is written off against this account. "
+                    "In RGS this is mapped to WBedVkkAdd (45661). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/WBedVkkAdd&KB=R&kzB=SVC/Afboeking_dubieuze_debiteuren.htm"
+                ),
+                "credit_balance": False,
+            },
+        )
+
+    @classmethod
+    def get_bank_account(cls):
+        """Bank account (rekening-courant).
+
+        In RGS this is mapped to BLimBanRba (10201).
+        """
+        return cls.objects.get_or_create(
+            code=ACCOUNT_BANK,
+            defaults={
+                "name": _("Bank"),
+                "description": _(
+                    "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba (10201). See: {rgs_url}"
+                ).format(
+                    rgs_url="https://www.boekhoudplaza.nl/rgs_rekeningen/BLimBanRba/Rekening_courant_bank_tegoeden_bij_banken.htm"
+                ),
+                "credit_balance": False,
+            },
+        )
+
+    def credit_balance_cents(self):
+        return self.credit_transactions.aggregate(models.Sum("amount_cents", default=0))[
+            "amount_cents__sum"
+        ]
+
+    def debit_balance_cents(self):
+        return self.debit_transactions.aggregate(models.Sum("amount_cents", default=0))[
+            "amount_cents__sum"
+        ]
+
+    def balance_cents(self):
+        credit_balance = self.credit_transactions.aggregate(models.Sum("amount_cents", default=0))[
+            "amount_cents__sum"
+        ]
+        debit_balance = self.debit_transactions.aggregate(models.Sum("amount_cents", default=0))[
+            "amount_cents__sum"
+        ]
+        if self.credit_balance:
+            return credit_balance - debit_balance
+        else:
+            return debit_balance - credit_balance
+
+
+class ProductType(models.TextChoices):
+    SUBSCRIPTION = "subscription", _("Subscription")
+
+
+class Product(models.Model):
+    enabled = models.BooleanField(_("enabled"))
+    sku = models.SlugField(_("product sku"), max_length=100)
+    name = models.CharField(_("product name"), max_length=100)
+    price_euros = models.DecimalField(max_digits=8, decimal_places=2)
+    type = models.CharField(choices=ProductType, default=ProductType.SUBSCRIPTION)
+
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("updated at"), auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} (€{self.price_euros})"
+
+    def price_cents(self):
+        return int(self.price_euros * 100)
+
+    def order(self, for_user: Member, billing_address: BillingAddress):
+        return Order.objects.create(
+            product=self,
+            product_sku=self.sku,
+            product_name=self.name,
+            product_price_euros=self.price_euros,
+            subscription=self.subscription,
+            subscription_period_unit=self.subscription.period_unit,
+            subscription_period=self.subscription.period,
+            ordered_for=for_user,
+            ordered_for_billing_address=billing_address,
+        )
+
+
+class Subscription(models.Model):
+    """If the product.type is SUBSCRIPTION, this contains the information about the subscription"""
+
+    product = models.OneToOneField(Product, on_delete=models.CASCADE)
+    period_unit = models.CharField(choices=PeriodUnit)
+    period = models.IntegerField(
+        help_text=_("How many of the period unit before the subscription repeats.")
+    )
+
+    def __str__(self):
+        return f"Subscription for {self.product.name}"
 
     @classmethod
     def get_or_404(cls, eid) -> Order:
@@ -112,34 +363,219 @@ class Order(models.Model):
         return get_object_or_404(cls, id=id)
 
 
-class Subscription(models.Model):
-    """A subscription is a type of product that requires multiple payments.
+def _weeks_for_year(year):
+    last_week = date(year, 12, 28)
+    return last_week.isocalendar().week
 
-    The payment structure of a subscription is given by the price_per_period,
-    the period_quantity and the period_unit.
 
-    Subscriptions have an indefinite duration by default.
-    """
+class OrderManager(models.Manager):
+    def create_with_obligation(
+        self,
+        *,
+        product,
+        paid_using: PaymentProvider,
+        billing_address,
+        for_user=None,
+        price_euros=None,
+        timezone=None,
+    ):
+        order = self.create(
+            product=product,
+            product_sku=product.sku,
+            product_name=product.name,
+            product_price_euros=price_euros if price_euros is not None else product.price_euros,
+            subscription=product.subscription,
+            subscription_period_unit=product.subscription.period_unit,
+            subscription_period=product.subscription.period,
+            ordered_for=for_user,
+            ordered_for_billing_address=billing_address,
+            paid_using=paid_using,
+        )
+        obligation = order.get_or_create_next_payment_obligation(timezone=timezone)
+        return order, obligation
 
-    id = models.AutoField(primary_key=True)
-    name = models.TextField(null=False, blank=False)
-    description = models.TextField(null=False, blank=True)
 
-    price_per_period = models.IntegerField(
-        null=True, blank=True
-    )  # in cents, if null then it must be set in the order
-    period_quantity = models.IntegerField()
-    period_unit = models.CharField(max_length=5, choices=PeriodUnit.choices)
+class Order(models.Model):
+    # For now only one order item per order is possible
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    product_sku = models.CharField(_("product sku"), max_length=100)
+    product_name = models.CharField(_("product name"), max_length=100)
+    product_price_euros = models.DecimalField(max_digits=8, decimal_places=2)
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True)
+    subscription_period_unit = models.CharField(choices=PeriodUnit, blank=True)
+    subscription_period = models.IntegerField(
+        help_text=_("How many of the period unit before the subscription repeats."), null=True
+    )
+
+    ordered_for = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    ordered_for_billing_address = models.ForeignKey(BillingAddress, on_delete=models.PROTECT)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    cancelled_at = models.DateTimeField(_("cancelled at"), null=True, blank=True)
 
-    class Meta:
-        verbose_name = _("subscription")
-        verbose_name_plural = _("subscriptions")
+    paid_using = models.ForeignKey("PaymentProvider", on_delete=models.SET_NULL, null=True)
+
+    objects = OrderManager()
 
     def __str__(self):
-        return self.description
+        if self.ordered_for:
+            return (
+                f"Order for product {self.product_name} for user {self.ordered_for.get_full_name()}"
+            )
+        return f"Order for product {self.product_name}"
+
+    def product_price_cents(self):
+        return int(self.product_price_euros * 100)
+
+    def _get_current_period(self, now: datetime):
+        match self.subscription_period_unit:
+            case PeriodUnit.DAY:
+                return now.year, now.timetuple().tm_yday - 1
+            case PeriodUnit.WEEK:
+                return now.isocalendar().year, now.isocalendar().week - 1
+            case PeriodUnit.MONTH:
+                return now.year, now.month - 1
+            case PeriodUnit.YEAR:
+                return now.year, now.year
+
+    def _get_period_limit(self, year: int):
+        match self.subscription_period_unit:
+            case PeriodUnit.DAY:
+                return 365 + int(calendar.isleap(year))
+            case PeriodUnit.WEEK:
+                return _weeks_for_year(year)
+            case PeriodUnit.MONTH:
+                return 12
+            case PeriodUnit.YEAR:
+                return float("inf")  # Years don't wrap
+
+    def _get_period_initial(self):
+        match self.subscription_period_unit:
+            case PeriodUnit.DAY:
+                return (self.created_at.timetuple().tm_yday - 1, self.created_at.year)
+            case PeriodUnit.WEEK:
+                return (self.created_at.isocalendar().week - 1, self.created_at.isocalendar().year)
+            case PeriodUnit.MONTH:
+                return (self.created_at.month - 1, self.created_at.year)
+            case PeriodUnit.YEAR:
+                return (self.created_at.year, self.created_at.year)
+
+    def _period_to_datetime(self, year: int, period: int, *, timezone: zoneinfo.ZoneInfo):
+        match self.subscription_period_unit:
+            case PeriodUnit.DAY:
+                return datetime(year, 1, 1, tzinfo=timezone) + timedelta(days=period)
+            case PeriodUnit.WEEK:
+                return datetime.strptime(f"{year}-W{period + 1}-1", "%Y-W%W-%w").replace(
+                    tzinfo=timezone
+                )
+            case PeriodUnit.MONTH:
+                return datetime(year, period + 1, 1, tzinfo=timezone)
+            case PeriodUnit.YEAR:
+                return datetime(year, 1, 1, tzinfo=timezone)
+
+    def _calculate_next_period(self, previous_year: int, previous_period: int):
+        if self.subscription_period_unit == PeriodUnit.YEAR:
+            # Special case: years don't wrap within a year
+            next_period = previous_year + self.subscription_period
+            next_year = previous_year + self.subscription_period
+        else:
+            limit = self._get_period_limit(previous_year)
+            next_period = (previous_period + self.subscription_period) % limit
+            year_rollover = (previous_period + self.subscription_period) >= limit
+            next_year = previous_year + int(year_rollover)
+        return next_year, next_period
+
+    def cancel(self):
+        self.cancelled_at = datetime.now(tz=zoneinfo.ZoneInfo("UTC"))
+        self.save(update_fields=["cancelled_at"])
+
+    def get_or_create_next_payment_obligation(self, *, timezone=None, now: datetime = None):
+        if self.cancelled_at is not None:
+            return None
+        if timezone is None:
+            timezone = _tenant_payments_timezone()
+        timezone = zoneinfo.ZoneInfo(timezone)
+        if now is None:
+            now = datetime.now(tz=timezone)
+        previous_obligation = self.paymentobligation_set.order_by("-year", "-period").first()
+        # Define period extractors and limits for each unit
+
+        if previous_obligation is None:
+            next_period, next_year = self._get_period_initial()
+        else:
+            previous_period = previous_obligation.period
+            previous_year = previous_obligation.year
+            current_period = self._get_current_period(now)
+
+            if (previous_year, previous_period) >= current_period:
+                next_period = previous_period
+                next_year = previous_year
+            else:
+                next_year, next_period = self._calculate_next_period(previous_year, previous_period)
+
+        # Convert the year and period to a pay_before datetime
+        pay_before = self._period_to_datetime(
+            *self._calculate_next_period(next_year, next_period),
+            timezone=timezone,
+        ) - timedelta(seconds=1)
+
+        obligation = self.paymentobligation_set.filter(year=next_year, period=next_period).first()
+        if obligation is None:
+            from symfexit.payments.services import apply_member_credit  # noqa: PLC0415
+
+            ar_account, _ = Account.get_accounts_receivable_account()
+            revenue_account, _ = Account.get_revenue_account()
+            try:
+                with transaction.atomic():
+                    t = Transaction.objects.create(
+                        credit_account=revenue_account,
+                        debit_account=ar_account,
+                        amount_cents=int(self.product_price_euros * 100),
+                    )
+                    obligation = PaymentObligation.objects.create(
+                        order=self,
+                        year=next_year,
+                        period=next_period,
+                        pay_before=pay_before,
+                        ordered_for_billing_address=self.ordered_for_billing_address,
+                        transaction=t,
+                    )
+            except IntegrityError:
+                # Another caller won the race for this (order, year, period).
+                # Re-fetch and use theirs; skip apply_member_credit since the
+                # winner will have run it.
+                return self.paymentobligation_set.get(year=next_year, period=next_period)
+            apply_member_credit(obligation)
+        return obligation
+
+
+class PaymentObligation(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    year = models.IntegerField()
+    period = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    pay_before = models.DateTimeField()
+    amount_euros = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    ordered_for_billing_address = models.ForeignKey(
+        BillingAddress, on_delete=models.PROTECT, null=False, blank=False
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "year", "period"],
+                name="paymentobligation_unique_per_period",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Payment obligation for order {self.order.id} for year {self.year} {self.order.subscription_period_unit} {self.period + 1}"
+
+    def save(self, *args, **kwargs):
+        if self.amount_euros is None:
+            self.amount_euros = self.order.product_price_euros
+        super().save(*args, **kwargs)
 
     @property
     def eid(self):
@@ -147,19 +583,53 @@ class Subscription(models.Model):
 
     eid.fget.short_description = _("external identifier")
 
+    @property
+    def outstanding_cents(self) -> int:
+        obligation_cents = int(self.amount_euros * 100)
+        paid_cents = (
+            Payment.objects.filter(obligation=self)
+            .aggregate(total=models.Sum("transaction__amount_cents"))
+            .get("total")
+            or 0
+        )
+        return obligation_cents - paid_cents
+
+    @property
+    def is_fully_paid(self) -> bool:
+        return self.outstanding_cents <= 0
+
     @classmethod
     def get_or_404(cls, eid) -> Subscription:
         id = hashids.decode(eid)[0]
-        return get_object_or_404(cls, id=id)
+        return get_object_or_404(PaymentObligation, id=id)
 
-    def new_order(self, *, initial, return_url, description=None):
-        """Create a subscription "instance" of this subscription type."""
-        if description is None:
-            description = f"Subscription for {self.address.name}"
-        return Order.objects.create(
-            price=self.price_per_period,
-            description=description,
-            address=self.address,
-            subscription=self,
-            return_url=return_url,
-        )
+
+class Payment(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    obligation = models.ForeignKey(PaymentObligation, on_delete=models.SET_NULL, null=True)
+    transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    paid_using = models.ForeignKey("PaymentProvider", on_delete=models.SET_NULL, null=True)
+    # When this payment was made according to the payer
+    paid_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment for order {self.order.id} made at {date_format(self.paid_at, 'DATETIME_FORMAT')}"
+
+
+class PaymentProvider(models.Model):
+    name = models.CharField(max_length=100, default="")
+    type = models.CharField(max_length=100)
+    credit_to_account = models.ForeignKey(
+        Account, on_delete=models.PROTECT, default=default_bank_account_uuid
+    )
+    default = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_processor(self) -> PaymentProcessor | None:
+        from symfexit.payments.registry import payments_registry  # noqa: PLC0415
+
+        return payments_registry.get(self.type)

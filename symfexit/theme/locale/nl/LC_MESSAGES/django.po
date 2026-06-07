@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-14 18:16+0100\n"
+"POT-Creation-Date: 2026-06-07 13:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/theme/admin.py:59
+#: symfexit/theme/admin.py:47
 msgid "Rebuilding theme, refresh to see progress"
 msgstr "Thema opnieuw aan het bouwen, herlaad om de voortgang te zien"
 
@@ -37,34 +37,6 @@ msgstr "waarde"
 #: symfexit/theme/models.py:26
 msgid "version"
 msgstr "versie"
-
-#: symfexit/theme/templates/admin/constance_theme/change_list.html:61
-msgid "Save"
-msgstr "Opslaan"
-
-#: symfexit/theme/templates/admin/constance_theme/change_list.html:70
-msgid "Home"
-msgstr "Home"
-
-#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:6
-msgid "Name"
-msgstr "Naam"
-
-#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:7
-msgid "Default"
-msgstr "Standaardwaarde"
-
-#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:8
-msgid "Value"
-msgstr "Waarde"
-
-#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:9
-msgid "Is modified"
-msgstr "Is aangepast"
-
-#: symfexit/theme/templates/admin/constance_theme/includes/results_list.html:43
-msgid "Reset to default"
-msgstr "Terugzetten naar standaard"
 
 #: symfexit/theme/templates/admin/rebuild_theme/index.html:6
 #, python-format
@@ -101,3 +73,24 @@ msgstr "Wachtwoord vergeten?"
 #: symfexit/theme/templates/registration/login.html:26
 msgid "Back to the website"
 msgstr "Terug naar de website"
+
+#~ msgid "Save"
+#~ msgstr "Opslaan"
+
+#~ msgid "Home"
+#~ msgstr "Home"
+
+#~ msgid "Name"
+#~ msgstr "Naam"
+
+#~ msgid "Default"
+#~ msgstr "Standaardwaarde"
+
+#~ msgid "Value"
+#~ msgstr "Waarde"
+
+#~ msgid "Is modified"
+#~ msgstr "Is aangepast"
+
+#~ msgid "Reset to default"
+#~ msgstr "Terugzetten naar standaard"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-14 18:16+0100\n"
+"POT-Creation-Date: 2026-06-07 13:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: symfexit/events/apps.py:8 symfexit/events/apps.py:14
 #: symfexit/events/templates/events/events.html:3
 msgid "Events"
@@ -54,15 +55,15 @@ msgstr "evenement"
 msgid "events"
 msgstr "evenementen"
 
-#: symfexit/events/templates/events/event.html:27
+#: symfexit/events/templates/events/event.html:31
 msgid "Organised by "
 msgstr "Georganiseerd door "
 
-#: symfexit/events/templates/events/event.html:34
+#: symfexit/events/templates/events/event.html:38
 msgid "Cancel attendance"
 msgstr "Aanmelding annuleren"
 
-#: symfexit/events/templates/events/event.html:39
+#: symfexit/events/templates/events/event.html:43
 msgid "Sign up"
 msgstr "Aanmelden"
 

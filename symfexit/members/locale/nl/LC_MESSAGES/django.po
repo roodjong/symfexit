@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 17:16+0200\n"
+"POT-Creation-Date: 2026-06-07 14:07+0200\n"
 "PO-Revision-Date: 2025-08-25 20:02+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,63 +25,83 @@ msgstr "Rechtengroep"
 msgid "Permission Groups"
 msgstr "Rechtengroepen"
 
-#: symfexit/members/admin.py:40 symfexit/members/models.py:98
+#: symfexit/members/admin.py:55
+msgid "active order"
+msgstr "lopende bestelling"
+
+#: symfexit/members/admin.py:56
+msgid "active orders"
+msgstr "lopende bestellingen"
+
+#: symfexit/members/admin.py:58
+msgid "last payment"
+msgstr "laatste betaling"
+
+#: symfexit/members/admin.py:74 symfexit/members/models.py:118
 msgid "is registered"
 msgstr "is ingeschreven"
 
-#: symfexit/members/admin.py:44
+#: symfexit/members/admin.py:78
 msgid "Yes"
 msgstr "Ja"
 
-#: symfexit/members/admin.py:44
+#: symfexit/members/admin.py:78
 msgid "No"
 msgstr "Nee"
 
-#: symfexit/members/admin.py:44
+#: symfexit/members/admin.py:78
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:68 symfexit/members/models.py:181
+#: symfexit/members/admin.py:102 symfexit/members/models.py:225
 msgid "local groups"
 msgstr "groepen"
 
-#: symfexit/members/admin.py:81
+#: symfexit/members/admin.py:115
 msgid "permission groups"
 msgstr "rechtengroepen"
 
-#: symfexit/members/admin.py:101 symfexit/members/admin.py:418
+#: symfexit/members/admin.py:136 symfexit/members/admin.py:533
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
-#: symfexit/members/admin.py:120
+#: symfexit/members/admin.py:157
 msgid "Permissions"
 msgstr "Rechten"
 
-#: symfexit/members/admin.py:130
+#: symfexit/members/admin.py:167
 msgid "Important dates"
 msgstr "Belangrijke data"
 
-#: symfexit/members/admin.py:349
+#: symfexit/members/admin.py:168
+msgid "Finances"
+msgstr "Financiën"
+
+#: symfexit/members/admin.py:237
+msgid "credit balance"
+msgstr "krediet balans"
+
+#: symfexit/members/admin.py:452
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:350
+#: symfexit/members/admin.py:453
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:363
+#: symfexit/members/admin.py:471
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:364
+#: symfexit/members/admin.py:472
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:392
+#: symfexit/members/admin.py:505
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:393
+#: symfexit/members/admin.py:506
 msgid "local group members"
 msgstr "groepsleden"
 
@@ -97,73 +117,107 @@ msgstr "Gegevens"
 msgid "Log out"
 msgstr "Uitloggen"
 
-#: symfexit/members/forms.py:10
+#: symfexit/members/forms.py:16
 msgid "First name"
 msgstr "Voornaam"
 
-#: symfexit/members/forms.py:11
+#: symfexit/members/forms.py:17
 msgid "Last name"
 msgstr "Achternaam"
 
-#: symfexit/members/forms.py:28
+#: symfexit/members/forms.py:34
 msgid "Member number"
 msgstr "Lidnummer"
 
-#: symfexit/members/forms.py:29
+#: symfexit/members/forms.py:35
 msgid "Name"
 msgstr "Naam"
 
-#: symfexit/members/forms.py:30
+#: symfexit/members/forms.py:36
 msgid "Email"
 msgstr "E-mailadres"
 
-#: symfexit/members/forms.py:31
+#: symfexit/members/forms.py:37
 msgid "Phone number"
 msgstr "Telefoonnummer"
 
-#: symfexit/members/forms.py:32
+#: symfexit/members/forms.py:38
 msgid "Address"
 msgstr "Adres"
 
-#: symfexit/members/forms.py:33
+#: symfexit/members/forms.py:39
 msgid "City"
 msgstr "Woonplaats"
 
-#: symfexit/members/forms.py:34
+#: symfexit/members/forms.py:40
 msgid "Postal code"
 msgstr "Postcode"
 
-#: symfexit/members/forms.py:36
+#: symfexit/members/forms.py:42
 msgid "Local group"
 msgstr "Groep"
 
-#: symfexit/members/forms.py:39 symfexit/members/models.py:78
+#: symfexit/members/forms.py:45 symfexit/members/models.py:78
 msgid "Extra information"
 msgstr "Extra informatie"
 
-#: symfexit/members/forms.py:76
+#: symfexit/members/forms.py:82
 msgid "Old password"
 msgstr "Oud wachtwoord"
 
-#: symfexit/members/forms.py:80
+#: symfexit/members/forms.py:86
 msgid "New password"
 msgstr "Nieuw wachtwoord"
 
-#: symfexit/members/forms.py:84
+#: symfexit/members/forms.py:90
 msgid "New password (again)"
 msgstr "Nieuw wachtwoord (nog een keer)"
 
-#: symfexit/members/forms.py:95
+#: symfexit/members/forms.py:101
 msgid "Old password is incorrect"
 msgstr "Oud wachtwoord is onjuist"
 
-#: symfexit/members/forms.py:102
+#: symfexit/members/forms.py:108
 msgid "The passwords do not match"
 msgstr "De wachtwoorden komen niet overeen"
 
+#: symfexit/members/forms.py:130
+#, fuzzy
+#| msgid "Select your membership"
+msgid "Select your membership tier:"
+msgstr "Selecteer je lidmaatschap"
+
+#: symfexit/members/forms.py:134 symfexit/members/forms.py:174
+#: symfexit/members/templates/members/membership_selection.html:79
+msgid "I want to pay more, namely:"
+msgstr ""
+
+#: symfexit/members/forms.py:191
+msgid "This membership type does not allow a custom amount."
+msgstr ""
+
+#: symfexit/members/forms.py:195
+msgid "Please enter an amount."
+msgstr ""
+
+#: symfexit/members/forms.py:201
+#, python-format
+msgid "Please enter an amount of at least €%(amount).2f."
+msgstr ""
+
+#: symfexit/members/forms.py:208
+msgid "Invalid choice."
+msgstr ""
+
+#: symfexit/members/forms.py:212
+msgid "This tier does not belong to the selected membership type."
+msgstr ""
+
 #: symfexit/members/models.py:61
+#, fuzzy
+#| msgid "Members"
 msgid "Member"
-msgstr "Lid"
+msgstr "Leden"
 
 #: symfexit/members/models.py:62
 msgid "Support member"
@@ -209,27 +263,41 @@ msgstr "kader"
 msgid "Designates whether the member is a cadre member."
 msgstr "Bepaalt of deze gebruiker een kaderlid is."
 
-#: symfexit/members/models.py:80
+#: symfexit/members/models.py:79
+msgid "member type"
+msgstr "lidtype"
+
+#: symfexit/members/models.py:85
 msgid "membership type"
 msgstr "lidmaatschapstype"
 
-#: symfexit/members/models.py:83
+#: symfexit/members/models.py:92
+msgid "membership tier"
+msgstr "lidmaatschapsschijf"
+
+#: symfexit/members/models.py:100
+#, fuzzy
+#| msgid "credit balance"
+msgid "credit account"
+msgstr "krediet balans"
+
+#: symfexit/members/models.py:103
 msgid "preferred language"
-msgstr "voorkeurstaal"
+msgstr ""
 
-#: symfexit/members/models.py:89
+#: symfexit/members/models.py:109
 msgid "User's preferred language for emails"
-msgstr "Voorkeurstaal van de gebruiker voor e-mails"
+msgstr ""
 
-#: symfexit/members/models.py:93
+#: symfexit/members/models.py:113
 msgid "staff status"
 msgstr "stafstatus"
 
-#: symfexit/members/models.py:95
+#: symfexit/members/models.py:115
 msgid "Designates whether the user can log into this admin site."
 msgstr "Bepaalt of de gebruiker kan inloggen op deze beheersite."
 
-#: symfexit/members/models.py:101
+#: symfexit/members/models.py:121
 msgid ""
 "Designates whether this user should be treated as active. Cancel membership "
 "below instead of deleting accounts."
@@ -237,48 +305,48 @@ msgstr ""
 "Bepaalt of deze gebruiker als actief moet worden beschouwd. Schrijf iemand "
 "uit in plaats van accounts te verwijderen."
 
-#: symfexit/members/models.py:104
+#: symfexit/members/models.py:124
 msgid "date joined"
 msgstr "datum van aanmaken"
 
-#: symfexit/members/models.py:106
+#: symfexit/members/models.py:126
 msgid "date left"
 msgstr "uitschrijfdatum"
 
-#: symfexit/members/models.py:107
+#: symfexit/members/models.py:127
 msgid "Date someone's membership was cancelled"
 msgstr "Datum dat iemand uitgeschreven is als (steun)lid"
 
-#: symfexit/members/models.py:119
+#: symfexit/members/models.py:139
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/members/models.py:120
+#: symfexit/members/models.py:140
 msgid "users"
 msgstr "gebruikers"
 
-#: symfexit/members/models.py:180
+#: symfexit/members/models.py:224
 msgid "local group"
 msgstr "groep"
 
-#: symfexit/members/models.py:187 symfexit/members/models.py:208
+#: symfexit/members/models.py:231 symfexit/members/models.py:252
 msgid "contact people"
 msgstr "contactpersonen"
 
-#: symfexit/members/models.py:191
+#: symfexit/members/models.py:235
 msgid "selectable"
 msgstr "selecteerbaar"
 
-#: symfexit/members/models.py:193
+#: symfexit/members/models.py:237
 msgid "Whether this group can be selected by new members signing up"
 msgstr ""
 "Of deze groep geselecteerd kan worder door nieuwe leden die zich inschrijven"
 
-#: symfexit/members/models.py:199
+#: symfexit/members/models.py:243
 msgid "work group"
 msgstr "werkgroep"
 
-#: symfexit/members/models.py:200
+#: symfexit/members/models.py:244
 msgid "work groups"
 msgstr "werkgroepen"
 
@@ -304,11 +372,11 @@ msgstr ""
 "Weet je zeker dat je het lidmaatschap van %(object_name)s "
 "“%(escaped_object)s” wil opzeggen?"
 
-#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:41
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:49
 msgid "Yes, I’m sure"
 msgstr "Ja, ik weet het zeker"
 
-#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:42
+#: symfexit/members/templates/admin/members/membership_cancellation_confirm.html:50
 msgid "No, take me back"
 msgstr "Nee, breng me terug"
 
@@ -341,6 +409,14 @@ msgstr "Sluiten"
 msgid "Cancel Membership"
 msgstr "Lidmaatschap opzeggen"
 
+#: symfexit/members/templates/members/membership_selection.html:3
+msgid "Select your membership"
+msgstr "Selecteer je lidmaatschap"
+
+#: symfexit/members/templates/members/membership_selection.html:32
+msgid "Continue"
+msgstr "Doorgaan"
+
 #: symfexit/members/templates/members/user_form.html:4
 msgid "My details"
 msgstr "Gegevens"
@@ -354,10 +430,88 @@ msgstr "Wachtwoord veranderen"
 msgid "Contribution"
 msgstr "Contributie"
 
+#: symfexit/members/templates/members/user_form.html:30
+#, python-format
+msgid ""
+"\n"
+"          Your contribution is automatically debited every %(period)s via "
+"direct debit through %(provider)s. Your contribution amount is €&nbsp;"
+"%(amount)s.\n"
+"        "
+msgstr ""
+"\n"
+"          Je contributie wordt elk %(period)s automatisch per automatische "
+"incasso afgeschreven via %(provider)s. Je contributiebedrag bedraagt €&nbsp;"
+"%(amount)s.\n"
+"        "
+
+#: symfexit/members/templates/members/user_form.html:35
+msgid "Cancel subscription"
+msgstr "Abonnement opzeggen"
+
 #: symfexit/members/templates/members/user_form.html:36
+msgid "Different bank account"
+msgstr "Andere bankrekening"
+
+#: symfexit/members/templates/members/user_form.html:37
+msgid "Adjust amount"
+msgstr "Bedrag aanpassen"
+
+#: symfexit/members/templates/members/user_form.html:40
+msgid "Payment history"
+msgstr "Betalingsgeschiedenis"
+
+#: symfexit/members/templates/members/user_form.html:44
+msgid "Date"
+msgstr "Datum"
+
+#: symfexit/members/templates/members/user_form.html:45
+msgid "Amount"
+msgstr "Bedrag"
+
+#: symfexit/members/templates/members/user_form.html:59
 msgid "Setup your membership payments now"
 msgstr "Stel nu je lidmaatschapsbetalingen in"
 
-#: symfexit/members/templates/members/user_form.html:42
+#: symfexit/members/templates/members/user_form.html:63
 msgid "Start subscription"
 msgstr "Start automatische betaling"
+
+#: symfexit/members/views.py:22
+msgid "quarter"
+msgstr "kwartaal"
+
+#: symfexit/members/views.py:24
+msgid "month"
+msgstr "maand"
+
+#: symfexit/members/views.py:26
+msgid "year"
+msgstr "jaar"
+
+#: symfexit/members/views.py:28
+msgid "week"
+msgstr "week"
+
+#: symfexit/members/views.py:30
+msgid "day"
+msgstr "dag"
+
+#: symfexit/members/views.py:48
+msgid "an unknown provider"
+msgstr "een onbekende provider"
+
+#: symfexit/members/views.py:173
+msgid ""
+"No membership type is configured for your account. Please contact the "
+"administrator."
+msgstr ""
+"Er is geen lidmaatschapstype geconfigureerd voor je account. Neem contact op "
+"met de beheerder."
+
+#: symfexit/members/views.py:182
+msgid ""
+"Please fill in your address, city, and postal code before starting a "
+"subscription."
+msgstr ""
+"Vul je adres, woonplaats en postcode in voordat je een abonnement start."

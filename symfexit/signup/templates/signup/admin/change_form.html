@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    {% if show_resend_button %}
+        <div class="submit-row">
+            <a href="{{ resend_url }}" class="button">Resend accepted email</a>
+        </div>
+    {% endif %}
+{% endblock %}

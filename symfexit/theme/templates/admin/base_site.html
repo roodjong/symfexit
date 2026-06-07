@@ -30,3 +30,14 @@
 {% endwith %}
 </style>
 {% endblock %}
+
+{% block messages %}
+{{ block.super }}
+{% if admin_warnings %}
+<ul class="messagelist">
+  {% for warning in admin_warnings %}
+  <li class="warning">{{ warning }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

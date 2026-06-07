@@ -9,7 +9,7 @@ register = template.Library()
 @register.inclusion_tag("theme/tags/current_theme_css.html", takes_context=True)
 def theme_css_file(context):
     v = None
-    if settings.DEBUG:
+    if settings.SYMFEXIT_ENV == "development":
         # append a time-based suffix to force reload of css in dev mode
         v = int(time.time())
     return {

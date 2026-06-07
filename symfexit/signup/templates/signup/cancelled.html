@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% load static l10n payments %} {% block body %}
+{% extends "base.html" %} {% load static l10n %} {% block body %}
 <div
   id="loginscreen"
   class="flex justify-center place-items-center flex-col pt-8"
@@ -23,7 +23,7 @@
       </p>
       <form action="{% url "signup:retry" application.eid %}" method="POST">
         {% csrf_token %}
-        <p class="block">
+        <p>
           Klik <input type="submit" class="text-primary inline cursor-pointer" value="hier" /> om terug te gaan naar de betaalpagina zodat je alsnog kan
           betalen
         </p>

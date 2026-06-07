@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Processing payment" %}{% endblock %}
+
+{% block body %}
+<div class="flex justify-center place-items-center flex-col pt-8">
+  <div class="max-w-lg m-4 flex flex-col flex-grow space-y-4">
+    <div class="p-6 space-y-4 text-center">
+      <h2 class="text-3xl uppercase font-header font-bold">
+        {% translate "Processing your payment" %}
+      </h2>
+      <p>
+        {% translate "We're confirming your payment with Mollie. This usually takes just a few seconds." %}
+      </p>
+      <p id="pending-fallback" class="text-sm text-gray-500 hidden">
+        {% translate "It's taking a bit longer than expected. Continuing anyway..." %}
+      </p>
+      <div class="flex justify-center pt-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700"></div>
+      </div>
+      <noscript>
+        <p>
+          <a href="{{ return_url }}">{% translate "Continue" %}</a>
+        </p>
+      </noscript>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module">
+  const statusUrl = "{{ status_url|escapejs }}";
+  const returnUrl = "{{ return_url|escapejs }}";
+  const timeoutMs = {{ timeout_seconds }} * 1000;
+  const pollInterval = {{ poll_interval_ms }};
+  const fallback = document.getElementById("pending-fallback");
+  const deadline = Date.now() + timeoutMs;
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async function isDone() {
+    try {
+      const response = await fetch(statusUrl, { credentials: "same-origin" });
+      if (!response.ok) return false;
+      const data = await response.json();
+      return Boolean(data && data.done);
+    } catch {
+      return false;
+    }
+  }
+
+  while (Date.now() < deadline) {
+    await sleep(pollInterval);
+    if (await isDone()) break;
+  }
+
+  if (Date.now() >= deadline && fallback) {
+    fallback.classList.remove("hidden");
+  }
+  window.location.replace(returnUrl);
+</script>
+{% endblock %}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 19:54+0100\n"
+"POT-Creation-Date: 2026-06-07 13:26+0200\n"
 "PO-Revision-Date: 2026-03-07 19:54+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,78 +17,72 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:150 apps.py:68
-msgid "Site settings"
-msgstr "Site-instellingen"
-
-#: admin.py:155
-msgid "Live settings updated successfully."
-msgstr "Live-instellingen succesvol bijgewerkt."
-
-#: admin.py:159
-msgid "Failed to update live settings."
-msgstr "Bijwerken van live-instellingen mislukt."
-
-#: apps.py:39
+#: symfexit/tenants/apps.py:39
 msgid "Tenants"
 msgstr "Tenants"
 
-#: apps.py:48
-msgid "Settings"
-msgstr "Instellingen"
-
-#: config.py:15
+#: symfexit/tenants/config.py:15
 msgid "Main title of this site"
 msgstr "Hoofdtitel van deze site"
 
-#: config.py:16
+#: symfexit/tenants/config.py:16
 msgid "Organisation logo"
 msgstr "Organisatielogo"
 
-#: config.py:18
+#: symfexit/tenants/config.py:18
 msgid "Main site of the organisation"
 msgstr "Hoofdsite van de organisatie"
 
-#: config.py:21
+#: symfexit/tenants/config.py:21
 msgid "Current home page (configure this on the home pages admin)"
 msgstr "Huidige startpagina (configureer dit in het startpagina-beheer)"
 
-#: templates/admin/tenants/client/change_form.html:6
+#: symfexit/tenants/templates/admin/tenants/client/change_form.html:6
 msgid "Configuration"
 msgstr "Configuratie"
 
-#: templates/admin/tenants/includes/config_table.html:5
+#: symfexit/tenants/templates/admin/tenants/includes/config_table.html:5
 msgid "NAME"
 msgstr "NAAM"
 
-#: templates/admin/tenants/includes/config_table.html:6
+#: symfexit/tenants/templates/admin/tenants/includes/config_table.html:6
 msgid "DEFAULT"
 msgstr "STANDAARD"
 
-#: templates/admin/tenants/includes/config_table.html:7
+#: symfexit/tenants/templates/admin/tenants/includes/config_table.html:7
 msgid "VALUE"
 msgstr "WAARDE"
 
-#: templates/admin/tenants/includes/config_table.html:8
+#: symfexit/tenants/templates/admin/tenants/includes/config_table.html:8
 msgid "IS MODIFIED"
 msgstr "IS GEWIJZIGD"
 
-#: templates/admin/tenants/includes/config_table.html:28
+#: symfexit/tenants/templates/admin/tenants/includes/config_table.html:28
 msgid "Reset to default"
 msgstr "Standaardwaarde herstellen"
 
-#: templates/admin/tenants/includes/config_table.html:33
+#: symfexit/tenants/templates/admin/tenants/includes/config_table.html:33
 msgid "Modified"
 msgstr "Gewijzigd"
 
-#: templates/admin/tenants/includes/config_table.html:35
+#: symfexit/tenants/templates/admin/tenants/includes/config_table.html:35
 msgid "Default"
 msgstr "Standaard"
 
-#: templates/admin/tenants/sitesettings/change_list.html:8
-msgid "Home"
-msgstr "Start"
+#~ msgid "Site settings"
+#~ msgstr "Site-instellingen"
 
-#: templates/admin/tenants/sitesettings/change_list.html:23
-msgid "Save"
-msgstr "Opslaan"
+#~ msgid "Live settings updated successfully."
+#~ msgstr "Live-instellingen succesvol bijgewerkt."
+
+#~ msgid "Failed to update live settings."
+#~ msgstr "Bijwerken van live-instellingen mislukt."
+
+#~ msgid "Settings"
+#~ msgstr "Instellingen"
+
+#~ msgid "Home"
+#~ msgstr "Start"
+
+#~ msgid "Save"
+#~ msgstr "Opslaan"
