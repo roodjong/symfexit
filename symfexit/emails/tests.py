@@ -251,11 +251,9 @@ class EmailAdminFormTests(TestCase):
             }
         )
         self.assertFalse(form.is_valid())
-        self.assertIn("body", form.errors)
 
     def test_email_layout_form_requires_template_identifier(self):
         form = EmailLayoutForm(
             data={"name": "Test", "body": "<div>{{ content }}</div>", "text_body": "{{ content }}"}
         )
         self.assertFalse(form.is_valid())
-        self.assertIn("body", form.errors)

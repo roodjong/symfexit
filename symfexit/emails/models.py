@@ -43,11 +43,11 @@ class EmailTemplate(models.Model):
     language = models.CharField(
         _("preferred language"),
         max_length=10,
-        choices=settings.LANGUAGES + [("*", _("Fallback for all languages"))],
+        choices=settings.LANGUAGES + [("*", _("Fallback for missing languages"))],
         default="*",
         blank=False,
         null=False,
-        help_text=_("User's preferred interface language"),
+        help_text=_("Receiver's preferred language"),
     )
 
     layout = models.ForeignKey(
