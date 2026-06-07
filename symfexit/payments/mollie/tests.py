@@ -1,7 +1,7 @@
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 from django_tenants.test.cases import FastTenantTestCase
 from django_tenants.test.client import TenantClient
@@ -1001,6 +1001,7 @@ class MolliePendingViewTest(FastTenantTestCase):
     def _status_url(self):
         return f"/mollie/pending/{self._eid()}/status/"
 
+    @override_settings(LANGUAGE_CODE="en-US", LANGUAGES=(("en", "English"),))
     def test_pending_renders(self):
         response = self.client.get(self._pending_url())
         self.assertEqual(response.status_code, 200)
