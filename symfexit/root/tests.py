@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models as django_models
+from django.db.models import Manager
 from django.test import SimpleTestCase
 from django.utils.functional import SimpleLazyObject
 
@@ -31,6 +32,12 @@ def make_obj(**attrs):
     for k, v in attrs.items():
         setattr(obj, k, v)
     return obj
+
+
+def make_manager(*objects):
+    manager = MagicMock(spec=Manager)
+    manager.all.return_value = list(objects)
+    return manager
 
 
 class BuildHeaderTest(SimpleTestCase):
@@ -154,6 +161,14 @@ class BuildRowsTest(SimpleTestCase):
         obj = make_obj(b=None)
         model = make_model()
         export_fields: fields = [("b", [("c", ["attr1", "attr2"])])]
+        builder = ExportDataBuilder(export_fields, [obj], model)
+        self.assertEqual(builder.build_rows([obj], export_fields), [[None, None]])
+
+    def test_chained_to_many_with_empty_middle_produces_none_for_all_nested_fields(self):
+        # A → (many) B (empty) → (many) C: C's fields must still appear as None so the row length matches the header
+        obj = make_obj(bs=make_manager())
+        model = make_model()
+        export_fields: fields = [("bs", [("cs", ["attr1", "attr2"])])]
         builder = ExportDataBuilder(export_fields, [obj], model)
         self.assertEqual(builder.build_rows([obj], export_fields), [[None, None]])
 
