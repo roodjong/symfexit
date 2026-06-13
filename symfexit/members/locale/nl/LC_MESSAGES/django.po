@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 22:46+0200\n"
+"POT-Creation-Date: 2026-06-13 22:49+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,91 +17,91 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/members/admin.py:28
+#: symfexit/members/admin.py:29
 msgid "Permission Group"
 msgstr "Rechtengroep"
 
-#: symfexit/members/admin.py:29
+#: symfexit/members/admin.py:30
 msgid "Permission Groups"
 msgstr "Rechtengroepen"
 
-#: symfexit/members/admin.py:55
+#: symfexit/members/admin.py:56
 msgid "active order"
 msgstr "lopende bestelling"
 
-#: symfexit/members/admin.py:56
+#: symfexit/members/admin.py:57
 msgid "active orders"
 msgstr "lopende bestellingen"
 
-#: symfexit/members/admin.py:58
+#: symfexit/members/admin.py:59
 msgid "last payment"
 msgstr "laatste betaling"
 
-#: symfexit/members/admin.py:74 symfexit/members/models.py:118
+#: symfexit/members/admin.py:75 symfexit/members/models.py:118
 msgid "is registered"
 msgstr "is ingeschreven"
 
-#: symfexit/members/admin.py:78
+#: symfexit/members/admin.py:79
 msgid "Yes"
 msgstr "Ja"
 
-#: symfexit/members/admin.py:78
+#: symfexit/members/admin.py:79
 msgid "No"
 msgstr "Nee"
 
-#: symfexit/members/admin.py:78
+#: symfexit/members/admin.py:79
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:102 symfexit/members/models.py:225
+#: symfexit/members/admin.py:103 symfexit/members/models.py:225
 msgid "local groups"
 msgstr "groepen"
 
-#: symfexit/members/admin.py:115
+#: symfexit/members/admin.py:116
 msgid "permission groups"
 msgstr "rechtengroepen"
 
-#: symfexit/members/admin.py:136 symfexit/members/admin.py:533
+#: symfexit/members/admin.py:137 symfexit/members/admin.py:552
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
-#: symfexit/members/admin.py:157
+#: symfexit/members/admin.py:158
 msgid "Permissions"
 msgstr "Rechten"
 
-#: symfexit/members/admin.py:167
+#: symfexit/members/admin.py:168
 msgid "Important dates"
 msgstr "Belangrijke data"
 
-#: symfexit/members/admin.py:168
+#: symfexit/members/admin.py:169
 msgid "Finances"
 msgstr "Financiën"
 
-#: symfexit/members/admin.py:237
+#: symfexit/members/admin.py:227 symfexit/members/admin.py:256
 msgid "credit balance"
 msgstr "krediet balans"
 
-#: symfexit/members/admin.py:452
+#: symfexit/members/admin.py:471
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:453
+#: symfexit/members/admin.py:472
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:471
+#: symfexit/members/admin.py:490
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:472
+#: symfexit/members/admin.py:491
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:505
+#: symfexit/members/admin.py:524
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:506
+#: symfexit/members/admin.py:525
 msgid "local group members"
 msgstr "groepsleden"
 

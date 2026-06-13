@@ -24,6 +24,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from symfexit.adminsite.admin import GroupFlagsInline
 from symfexit.members.models import LocalGroup, User, WorkGroup, generate_member_number
+from symfexit.root.export.mixin import ExportMixin
 
 Group._meta.verbose_name = _("Permission Group")
 Group._meta.verbose_name_plural = _("Permission Groups")
@@ -127,7 +128,7 @@ class PermissionGroupFilter(SimpleListFilter):
 
 # Modified from django.contrib.auth.admin.UserAdmin to remove username field
 @admin.register(User)
-class BaseUserAdmin(admin.ModelAdmin):
+class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
     add_form_template = "admin/auth/user/add_form.html"
     change_user_password_template = None
     fieldsets = (
@@ -215,6 +216,24 @@ class BaseUserAdmin(admin.ModelAdmin):
         "user_permissions",
     )
     delete_confirmation_template = "admin/members/membership_cancellation_confirm.html"
+
+    export_fields = [
+        "member_identifier",
+        "member_type",
+        "membership_type",
+        "membership_tier",
+        "first_name",
+        "last_name",
+        ("credit_balance_cents", _("credit balance")),
+        "email",
+        "language",
+        "phone_number",
+        "address",
+        "postal_code",
+        "city",
+        "cadre",
+        "extra_information",
+    ]
 
     def get_inlines(self, request, obj=None):
         from symfexit.payments.mollie.admin import MollieCustomerInline  # noqa: PLC0415
