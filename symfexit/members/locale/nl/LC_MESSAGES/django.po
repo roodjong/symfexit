@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 13:22+0200\n"
+"POT-Creation-Date: 2026-07-19 13:36+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,7 +53,7 @@ msgstr "Nee"
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:102 symfexit/members/models.py:232
+#: symfexit/members/admin.py:102 symfexit/members/models.py:241
 msgid "local groups"
 msgstr "groepen"
 
@@ -327,28 +327,28 @@ msgstr "gebruiker"
 msgid "users"
 msgstr "gebruikers"
 
-#: symfexit/members/models.py:231
+#: symfexit/members/models.py:240
 msgid "local group"
 msgstr "groep"
 
-#: symfexit/members/models.py:238 symfexit/members/models.py:259
+#: symfexit/members/models.py:247 symfexit/members/models.py:268
 msgid "contact people"
 msgstr "contactpersonen"
 
-#: symfexit/members/models.py:242
+#: symfexit/members/models.py:251
 msgid "selectable"
 msgstr "selecteerbaar"
 
-#: symfexit/members/models.py:244
+#: symfexit/members/models.py:253
 msgid "Whether this group can be selected by new members signing up"
 msgstr ""
 "Of deze groep geselecteerd kan worder door nieuwe leden die zich inschrijven"
 
-#: symfexit/members/models.py:250
+#: symfexit/members/models.py:259
 msgid "work group"
 msgstr "werkgroep"
 
-#: symfexit/members/models.py:251
+#: symfexit/members/models.py:260
 msgid "work groups"
 msgstr "werkgroepen"
 

@@ -188,6 +188,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             return 0
         return self.credit_account.balance_cents()
 
+    @property
+    def local_group(self) -> LocalGroup | None:
+        return self.groups.filter(localgroup__isnull=False).first()
+
+    @property
+    def local_group_name(self) -> str | None:
+        local_group = self.local_group
+        return local_group.name if local_group else None
+
     def set_staff_rights(self) -> bool:
         # Add/remove user to contact person permission group
         contact_person_group = WellKnownPermissionGroup.get_or_create(

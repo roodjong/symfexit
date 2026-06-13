@@ -2,12 +2,21 @@ from django.contrib import admin
 from django.utils.html import format_html, format_html_join
 
 from symfexit.events.models import Event
+from symfexit.root.export.mixin import ExportMixin
 
 
 @admin.register(Event)
-class EventsAdmin(admin.ModelAdmin):
+class EventsAdmin(ExportMixin, admin.ModelAdmin):
     readonly_fields = ("attendees_display",)
     list_display = ("event_name", "event_date", "event_end", "event_organiser")
+
+    export_fields = (
+        "event_name",
+        "event_date",
+        "event_end",
+        "event_organiser",
+        ("attendees", ["first_name", "last_name", "local_group_name"]),
+    )
 
     def attendees_display(self, obj):
         attendees = obj.attendees.all().order_by("email")
