@@ -35,13 +35,21 @@ class ExportDataBuilder:
 
         return header, rows
 
-    def build_header(self, model: type[models.Model], export_fields: fields) -> list[str]:
+    def build_header(
+        self, model: type[models.Model], export_fields: fields, prefix: str = ""
+    ) -> list[str]:
         header = []
         for field in export_fields:
-            if isinstance(field, str):
-                header.append(self.get_model_field(model, field))
+            if isinstance(field, str):  # get model field
+                header.append(f"{prefix}{self.get_model_field(model, field)}")
+            elif isinstance(field, tuple) and isinstance(
+                field[1], list
+            ):  # get related model field and recursively build header
+                sub_model = model._meta.get_field(field[0]).related_model
+                relation_label = self.get_model_field(model, field[0]).title()
+                header.extend(self.build_header(sub_model, field[1], f"{prefix}{relation_label} "))
             else:
-                header.append(str(field[1]))
+                header.append(f"{prefix}{field[1]}")
         return header
 
     def get_model_field(self, model: type[models.Model], field_name: str) -> str:
@@ -65,14 +73,29 @@ class ExportDataBuilder:
     ) -> list[list[str | int | float | bool | None]]:
         rows = []
         for obj in queryset:
-            row = []
-            for field in export_fields:
-                if isinstance(field, str):
-                    value = getattr(obj, field)
-                else:
-                    value = getattr(obj, field[0])
-                if not isinstance(value, (str, int, float, bool, type(None))):
-                    value = str(value)
-                row.append(value)
-            rows.append(row)
+            rows.append(self.build_row(obj, export_fields))
         return rows
+
+    def build_row(
+        self, obj: models.Model, export_fields: fields
+    ) -> list[str | int | float | bool | None]:
+        row = []
+        for field in export_fields:
+            value = None
+            # recursively build nested fields
+            if isinstance(field, tuple) and isinstance(field[1], list):  # field with model
+                attr, config = field
+                if obj is not None:
+                    value = getattr(obj, attr)
+                row.extend(self.build_row(value, config))
+                continue
+
+            if obj is not None:  # make nested fields of null objects also null
+                if isinstance(field, str):  # field only
+                    value = getattr(obj, field)
+                elif isinstance(field, tuple):  # field with label
+                    value = getattr(obj, field[0])
+            if not isinstance(value, (str, int, float, bool, type(None))):
+                value = str(value)
+            row.append(value)
+        return row

@@ -5,11 +5,13 @@ from typing import cast
 from unittest.mock import MagicMock
 
 from django.core.exceptions import FieldDoesNotExist
+from django.db import models as django_models
 from django.test import SimpleTestCase
 from django.utils.functional import SimpleLazyObject
 
 from symfexit.root.export.databuilder import ExportDataBuilder
 from symfexit.root.export.exporters.json_exporter import JsonExporter
+from symfexit.root.export.types import fields
 
 
 def make_model(field_name=None, verbose_name=None):
@@ -57,14 +59,57 @@ class BuildHeaderTest(SimpleTestCase):
         header = builder.build_header(model, [("name", lazy_label)])
         self.assertIsInstance(header[0], str)
 
+    def test_to_one_relationship_generates_nested_headers(self):
+        related_model = MagicMock(spec=["_meta"])
+        street_field = MagicMock()
+        street_field.verbose_name = "Street name"
+        city_field = MagicMock()
+        city_field.verbose_name = "City"
+        related_model._meta.get_field.side_effect = lambda name: {
+            "street": street_field,
+            "city": city_field,
+        }[name]
+
+        parent_model = MagicMock(spec=["_meta"])
+        relation_field = MagicMock()
+        relation_field.verbose_name = "address"
+        relation_field.related_model = related_model
+        parent_model._meta.get_field.return_value = relation_field
+
+        parent = cast(type[django_models.Model], parent_model)
+        export_fields: fields = [("address", ["street", "city"])]
+        builder = ExportDataBuilder(export_fields, [], parent)
+        self.assertEqual(
+            builder.build_header(parent, export_fields), ["Address Street name", "Address City"]
+        )
+
+    def test_to_one_nested_field_label_overrides_verbose_name(self):
+        related_model = MagicMock(spec=["_meta"])
+        city_field = MagicMock()
+        city_field.verbose_name = "City"
+        related_model._meta.get_field.side_effect = lambda name: {"city": city_field}[name]
+
+        parent_model = MagicMock(spec=["_meta"])
+        relation_field = MagicMock()
+        relation_field.verbose_name = "address"
+        relation_field.related_model = related_model
+        parent_model._meta.get_field.return_value = relation_field
+
+        parent = cast(type[django_models.Model], parent_model)
+        export_fields: fields = [("address", [("street", "Home street"), "city"])]
+        builder = ExportDataBuilder(export_fields, [], parent)
+        self.assertEqual(
+            builder.build_header(parent, export_fields), ["Address Home street", "Address City"]
+        )
+
 
 class BuildRowsTest(SimpleTestCase):
     def test_primitive_values_pass_through(self):
         obj = make_obj(name="Alice", age=30, score=9.5, active=True)
         model = make_model()
-        fields = ["name", "age", "score", "active"]
-        builder = ExportDataBuilder(fields, [obj], model)
-        self.assertEqual(builder.build_rows([obj], fields), [["Alice", 30, 9.5, True]])
+        export_fields: fields = ["name", "age", "score", "active"]
+        builder = ExportDataBuilder(export_fields, [obj], model)
+        self.assertEqual(builder.build_rows([obj], export_fields), [["Alice", 30, 9.5, True]])
 
     def test_none_passes_through(self):
         obj = make_obj(note=None)
@@ -75,17 +120,42 @@ class BuildRowsTest(SimpleTestCase):
     def test_non_primitive_coerced_to_str(self):
         obj = make_obj(joined=date(2024, 1, 15), balance=Decimal("12.50"))
         model = make_model()
-        fields = ["joined", "balance"]
-        builder = ExportDataBuilder(fields, [obj], model)
-        rows = builder.build_rows([obj], fields)
+        export_fields: fields = ["joined", "balance"]
+        builder = ExportDataBuilder(export_fields, [obj], model)
+        rows = builder.build_rows([obj], export_fields)
         self.assertEqual(rows, [["2024-01-15", "12.50"]])
 
     def test_tuple_field_reads_correct_attribute(self):
         obj = make_obj(internal="value")
         model = make_model()
-        fields = [("internal", "Label")]
-        builder = ExportDataBuilder(fields, [obj], model)
-        self.assertEqual(builder.build_rows([obj], fields), [["value"]])
+        export_fields: fields = [("internal", "Label")]
+        builder = ExportDataBuilder(export_fields, [obj], model)
+        self.assertEqual(builder.build_rows([obj], export_fields), [["value"]])
+
+    def test_nested_model_field_flattened_into_row(self):
+        address = make_obj(street="Main St", city="Amsterdam")
+        obj = make_obj(address=address)
+        model = make_model()
+        sub_fields: fields = ["street", "city"]
+        export_fields: fields = [("address", sub_fields)]
+        builder = ExportDataBuilder(export_fields, [obj], model)
+        self.assertEqual(builder.build_rows([obj], export_fields), [["Main St", "Amsterdam"]])
+
+    def test_null_to_one_relationship_produces_none_values(self):
+        obj = make_obj(address=None)
+        model = make_model()
+        sub_fields: fields = ["street", "city"]
+        export_fields: fields = [("address", sub_fields)]
+        builder = ExportDataBuilder(export_fields, [obj], model)
+        self.assertEqual(builder.build_rows([obj], export_fields), [[None, None]])
+
+    def test_chained_to_one_with_null_middle_produces_none_for_all_nested_fields(self):
+        # A → B → C, B is None: C's fields must still appear as None so the row length matches the header
+        obj = make_obj(b=None)
+        model = make_model()
+        export_fields: fields = [("b", [("c", ["attr1", "attr2"])])]
+        builder = ExportDataBuilder(export_fields, [obj], model)
+        self.assertEqual(builder.build_rows([obj], export_fields), [[None, None]])
 
 
 class JsonExporterTest(SimpleTestCase):
