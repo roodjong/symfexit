@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
+from django.db.models import Manager
 from django.http import HttpResponse
 
 from symfexit.root.export.exporters._abstract_exporter import AbstractExporter
@@ -73,20 +74,34 @@ class ExportDataBuilder:
     ) -> list[list[str | int | float | bool | None]]:
         rows = []
         for obj in queryset:
-            rows.append(self.build_row(obj, export_fields))
+            rows.extend(self.flatten_rows(self.build_row(obj, export_fields)))
         return rows
 
-    def build_row(
-        self, obj: models.Model, export_fields: fields
-    ) -> list[str | int | float | bool | None]:
+    def flatten_rows(self, partial_row: list) -> list[list[str | int | float | bool | None]]:
+        for i, value in enumerate(partial_row):
+            if isinstance(value, list):
+                result = []
+                prefix = partial_row[:i]
+                suffix = partial_row[i + 1 :]
+                for sub_row in value:
+                    result.extend(self.flatten_rows(prefix + sub_row + suffix))
+                return result
+        return [partial_row]
+
+    def build_row(self, obj: models.Model | None, export_fields: fields) -> list:
         row = []
         for field in export_fields:
             value = None
-            # recursively build nested fields
-            if isinstance(field, tuple) and isinstance(field[1], list):  # field with model
+            if isinstance(field, tuple) and isinstance(field[1], list):
                 attr, config = field
                 if obj is not None:
                     value = getattr(obj, attr)
+                if isinstance(value, Manager):
+                    objects = list(value.all())
+                    if objects:
+                        row.append([self.build_row(sub_obj, config) for sub_obj in objects])
+                        continue
+                    value = None
                 row.extend(self.build_row(value, config))
                 continue
 
