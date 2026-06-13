@@ -232,6 +232,8 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
         "city",
         "cadre",
         "extra_information",
+        ("membership_type", ["name", "description"]),
+        ("credit_account", ["code", "name", "description"]),
     ]
 
     def get_inlines(self, request, obj=None):

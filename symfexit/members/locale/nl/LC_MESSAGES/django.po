@@ -61,7 +61,7 @@ msgstr "groepen"
 msgid "permission groups"
 msgstr "rechtengroepen"
 
-#: symfexit/members/admin.py:136 symfexit/members/admin.py:547
+#: symfexit/members/admin.py:136 symfexit/members/admin.py:549
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
@@ -77,31 +77,31 @@ msgstr "Belangrijke data"
 msgid "Finances"
 msgstr "Financiën"
 
-#: symfexit/members/admin.py:226 symfexit/members/admin.py:255
+#: symfexit/members/admin.py:226 symfexit/members/admin.py:257
 msgid "credit balance"
 msgstr "krediet balans"
 
-#: symfexit/members/admin.py:466
+#: symfexit/members/admin.py:468
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:467
+#: symfexit/members/admin.py:469
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:485
+#: symfexit/members/admin.py:487
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:486
+#: symfexit/members/admin.py:488
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:519
+#: symfexit/members/admin.py:521
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:520
+#: symfexit/members/admin.py:522
 msgid "local group members"
 msgstr "groepsleden"
 
