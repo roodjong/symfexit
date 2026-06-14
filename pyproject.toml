@@ -36,7 +36,7 @@ build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
-    "beautifulsoup4>=4.13.5",
+    "beautifulsoup4>=4.15.0",
     "django-browser-reload>=1.17.0",
     "ruff>=0.15.13",
 ]
