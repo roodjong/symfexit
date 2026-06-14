@@ -24,8 +24,10 @@ def export_fields_to_nodes(
     for f in export_fields:
         if isinstance(f, str):
             nodes.append(FieldNode(name=f, label=get_model_field(model, f), kind="field"))
-        elif isinstance(f, tuple) and isinstance(f[1], list):
-            attr, config = f
+        elif isinstance(f, tuple) and isinstance(
+            f[1], list
+        ):  # related model field with nested export fields
+            attr, config = f[0], f[1]
             label = get_model_field(model, attr).title()
             try:
                 sub_model = model._meta.get_field(attr).related_model
@@ -34,8 +36,7 @@ def export_fields_to_nodes(
                 sub_nodes = []
             nodes.append(FieldNode(name=attr, label=label, kind="relation", sub_nodes=sub_nodes))
         else:
-            attr, label = f
-            nodes.append(FieldNode(name=attr, label=str(label), kind="field"))
+            nodes.append(FieldNode(name=f[0], label=str(f[1]), kind="field"))
     return nodes
 
 
