@@ -6,6 +6,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.root.export.databuilder import ExportDataBuilder
+from symfexit.root.export.exporters import exporters
 from symfexit.root.export.exporters.json_exporter import JsonExporter
 from symfexit.root.export.field_selection import export_fields_to_nodes, nodes_to_export_fields
 from symfexit.root.export.types import fields
@@ -55,7 +56,9 @@ class ExportMixin(admin.ModelAdmin):
                 if selected_paths
                 else self.export_fields
             )
-            return ExportDataBuilder(export_fields, queryset, self.model).export(JsonExporter())
+            export_type = request.POST.get("exporter", "")
+            exporter = exporters.get(export_type, JsonExporter())
+            return ExportDataBuilder(export_fields, queryset, self.model).export(exporter)
 
         return TemplateResponse(
             request,
@@ -64,6 +67,7 @@ class ExportMixin(admin.ModelAdmin):
                 **self.admin_site.each_context(request),
                 "queryset": queryset,
                 "field_nodes": export_fields_to_nodes(self.model, self.export_fields),
+                "exporters": exporters.keys(),
                 "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
                 "opts": self.model._meta,
                 "title": _("Select fields to export"),
