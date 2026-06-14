@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html, format_html_join
+from django.utils.translation import gettext_lazy as _
 
 from symfexit.events.models import Event
+from symfexit.members.admin import BaseUserAdmin
 from symfexit.root.export.mixin import ExportMixin
+from symfexit.root.export.types import fields
 
 
 @admin.register(Event)
@@ -10,12 +13,13 @@ class EventsAdmin(ExportMixin, admin.ModelAdmin):
     readonly_fields = ("attendees_display",)
     list_display = ("event_name", "event_date", "event_end", "event_organiser")
 
-    export_fields = (
+    export_fields: fields = (
         "event_name",
         "event_date",
         "event_end",
         "event_organiser",
-        ("attendees", ["first_name", "last_name", "local_group_name"]),
+        ("attendees_count", f"{_('attendees')} {_('count')}", lambda obj: obj.attendees.count()),
+        ("attendees", BaseUserAdmin.export_fields),
     )
 
     def attendees_display(self, obj):
