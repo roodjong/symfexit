@@ -10,6 +10,18 @@ from symfexit.root.export.exporters._abstract_exporter import AbstractExporter
 from symfexit.root.export.types import fields
 
 
+def get_model_field(model: type[models.Model], field_name: str) -> str:
+    try:
+        return str(model._meta.get_field(field_name).verbose_name)
+    except FieldDoesNotExist:
+        pass
+    if hasattr(model, field_name):
+        method = getattr(model, field_name)
+        if hasattr(method, "short_description"):
+            return str(method.short_description)
+    return field_name.replace("_", " ").title()
+
+
 class ExportDataBuilder:
     """Builder class that constructs the data to be exported based on the specified export fields and queryset."""
 
@@ -42,32 +54,16 @@ class ExportDataBuilder:
         header = []
         for field in export_fields:
             if isinstance(field, str):  # get model field
-                header.append(f"{prefix}{self.get_model_field(model, field)}")
+                header.append(f"{prefix}{get_model_field(model, field)}")
             elif isinstance(field, tuple) and isinstance(
                 field[1], list
             ):  # get related model field and recursively build header
                 sub_model = model._meta.get_field(field[0]).related_model
-                relation_label = self.get_model_field(model, field[0]).title()
+                relation_label = get_model_field(model, field[0]).title()
                 header.extend(self.build_header(sub_model, field[1], f"{prefix}{relation_label} "))
             else:
                 header.append(f"{prefix}{field[1]}")
         return header
-
-    def get_model_field(self, model: type[models.Model], field_name: str) -> str:
-        # Check if it's a model field
-        try:
-            field = model._meta.get_field(field_name)
-            return str(field.verbose_name)
-        except FieldDoesNotExist:
-            pass
-
-        if hasattr(model, field_name):
-            method = getattr(model, field_name)
-            if hasattr(method, "short_description"):
-                return str(method.short_description)
-
-        # Fallback to field name with underscores replaced
-        return field_name.replace("_", " ").title()
 
     def build_rows(
         self, queryset: Iterable, export_fields: fields
