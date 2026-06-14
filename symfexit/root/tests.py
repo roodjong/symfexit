@@ -13,6 +13,7 @@ from django.utils.functional import SimpleLazyObject
 from openpyxl import load_workbook
 
 from symfexit.root.export.databuilder import ExportDataBuilder
+from symfexit.root.export.exporters.csv_exporter import CSVExporter
 from symfexit.root.export.exporters.excel_exporter import ExcelExporter
 from symfexit.root.export.exporters.json_exporter import JsonExporter
 from symfexit.root.export.field_selection import nodes_to_export_fields
@@ -258,3 +259,29 @@ class ExcelExporterTest(SimpleTestCase):
         rows = list(ws.iter_rows())
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][0].value, "name")
+
+
+class CsvExporterTest(SimpleTestCase):
+    def test_returns_csv_response_with_correct_data(self):
+        exporter = CSVExporter()
+        response = exporter.export(["name", "age"], [["Alice", 30], ["Bob", 25]], "test")
+        self.assertEqual(response.status_code, 200)
+        lines = response.content.decode().splitlines()
+        self.assertEqual(lines, ["name,age", "Alice,30", "Bob,25"])
+
+    def test_sets_content_disposition(self):
+        exporter = CSVExporter()
+        response = exporter.export(["x"], [[1]], "export")
+        self.assertEqual(response["Content-Disposition"], 'attachment; filename="export.csv"')
+
+    def test_empty_queryset(self):
+        exporter = CSVExporter()
+        response = exporter.export(["name"], [], "empty")
+        lines = response.content.decode().splitlines()
+        self.assertEqual(lines, ["name"])
+
+    def test_values_with_commas_are_escaped(self):
+        exporter = CSVExporter()
+        response = exporter.export(["name"], [["Smith, John"]], "test")
+        lines = response.content.decode().splitlines()
+        self.assertEqual(lines, ["name", '"Smith, John"'])
