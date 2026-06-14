@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 22:51+0200\n"
+"POT-Creation-Date: 2026-06-14 16:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +18,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/root/export/mixin.py:37
+#: symfexit/root/export/mixin.py:39
 msgid "Export selected data"
 msgstr "Exporteer geselecteerde data"
 
-#: symfexit/root/export/mixin.py:43
+#: symfexit/root/export/mixin.py:44
 msgid "You don't have permission to export data."
 msgstr "Je hebt geen rechten om data te exporteren."
 
-#: symfexit/root/export/mixin.py:47
+#: symfexit/root/export/mixin.py:48
 msgid "No rows selected for export."
 msgstr "Geen rijen geselecteerd om te exporteren."
+
+#: symfexit/root/export/mixin.py:69
+msgid "Select fields to export"
+msgstr "Selecteer velden om te exporteren"
 
 #: symfexit/root/settings.py:294
 msgid "Dutch"
@@ -37,6 +41,27 @@ msgstr "Nederlands"
 #: symfexit/root/settings.py:295
 msgid "English"
 msgstr "Engels"
+
+#: symfexit/root/templates/admin/export/select_fields.html:49
+#, python-format
+msgid "Exporting %(count)s %(model)s."
+msgstr "Exporteer %(count)s %(model)s."
+
+#: symfexit/root/templates/admin/export/select_fields.html:62
+msgid "Fields"
+msgstr "Velden"
+
+#: symfexit/root/templates/admin/export/select_fields.html:65
+msgid "(de)select all"
+msgstr "(de)selecteer alles"
+
+#: symfexit/root/templates/admin/export/select_fields.html:72
+msgid "Export"
+msgstr "Exporteren"
+
+#: symfexit/root/templates/admin/export/select_fields.html:73
+msgid "Cancel"
+msgstr "Annuleren"
 
 #~ msgid "Main title of this site"
 #~ msgstr "Hoofdtitel van de site"

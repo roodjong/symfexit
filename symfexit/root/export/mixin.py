@@ -2,10 +2,12 @@ from django.contrib import admin, messages
 from django.db import models
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
+from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.root.export.databuilder import ExportDataBuilder
 from symfexit.root.export.exporters.json_exporter import JsonExporter
+from symfexit.root.export.field_selection import export_fields_to_nodes, nodes_to_export_fields
 from symfexit.root.export.types import fields
 
 
@@ -38,7 +40,6 @@ class ExportMixin(admin.ModelAdmin):
     def export_data(self, request: HttpRequest, queryset: models.QuerySet) -> HttpResponse:
         """Admin action that handles the export process, including permission checks and data retrieval."""
 
-        # check permissions
         if not self.has_export_permission(request):
             messages.error(request, _("You don't have permission to export data."))
             return redirect(request.META.get("HTTP_REFERER", "admin:index"))
@@ -47,8 +48,27 @@ class ExportMixin(admin.ModelAdmin):
             messages.warning(request, _("No rows selected for export."))
             return redirect(request.META.get("HTTP_REFERER", "admin:index"))
 
-        # export data
-        return ExportDataBuilder(self.export_fields, queryset, self.model).export(JsonExporter())
+        if "_export_confirm" in request.POST:
+            selected_paths = request.POST.getlist("fields")
+            export_fields = (
+                nodes_to_export_fields(self.export_fields, selected_paths)
+                if selected_paths
+                else self.export_fields
+            )
+            return ExportDataBuilder(export_fields, queryset, self.model).export(JsonExporter())
+
+        return TemplateResponse(
+            request,
+            "admin/export/select_fields.html",
+            {
+                **self.admin_site.each_context(request),
+                "queryset": queryset,
+                "field_nodes": export_fields_to_nodes(self.model, self.export_fields),
+                "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
+                "opts": self.model._meta,
+                "title": _("Select fields to export"),
+            },
+        )
 
     def has_export_permission(self, request: HttpRequest) -> bool:
         """Check if the user has permission to export data. By default, it checks if the user has view permission."""

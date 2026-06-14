@@ -12,6 +12,7 @@ from django.utils.functional import SimpleLazyObject
 
 from symfexit.root.export.databuilder import ExportDataBuilder
 from symfexit.root.export.exporters.json_exporter import JsonExporter
+from symfexit.root.export.field_selection import nodes_to_export_fields
 from symfexit.root.export.types import fields
 
 
@@ -171,6 +172,33 @@ class BuildRowsTest(SimpleTestCase):
         export_fields: fields = [("bs", [("cs", ["attr1", "attr2"])])]
         builder = ExportDataBuilder(export_fields, [obj], model)
         self.assertEqual(builder.build_rows([obj], export_fields), [[None, None]])
+
+
+class FieldSelectionTest(SimpleTestCase):
+    def test_unselected_fields_are_excluded(self):
+        export_fields: fields = ["name", "email", "age"]
+        self.assertEqual(nodes_to_export_fields(export_fields, ["name", "age"]), ["name", "age"])
+
+    def test_custom_label_is_preserved(self):
+        export_fields: fields = [("internal_name", "Display Name"), "email"]
+        result = nodes_to_export_fields(export_fields, ["internal_name"])
+        self.assertEqual(result, [("internal_name", "Display Name")])
+
+    def test_nested_relation_is_filtered(self):
+        export_fields: fields = [("address", ["street", "city", "country"])]
+        result = nodes_to_export_fields(export_fields, ["address.street", "address.city"])
+        self.assertEqual(result, [("address", ["street", "city"])])
+
+    def test_relation_excluded_when_no_sub_fields_selected(self):
+        export_fields: fields = ["name", ("address", ["street", "city"])]
+        result = nodes_to_export_fields(export_fields, ["name"])
+        self.assertEqual(result, ["name"])
+
+    def test_nested_custom_label_is_preserved(self):
+        # This is the critical case: a custom label inside a relation must survive the round-trip
+        export_fields: fields = [("address", [("street", "Home street"), "city"])]
+        result = nodes_to_export_fields(export_fields, ["address.street"])
+        self.assertEqual(result, [("address", [("street", "Home street")])])
 
 
 class JsonExporterTest(SimpleTestCase):

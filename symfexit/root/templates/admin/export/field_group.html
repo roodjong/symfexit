@@ -1,0 +1,21 @@
+{% for node in nodes %}
+<div class="export-field-item">
+  {% if node.kind == "relation" %}
+  <details open class="export-relation">
+    <summary class="export-relation-summary">
+      <span class="export-relation-label">{{ node.label }}</span>
+    </summary>
+    <div class="export-sub-fields">
+      {% with sub_prefix=prefix|add:node.name|add:"." %}
+      {% include "admin/export/field_group.html" with nodes=node.sub_nodes prefix=sub_prefix only %}
+      {% endwith %}
+    </div>
+  </details>
+  {% else %}
+  <label class="export-field-label">
+    <input type="checkbox" name="fields" value="{{ prefix }}{{ node.name }}" checked>
+    {{ node.label }}
+  </label>
+  {% endif %}
+</div>
+{% endfor %}

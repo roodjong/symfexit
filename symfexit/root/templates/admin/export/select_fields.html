@@ -1,0 +1,86 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+  .export-field-selector {
+    margin: 1em 0;
+  }
+  .export-field-item {
+    margin: 0.25em 0;
+  }
+  .export-relation {
+    border-left: 2px solid #ddd;
+    padding-left: 0.75em;
+    margin: 0.5em 0;
+  }
+  .export-relation-summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.25em 0;
+    font-weight: bold;
+  }
+  .export-relation-summary::-webkit-details-marker { display: none; }
+  .export-relation-summary::before {
+    content: "▶ ";
+    font-size: 0.75em;
+    transition: transform 0.15s;
+    display: inline-block;
+  }
+  details[open] > .export-relation-summary::before {
+    transform: rotate(90deg);
+  }
+  .export-sub-fields {
+    margin-left: 1em;
+    margin-top: 0.25em;
+  }
+  .export-field-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<p>
+  {% blocktrans with count=queryset.count model=opts.verbose_name_plural %}Exporting {{ count }} {{ model }}.{% endblocktrans %}
+</p>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% for obj in queryset %}
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}">
+  {% endfor %}
+  <input type="hidden" name="action" value="export_data">
+  <input type="hidden" name="index" value="0">
+
+  <fieldset class="module aligned">
+    <h2>{% trans "Fields" %}</h2>
+    <div class="export-field-selector">
+      <button type="button" id="toggle-all" class="button" style="margin-bottom: 0.75em;">
+        {% trans "(de)select all" %}
+      </button>
+      {% include "admin/export/field_group.html" with nodes=field_nodes prefix="" only %}
+    </div>
+  </fieldset>
+
+  <div class="submit-row">
+    <input type="submit" name="_export_confirm" value="{% trans 'Export' %}" class="default">
+    <a href="{{ request.META.HTTP_REFERER|default:'.' }}">{% trans "Cancel" %}</a>
+  </div>
+</form>
+
+<script>
+  const btn = document.getElementById('toggle-all');
+  btn.addEventListener('click', () => {
+    const boxes = document.querySelectorAll('.export-field-selector input[type="checkbox"]');
+    const allChecked = Array.from(boxes).every(b => b.checked);
+    boxes.forEach(b => b.checked = !allChecked);
+    btn.blur(); // prevent keeping focus on button after click
+  });
+</script>
+{% endblock %}
