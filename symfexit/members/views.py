@@ -24,22 +24,22 @@ def friendly_period(period, unit):
         elif period == 3:  # noqa: PLR2004
             return _("quarter")
         else:
-            return _(f"{period} months")
+            return _("{} months").format(period)
     elif unit == PeriodUnit.YEAR:
         if period == 1:
             return _("year")
         else:
-            return _(f"{period} years")
+            return _("{} years").format(period)
     elif unit == PeriodUnit.WEEK:
         if period == 1:
             return _("week")
         else:
-            return _(f"{period} weeks")
+            return _("{} weeks").format(period)
     elif unit == PeriodUnit.DAY:
         if period == 1:
             return _("day")
         else:
-            return _(f"{period} days")
+            return _("{} days").format(period)
     unit_display = PeriodUnit(unit).label.lower()
     return f"{period} {unit_display}"
 

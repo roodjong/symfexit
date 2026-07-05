@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-05 14:36+0200\n"
+"POT-Creation-Date: 2026-07-05 16:37+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -202,11 +202,6 @@ msgstr "Voer een bedrag in."
 #, python-format
 msgid "Please enter an amount of at least €%(amount).2f."
 msgstr "Voer een bedrag van minimaal €%(amount).2f in."
-
-#: symfexit/members/forms.py:201
-#, python-format
-msgid "Please enter an amount of at least \\u20ac%(amount).2f."
-msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
 
 #: symfexit/members/forms.py:208
 msgid "Invalid choice."
@@ -485,36 +480,32 @@ msgid "quarter"
 msgstr "kwartaal"
 
 #: symfexit/members/views.py:27
-#, python-brace-format
-msgid "{period} months"
-msgstr "{period} maanden"
+msgid "{} months"
+msgstr "{} maanden"
 
 #: symfexit/members/views.py:30
 msgid "year"
 msgstr "jaar"
 
 #: symfexit/members/views.py:32
-#, python-brace-format
-msgid "{period} years"
-msgstr "{period} jaren"
+msgid "{} years"
+msgstr "{} jaren"
 
 #: symfexit/members/views.py:35
 msgid "week"
 msgstr "week"
 
 #: symfexit/members/views.py:37
-#, python-brace-format
-msgid "{period} weeks"
-msgstr "{period} weken"
+msgid "{} weeks"
+msgstr "{} weken"
 
 #: symfexit/members/views.py:40
 msgid "day"
 msgstr "dag"
 
 #: symfexit/members/views.py:42
-#, python-brace-format
-msgid "{period} days"
-msgstr "{period} dagen"
+msgid "{} days"
+msgstr "{} dagen"
 
 #: symfexit/members/views.py:60
 msgid "an unknown provider"
@@ -534,3 +525,8 @@ msgid ""
 "subscription."
 msgstr ""
 "Vul je adres, woonplaats en postcode in voordat je een abonnement start."
+
+#: symfexit/members/forms.py:201
+#, python-format
+msgid "Please enter an amount of at least \\u20ac%(amount).2f."
+msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."

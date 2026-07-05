@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-05 14:19+0200\n"
+"POT-Creation-Date: 2026-07-05 16:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,6 +24,10 @@ msgstr "Aanmelden"
 #: symfexit/signup/forms.py:112
 msgid "None"
 msgstr "Geen"
+
+#: symfexit/signup/forms.py:220
+msgid "{} (€{:.2f} per {})"
+msgstr "{} (€{:.2f} per {})"
 
 #: symfexit/signup/models.py:26
 msgid "Created"
@@ -133,15 +137,3 @@ msgid ""
 msgstr ""
 "Je inschrijving is nu voltooid. Je ontvangt een bevestigingsmail op het "
 "opgegeven e-mailadres wanneer je inschrijving is goedgekeurd."
-
-#~ msgid "application payment"
-#~ msgstr "aanmeldingsbetaling"
-
-#~ msgid "application payments"
-#~ msgstr "aanmeldingsbetalingen"
-
-#~ msgid "payment order"
-#~ msgstr "betalingsopdracht"
-
-#~ msgid "associated subscription"
-#~ msgstr "verwante abbonement"
