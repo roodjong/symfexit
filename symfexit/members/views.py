@@ -10,7 +10,12 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic import FormView, TemplateView
 
-from symfexit.members.forms import MembershipSelectionForm, PasswordChangeForm, UserForm
+from symfexit.members.forms import (
+    MembershipCancellationForm,
+    MembershipSelectionForm,
+    PasswordChangeForm,
+    UserForm,
+)
 from symfexit.membership.models import MembershipTier, MembershipType
 from symfexit.payments.models import BillingAddress, Order, Payment, PeriodUnit
 from symfexit.payments.registry import payments_registry
@@ -214,3 +219,37 @@ def payment_start(request):
     if not request.user.is_authenticated:
         return redirect("login")
     return _start_payment(request)
+
+
+class MembershipCancellation(LoginRequiredMixin, FormView):
+    template_name = "members/membership_cancellation.html"
+    form_class = MembershipCancellationForm
+
+    def get(self, request, *args, **kwargs):
+        cancel_form = MembershipCancellationForm(user=request.user, prefix="cancel_form")
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "cancel_form": cancel_form,
+            },
+        )
+
+    def post(self, request, *args, **kwargs):
+        if "cancel_form" in request.POST:
+            cancel_form = MembershipCancellationForm(
+                request.POST, user=request.user, prefix="cancel_form"
+            )
+            if cancel_form.is_valid():
+                cancel_form.save()
+                return redirect("login")
+            else:
+                cancel_form = MembershipCancellationForm(user=request.user, prefix="cancel_form")
+                return render(
+                    request,
+                    self.template_name,
+                    {"cancel_form": cancel_form},
+                )
+        else:
+            raise ValueError("Invalid form")

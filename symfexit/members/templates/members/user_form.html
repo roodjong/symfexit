@@ -24,7 +24,8 @@
   </div>
 
   <div class="basis-96 grow-0 shrink-0">
-    <h1 class="font-header text-5xl mb-8">{% translate 'Contribution' %}</h1>
+    <h1 class="font-header text-5xl mb-8">{% translate 'Membership' %}</h1>
+    <h2 class="font-header text-3xl mb-4">{% translate 'Contribution' %}</h2>
     {% if active_order %}
       <p class="mb-4">
         {% blocktranslate with amount=active_order.product_price_euros period=subscription_period provider=payment_provider %}
@@ -62,7 +63,11 @@
         href="{% url 'members:membership-selection' %}"
       >{% translate 'Start subscription' %}</a>
     {% endif %}
-
+    <h2 class="font-header text-3xl mb-4 mt-8">{% translate 'Cancel membership' %}</h2>
+    <a 
+      class="btn bg-primary text-white p-3 cursor-pointer" 
+      href="{% url 'members:membership-cancellation' %}"
+    >{% translate 'Cancel membership...' %}</a>
   </div>
 </div>
 {% endblock main %}

@@ -15,7 +15,6 @@ from django.db import router, transaction
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
@@ -399,11 +398,7 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
         return super().delete_view(request, object_id, extra_context)
 
     def delete_model(self, request, obj: User):
-        obj.is_active = False
-        obj.date_left = timezone.now()
-        obj.save()
-        for order in obj.order_set.filter(cancelled_at__isnull=True):
-            order.cancel()
+        obj.cancel_membership()
 
     def has_add_permission(self, request):
         return False
