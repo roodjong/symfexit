@@ -90,7 +90,6 @@ class MollieWebhookTest(TestCase):
         self.assertTrue(Payment.objects.filter(obligation=self.obligation).exists())
 
         payment = Payment.objects.get(obligation=self.obligation)
-        self.assertEqual(payment.order, self.obligation.order)
         self.assertEqual(payment.paid_using, self.provider)
         self.assertEqual(payment.transaction.amount_cents, 1000)
 
@@ -191,7 +190,6 @@ class MollieWebhookTest(TestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=1000
         )
         Payment.objects.create(
-            order=self.obligation.order,
             obligation=self.obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),
@@ -441,7 +439,6 @@ class MollieStartPaymentFlowTest(TestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=1550
         )
         Payment.objects.create(
-            order=self.obligation.order,
             obligation=self.obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),
@@ -472,7 +469,6 @@ class MollieStartPaymentFlowTest(TestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=1000
         )
         Payment.objects.create(
-            order=self.obligation.order,
             obligation=self.obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),
@@ -677,7 +673,6 @@ class ChargeObligationsTest(TestCase):
             amount_cents=1000,
         )
         Payment.objects.create(
-            order=self.order,
             obligation=self.obligation,
             paid_using=self.provider,
             paid_at="2026-01-01T00:00:00Z",
@@ -718,7 +713,6 @@ class ChargeObligationsTest(TestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=400
         )
         Payment.objects.create(
-            order=self.obligation.order,
             obligation=self.obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),
@@ -752,7 +746,6 @@ class ChargeObligationsTest(TestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=1000
         )
         Payment.objects.create(
-            order=self.obligation.order,
             obligation=self.obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),
@@ -917,7 +910,6 @@ class BackfillProcessedAtMigrationTest(TestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=1000
         )
         Payment.objects.create(
-            order=self.obligation.order,
             obligation=self.obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),

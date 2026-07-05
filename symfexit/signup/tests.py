@@ -83,7 +83,6 @@ class ReturnViewTest(FastTenantTestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=amount_cents
         )
         Payment.objects.create(
-            order=obligation.order,
             obligation=obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),
@@ -180,7 +179,6 @@ class CreateUserSignupOverpaymentTest(FastTenantTestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=amount_cents
         )
         Payment.objects.create(
-            order=obligation.order,
             obligation=obligation,
             paid_using=self.provider,
             paid_at=timezone.now(),
