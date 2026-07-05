@@ -9,8 +9,9 @@ from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import format_html
+from django.utils.html import format_html_join
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.payments.models import (
@@ -258,26 +259,25 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = (OrderStatusFilter,)
     show_change_link = True
 
-    fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    # ...
-                    "payments_overview",
-                )
-            },
-        ),
-    )
-
     def payments_overview(self, obj):
         payments = Payment.objects.filter(obligation__order=obj)
 
         if not payments.exists():
             return "No payments"
 
-        return format_html(
-            "<br>".join(f'<a href="/admin/app/payment/{p.pk}/change/">{p}</a>' for p in payments)
+        return (
+            format_html_join(
+                "<br>",
+                '<a href="{}">{}</a>',
+                (
+                    (
+                        reverse("admin:payments_payment_change", args=[p.pk]),
+                        str(p),
+                    )
+                    for p in payments
+                ),
+            )
+            or "No payments"
         )
 
     payments_overview.short_description = "Payments"
@@ -400,15 +400,16 @@ class PaymentObligationPaymentInline(admin.TabularInline):
     model = Payment
     form = PaymentObligationPaymentInlineForm
     extra = 0
+    show_change_link = True
 
     def get_fields(self, request, obj=None):
         if obj and obj.payment_set.exists():
-            return ("order", "transaction", "paid_using", "paid_at")
+            return ("transaction", "paid_using", "paid_at")
         return ("paid_using", "paid_at")
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.payment_set.exists():
-            return ("order", "transaction", "paid_using", "paid_at")
+            return ("transaction", "paid_using", "paid_at")
         return ()
 
     def has_add_permission(self, request, obj=None):

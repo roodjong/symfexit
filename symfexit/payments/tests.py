@@ -102,7 +102,6 @@ class TestObligationOutstanding(TestCase):
             credit_account=ar_account, debit_account=bank_account, amount_cents=amount_cents
         )
         return Payment.objects.create(
-            order=self.obligation.order,
             obligation=self.obligation,
             paid_at=datetime(2026, 1, 1, tzinfo=UTC),
             transaction=tx,

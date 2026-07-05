@@ -68,7 +68,6 @@ def apply_member_credit(obligation: PaymentObligation) -> Payment | None:
             amount_cents=apply_cents,
         )
         payment = Payment.objects.create(
-            order=obligation.order,
             obligation=obligation,
             paid_using=obligation.order.paid_using,
             paid_at=timezone.now(),
@@ -131,7 +130,6 @@ def record_receipt(obligation: PaymentObligation, amount_cents: int) -> Payment 
                 amount_cents=applied,
             )
             payment = Payment.objects.create(
-                order=order,
                 obligation=locked_obligation,
                 paid_using=order.paid_using,
                 paid_at=timezone.now(),

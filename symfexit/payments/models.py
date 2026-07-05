@@ -617,7 +617,7 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment for order {self.order.id} made at {date_format(self.paid_at, 'DATETIME_FORMAT')}"
+        return f"Payment for order {self.obligation.order.id} made at {date_format(self.paid_at, 'DATETIME_FORMAT')}"
 
 
 class PaymentProvider(models.Model):
