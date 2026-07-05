@@ -28,7 +28,7 @@ class MollieSettings(models.Model):
 
     def format_description(self, obligation):
         user = obligation.order.ordered_for
-        member_number = str(user.member_identifier) if user else ""
+        member_number = str(user.pk) if user else ""
         return self.payment_description.format(
             order_id=obligation.order.id,
             product_name=obligation.order.product_name,

@@ -276,6 +276,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Django's default hashers, plus plain BCrypt and Argon2 so password hashes
+# imported from the old mijnrood (Symfony) administration keep working.
+# New passwords are hashed with the first entry (PBKDF2) and existing hashes
+# are upgraded to it on the first successful login.
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.BCryptPasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

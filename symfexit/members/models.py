@@ -12,17 +12,6 @@ from django.utils.translation import gettext_lazy as _
 from symfexit.adminsite.models import GroupFlags, WellKnownPermissionGroup
 
 
-def generate_member_number():
-    largest_member_number = User.objects.all().order_by("-member_identifier").first()
-    if largest_member_number is None:
-        return "1"
-
-    try:
-        return str(int(largest_member_number.member_identifier) + 1)
-    except ValueError as e:
-        raise ValueError("Did not expect non-integers in the member_identifier field") from e
-
-
 class UserManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
         """
@@ -40,13 +29,11 @@ class UserManager(BaseUserManager):
     def create_user(self, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        extra_fields.setdefault("member_identifier", generate_member_number())
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("member_identifier", generate_member_number())
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
@@ -61,9 +48,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         MEMBER = "MEMBER", _("Member")
         SUPPORT_MEMBER = "SUPPORT", _("Support member")
 
-    # Previously the primary_key of the User in the old mijnrood project
-    member_identifier = models.PositiveIntegerField(
-        _("member number"), unique=True, null=False, blank=False
+    # Previously the primary_key of the User in the old mijnrood project.
+    # Only kept for reference to the old administration; no longer assigned
+    # for new members.
+    legacy_member_number = models.PositiveIntegerField(
+        _("legacy member number"), unique=True, null=True, blank=True
     )
     first_name = models.TextField(_("first name"))
     last_name = models.TextField(_("last name"))
@@ -174,7 +163,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         with transaction.atomic():
             account = Account.objects.create(
                 code=ACCOUNT_MEMBER_CREDIT,
-                name=f"Member credit: {self.member_identifier}",
+                name=f"Member credit: {self.pk}",
                 description=f"Credit balance for member {self.get_full_name()} ({self.email})",
                 credit_balance=True,
             )

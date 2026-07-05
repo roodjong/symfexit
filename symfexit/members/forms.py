@@ -31,7 +31,6 @@ class NameField(forms.Field):
 
 class UserForm(forms.ModelForm):
     required_css_class = "required"
-    member_identifier = forms.CharField(label=_("Member number"), disabled=True)
     name = NameField(label=_("Name"))
     email = forms.EmailField(label=_("Email"))
     phone_number = forms.CharField(label=_("Phone number"))
@@ -48,7 +47,6 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = (
-            "member_identifier",
             "name",
             "email",
             "phone_number",
