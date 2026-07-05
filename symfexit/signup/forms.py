@@ -222,7 +222,7 @@ class SignupForm(forms.Form):
 
         if choices:
             num_choices = len(choices)
-            if num_choices % 2:
+            if num_choices % 2 != 0:
                 first_tier_value, _ = choices[(num_choices - 1) // 2]
             else:
                 first_tier_value, _ = choices[num_choices // 2]
