@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
-from django.db.models import Q
 
 User = get_user_model()
 
@@ -12,8 +11,7 @@ class IdOrEmailAuth(BaseBackend):
         if username is None or password is None:
             return
         try:
-            # Try to fetch the user by searching the username or email field
-            user = User.objects.get(Q(member_number=username) | Q(email=username))
+            user = User.objects.get(email=username)
             if user.check_password(password):
                 return user
         except User.DoesNotExist:

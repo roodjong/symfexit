@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
 from symfexit.adminsite.admin import GroupFlagsInline
-from symfexit.members.models import LocalGroup, User, WorkGroup, generate_member_number
+from symfexit.members.models import LocalGroup, User, WorkGroup
 from symfexit.root.export.mixin import ExportMixin
 
 Group._meta.verbose_name = _("Permission Group")
@@ -137,7 +137,7 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
             _("Personal info"),
             {
                 "fields": (
-                    "member_identifier",
+                    "legacy_member_number",
                     "member_type",
                     "membership_type",
                     "membership_tier",
@@ -177,7 +177,6 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
                 "fields": (
                     "password1",
                     "password2",
-                    "member_identifier",
                     "first_name",
                     "last_name",
                     "email",
@@ -186,6 +185,7 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
         ),
     )
     readonly_fields = (
+        "legacy_member_number",
         "membership_type",
         "membership_tier",
         "last_login",
@@ -218,7 +218,7 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
     delete_confirmation_template = "admin/members/membership_cancellation_confirm.html"
 
     export_fields = [
-        "member_identifier",
+        "legacy_member_number",
         "member_type",
         "membership_type",
         "membership_tier",
@@ -239,14 +239,6 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
         from symfexit.payments.mollie.admin import MollieCustomerInline  # noqa: PLC0415
 
         return [_get_order_inline(), MollieCustomerInline]
-
-    def get_changeform_initial_data(self, request):
-        return {"member_identifier": generate_member_number()}
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj is not None:
-            return self.readonly_fields + ("member_identifier",)
-        return self.readonly_fields
 
     def get_fieldsets(self, request, obj=None):
         if not obj:
@@ -534,7 +526,7 @@ class LocalGroupMemberAdmin(AbstractUserAdmin):
         "cadre",
     )
     readonly_fields = [
-        "member_identifier",
+        "legacy_member_number",
         "membership_type",
         "membership_tier",
         "first_name",
@@ -552,7 +544,6 @@ class LocalGroupMemberAdmin(AbstractUserAdmin):
             _("Personal info"),
             {
                 "fields": (
-                    "member_identifier",
                     "first_name",
                     "last_name",
                     "email",
