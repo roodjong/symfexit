@@ -16,18 +16,30 @@ from symfexit.payments.models import BillingAddress, Order, Payment, PeriodUnit
 from symfexit.payments.registry import payments_registry
 
 
-def _friendly_period(period, unit):
+def friendly_period(period, unit):
     """Return a user-friendly description of a subscription period."""
-    if unit == PeriodUnit.MONTH and period == 3:  # noqa: PLR2004
-        return _("quarter")
-    if unit == PeriodUnit.MONTH and period == 1:
-        return _("month")
-    if unit == PeriodUnit.YEAR and period == 1:
-        return _("year")
-    if unit == PeriodUnit.WEEK and period == 1:
-        return _("week")
-    if unit == PeriodUnit.DAY and period == 1:
-        return _("day")
+    if unit == PeriodUnit.MONTH:
+        if period == 1:
+            return _("month")
+        elif period == 3:  # noqa: PLR2004
+            return _("quarter")
+        else:
+            return _(f"{period} months")
+    elif unit == PeriodUnit.YEAR:
+        if period == 1:
+            return _("year")
+        else:
+            return _(f"{period} years")
+    elif unit == PeriodUnit.WEEK:
+        if period == 1:
+            return _("week")
+        else:
+            return _(f"{period} weeks")
+    elif unit == PeriodUnit.DAY:
+        if period == 1:
+            return _("day")
+        else:
+            return _(f"{period} days")
     unit_display = PeriodUnit(unit).label.lower()
     return f"{period} {unit_display}"
 
@@ -56,7 +68,7 @@ class MemberData(LoginRequiredMixin, TemplateView):
                 {"paid_at": p.paid_at, "amount_euros": p.transaction.amount_cents / 100}
                 for p in payment_qs
             ]
-            subscription_period = _friendly_period(
+            subscription_period = friendly_period(
                 active_order.subscription_period,
                 active_order.subscription_period_unit,
             )
