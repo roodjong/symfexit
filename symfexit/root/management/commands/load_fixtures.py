@@ -14,6 +14,8 @@ from symfexit.emails.models import EmailLayout, EmailTemplate
 from symfexit.events.models import Event
 from symfexit.home.models import HomePage
 from symfexit.members.models import LocalGroup, User, WorkGroup
+from symfexit.membership.models import MembershipTier, MembershipType
+from symfexit.payments.models import PeriodUnit, Product, Subscription
 from symfexit.signup.models import MembershipApplication
 from symfexit.tenants.apps import ensure_single_tenant_if_enabled
 from symfexit.tenants.config import config
@@ -67,6 +69,8 @@ class Command(BaseCommand):
         LocalGroup.objects.all().delete()
         WorkGroup.objects.all().delete()
         HomePage.objects.all().delete()
+        MembershipType.objects.all().delete()
+        Product.objects.all().delete()
         self.stdout.write(self.style.SUCCESS("All relevant data deleted."))
 
     def recreate_tenant(self):
@@ -98,8 +102,9 @@ class Command(BaseCommand):
 
         board_members = self.create_board_members()
         work_groups = self.create_work_groups()
+        membership_type, tiers = self.create_membership_types()
         local_groups, all_members, contact_people, workgroup_members = self.create_local_groups(
-            board_members, work_groups[0]
+            board_members, work_groups[0], membership_type, tiers
         )
 
         self.create_events(board_members, contact_people, all_members, now)
@@ -133,7 +138,68 @@ class Command(BaseCommand):
         fixture_workgroup = WorkGroup.objects.create(name="Webteam")
         return [fixture_workgroup]
 
-    def create_local_groups(self, board_members: list[User], workgroup: WorkGroup):
+    def create_membership_types(self):
+        def create_subscription_product(sku, name, price_euros):
+            product = Product.objects.create(
+                enabled=True,
+                sku=sku,
+                name=name,
+                price_euros=price_euros,
+            )
+            Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+            return product
+
+        custom_amount_product = create_subscription_product(
+            "membership-custom", "Membership (custom amount)", 10
+        )
+        membership_type = MembershipType.objects.create(
+            name="Membership",
+            description="Regular membership.",
+            slug="membership",
+            allow_custom_amount=True,
+            custom_amount_product=custom_amount_product,
+            position=0,
+        )
+        tiers = []
+        for position, (tier_name, price_euros) in enumerate(
+            [("Reduced", 5), ("Standard", 10), ("Solidarity", 15)]
+        ):
+            product = create_subscription_product(
+                f"membership-{tier_name.lower()}", f"Membership ({tier_name})", price_euros
+            )
+            tiers.append(
+                MembershipTier.objects.create(
+                    membership_type=membership_type,
+                    name=tier_name,
+                    product=product,
+                    position=position,
+                )
+            )
+
+        disabled_type = MembershipType.objects.create(
+            enabled=False,
+            name="Old membership",
+            description="A membership type that is no longer offered.",
+            slug="old-membership",
+            position=1,
+        )
+        MembershipTier.objects.create(
+            membership_type=disabled_type,
+            enabled=False,
+            name="Old standard",
+            product=create_subscription_product("old-membership-standard", "Old membership", 8),
+            position=0,
+        )
+
+        return membership_type, tiers
+
+    def create_local_groups(
+        self,
+        board_members: list[User],
+        workgroup: WorkGroup,
+        membership_type: MembershipType,
+        tiers: list[MembershipTier],
+    ):
         local_groups = []
         all_members = []
         contact_people = set()
@@ -146,6 +212,8 @@ class Command(BaseCommand):
             local_groups.append(group)
             applications = []
             for m in range(10):
+                # Every fourth member pays a custom amount, the rest rotate through the tiers
+                tier = None if (m + 1) % 4 == 0 else tiers[m % len(tiers)]
                 app = MembershipApplication.objects.create(
                     first_name=f"Member{g + 1}_{m + 1}",
                     last_name="User",
@@ -155,7 +223,9 @@ class Command(BaseCommand):
                     address=f"{g + 1}{m + 1} Main St",
                     city="Cityville",
                     postal_code=f"{g + 1}{m + 1}2345",
-                    payment_amount_euros=10,
+                    payment_amount_euros=tier.product.price_euros if tier else 7.50,
+                    membership_type=membership_type,
+                    membership_tier=tier,
                     preferred_group=group,
                 )
                 applications.append(app)
