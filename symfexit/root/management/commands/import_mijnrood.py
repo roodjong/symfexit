@@ -10,7 +10,9 @@ corresponding symfexit records in the *current tenant schema*, so run it as:
 
 What is imported:
 
-- admin_membershipstatus  -> User.is_active + note in extra_information
+- admin_membershipstatus  -> User.is_active + note in extra_information; status
+                             names can additionally be mapped to User.cadre and
+                             override activeness via --cadre-status/--inactive-status
 - admin_division          -> members.LocalGroup (+ member's group membership)
 - division_member         -> LocalGroup.contact_people
 - admin_member            -> members.User (member_type=MEMBER)
@@ -187,6 +189,25 @@ class Command(BaseCommand):
             "rest instead of aborting",
         )
         parser.add_argument(
+            "--cadre-status",
+            action="append",
+            default=[],
+            metavar="NAME",
+            help="Members whose mijnrood membership status has this name are imported as "
+            "cadre members. Repeatable, case-insensitive. The name must exist in "
+            "admin_membershipstatus.csv.",
+        )
+        parser.add_argument(
+            "--inactive-status",
+            action="append",
+            default=[],
+            metavar="NAME",
+            help="If given, members whose membership status has one of these names (e.g. "
+            "'Uitgeschreven') are imported as inactive and everyone else as active; without "
+            "this flag the status's allowed_access column decides. Repeatable, "
+            "case-insensitive.",
+        )
+        parser.add_argument(
             "--dry-run",
             action="store_true",
             help="Run the whole import and roll back at the end",
@@ -197,6 +218,8 @@ class Command(BaseCommand):
         if not self.export_dir.is_dir():
             raise CommandError(f"{self.export_dir} is not a directory")
         self.skip_duplicate_emails = options["skip_duplicate_emails"]
+        self.cadre_statuses = {name.lower() for name in options["cadre_status"]}
+        self.inactive_statuses = {name.lower() for name in options["inactive_status"]}
         self.warnings = []
         self.counts = {}
 
@@ -218,6 +241,7 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 self.import_statuses()
+                self.validate_status_flags()
                 self.import_groups()
                 self.setup_contribution_products()
                 self.import_members()
@@ -372,6 +396,16 @@ class Command(BaseCommand):
         for row in self.rows("admin_membershipstatus"):
             self.statuses[row["id"]] = (row["name"], parse_bool(row["allowed_access"]))
 
+    def validate_status_flags(self):
+        """Catch typos in --cadre-status/--active-status before importing anything."""
+        known = {name.lower() for name, _ in self.statuses.values()}
+        unknown = (self.cadre_statuses | self.inactive_statuses) - known
+        if unknown:
+            raise CommandError(
+                f"Unknown membership status name(s): {', '.join(sorted(unknown))}. "
+                f"The export contains: {', '.join(sorted(name for name, _ in self.statuses.values()))}"
+            )
+
     def import_groups(self):
         for row in self.rows("admin_division"):
             group = LocalGroup.objects.create(
@@ -462,11 +496,18 @@ class Command(BaseCommand):
             extra_lines.append(row["comments"])
         status_id = row.get("current_membership_status_id")
         is_active = True
+        cadre = False
         if status_id:
             status_name, allowed_access = self.statuses.get(status_id, (None, True))
-            is_active = allowed_access
             if status_name:
+                if self.inactive_statuses:
+                    is_active = status_name.lower() not in self.inactive_statuses
+                else:
+                    is_active = allowed_access
+                cadre = status_name.lower() in self.cadre_statuses
                 extra_lines.append(f"Membership status (mijnrood): {status_name}")
+            else:
+                is_active = allowed_access
         if row.get("accept_use_personal_information") == "0":
             extra_lines.append("Did NOT accept use of personal information (mijnrood)")
 
@@ -483,10 +524,13 @@ class Command(BaseCommand):
             postal_code=row["post_code"] or "",
             extra_information="\n".join(extra_lines),
             is_active=is_active,
+            cadre=cadre,
             date_joined=date_to_datetime(registration) or datetime.now(tz=AMSTERDAM),
             password=password,
         )
         user.save()
+        if cadre:
+            self.count("cadre members")
         self.link_mollie_customer(user, row.get("mollie_customer_id"), description)
         self.create_contribution_order(user, row, registration, description)
         if row.get("mollie_subscription_id"):

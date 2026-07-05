@@ -14,7 +14,7 @@ from zoneinfo import ZoneInfo
 
 import bcrypt
 from argon2 import PasswordHasher as Argon2Hasher
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 from django_tenants.test.cases import FastTenantTestCase
 
 from symfexit.documents.models import Directory, File
@@ -111,6 +111,11 @@ class ImportMijnroodTest(FastTenantTestCase):
             "--documents-cache",
             str(self.cache_dir),
             "--skip-duplicate-emails",
+            # lowercase on purpose: names match case-insensitively
+            "--cadre-status",
+            "kaderlid",
+            "--inactive-status",
+            "opgezegd",
             *self.import_args(),
             stdout=self.stdout,
         )
@@ -135,6 +140,7 @@ class ImportMijnroodTest(FastTenantTestCase):
             [
                 {"id": "1", "name": "Actief", "allowed_access": "1"},
                 {"id": "2", "name": "Opgezegd", "allowed_access": "0"},
+                {"id": "3", "name": "Kaderlid", "allowed_access": "1"},
             ],
         )
         self.write_csv(
@@ -205,6 +211,7 @@ class ImportMijnroodTest(FastTenantTestCase):
                     "roles": "[]",
                     "country": "NL",
                     "accept_use_personal_information": "1",
+                    "current_membership_status_id": "3",
                 },
                 {
                     "id": "13",
@@ -442,6 +449,29 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertIn("Betaalt per kwartaal", anna.extra_information)
         self.assertIn("Opgezegd", anna.extra_information)
         self.assertIn("Did NOT accept", anna.extra_information)
+
+    def test_status_mapping(self):
+        kees = User.objects.get(legacy_member_number=12)
+        self.assertTrue(kees.cadre)
+        self.assertTrue(kees.is_active)
+        self.assertIn("Kaderlid", kees.extra_information)
+        piet = User.objects.get(legacy_member_number=10)
+        self.assertFalse(piet.cadre)
+        anna = User.objects.get(legacy_member_number=11)
+        self.assertFalse(anna.cadre)
+        self.assertFalse(anna.is_active)
+
+    def test_unknown_status_name_aborts(self):
+        with self.assertRaisesMessage(CommandError, "Unknown membership status name(s): bestaatniet"):
+            call_command(
+                "import_mijnrood",
+                str(self.export_dir),
+                "--documents-cache",
+                str(self.cache_dir),
+                "--cadre-status",
+                "Bestaatniet",
+                stdout=StringIO(),
+            )
 
     def test_passwords(self):
         piet = User.objects.get(legacy_member_number=10)
