@@ -201,7 +201,7 @@ class SignupForm(forms.Form):
                 )
             elif tier.product.subscription.period_unit == "week":
                 price_nor.append(
-                    (tier.price_cents() / tier.product.subscription.period * 365.25 / 7), tier
+                    (tier.price_cents() / tier.product.subscription.period * 365.25 / 7, tier)
                 )
             elif tier.product.subscription.period_unit == "month":
                 price_nor.append((tier.price_cents() / tier.product.subscription.period * 12, tier))
