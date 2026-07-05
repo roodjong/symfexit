@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.members.models import LocalGroup
+from symfexit.members.views import friendly_period
 from symfexit.membership.models import MembershipTier, MembershipType
 from symfexit.signup.models import MembershipApplication
 
@@ -190,13 +191,42 @@ class SignupForm(forms.Form):
             self.fields["preferred_group"].initial = initialgroup.id
 
     def _build_tier_choices(self, membership_type):
-        choices = []
         first_tier_value = None
+        price_nor = []
         for tier in membership_type.tiers.all():
+            # Normalise to 1 year for comparison
+            if tier.product.subscription.period_unit == "day":
+                price_nor.append(
+                    (tier.price_cents() / tier.product.subscription.period * 365.25, tier)
+                )
+            elif tier.product.subscription.period_unit == "week":
+                price_nor.append(
+                    (tier.price_cents() / tier.product.subscription.period * 365.25 / 7), tier
+                )
+            elif tier.product.subscription.period_unit == "month":
+                price_nor.append((tier.price_cents() / tier.product.subscription.period * 12, tier))
+            elif tier.product.subscription.period_unit == "year":
+                price_nor.append((tier.price_cents() / tier.product.subscription.period, tier))
+            else:
+                price_nor.append((0, tier))
+
+        choices = []
+        for _price, tier in sorted(price_nor):
             value = str(tier.pk)
-            if first_tier_value is None:
-                first_tier_value = value
-            choices.append((value, f"{tier.name} (€{tier.price_euros():.2f})"))
+            choices.append(
+                (
+                    value,
+                    f"{tier.name} (€{tier.price_euros():.2f} per {friendly_period(tier.product.subscription.period, tier.product.subscription.period_unit)})",
+                )
+            )
+
+        if choices:
+            num_choices = len(choices)
+            if num_choices % 2:
+                first_tier_value, _ = choices[(num_choices - 1) // 2]
+            else:
+                first_tier_value, _ = choices[num_choices // 2]
+
         if membership_type.allow_custom_amount:
             choices.append((CUSTOM_TIER_VALUE, "Ik wil meer betalen, namelijk:"))
         self.fields["payment_tier"].choices = choices
