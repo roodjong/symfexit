@@ -77,12 +77,15 @@ form {
     }
   }
   .checkmark {
-    @apply col-span-2 flex-row-reverse;
+    @apply col-span-2;
     label {
-      @apply basis-auto;
+      @apply grow shrink basis-0;
     }
     input[type="checkbox"] {
-      @apply grow-0 mr-2 mb-2;
+      @apply order-first grow-0 shrink-0 mr-2 mb-2;
+    }
+    .errorlist {
+      @apply basis-full;
     }
   }
   .message-error, .errorlist {
