@@ -118,6 +118,7 @@ class SignupForm(forms.Form):
     membership_type = forms.ModelChoiceField(
         queryset=MembershipType.objects.filter(enabled=True),
         widget=forms.HiddenInput,
+        label="Lidmaatschapstype",
         required=True,
     )
 
@@ -216,16 +217,23 @@ class SignupForm(forms.Form):
             choices.append(
                 (
                     value,
-                    f"{tier.name} (€{tier.price_euros():.2f} per {friendly_period(tier.product.subscription.period, tier.product.subscription.period_unit)})",
+                    _("{} (€{:.2f} per {})").format(
+                        tier.name,
+                        tier.price_euros(),
+                        friendly_period(
+                            tier.product.subscription.period,
+                            tier.product.subscription.period_unit,
+                        ),
+                    ),
                 )
             )
 
         if choices:
             num_choices = len(choices)
             if num_choices % 2 != 0:
-                first_tier_value, _ = choices[(num_choices - 1) // 2]
+                first_tier_value, desc = choices[(num_choices - 1) // 2]
             else:
-                first_tier_value, _ = choices[num_choices // 2]
+                first_tier_value, desc = choices[num_choices // 2]
 
         if membership_type.allow_custom_amount:
             choices.append((CUSTOM_TIER_VALUE, "Ik wil meer betalen, namelijk:"))
