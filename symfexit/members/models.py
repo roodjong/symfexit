@@ -211,6 +211,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.is_staff = self.is_superuser
         return self.is_staff
 
+    def cancel_membership(self):
+        self.is_active = False
+        self.date_left = timezone.now()
+        self.save()
+        for order in self.order_set.filter(cancelled_at__isnull=True):
+            order.cancel()
+
     def save(self, *args, **kwargs):
         if self.pk is None:  # this is a newly created user
             self.is_staff = self.is_superuser

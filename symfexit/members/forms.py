@@ -225,3 +225,30 @@ class MembershipSelectionForm(forms.Form):
         user.membership_tier = membership_tier
         user.save()
         return user
+
+
+class MembershipCancellationForm(forms.Form):
+    required_css_class = "required"
+
+    confirm_cancellation = forms.BooleanField(
+        label=_("I confirm that I want to cancel my membership."),
+        required=True,
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        confirm_cancellation = cleaned_data.get("confirm_cancellation")
+
+        if not confirm_cancellation:
+            self.add_error(
+                "confirm_cancellation",
+                _("You must confirm that you want to cancel your membership."),
+            )
+
+    def save(self, commit=True):
+        if commit:
+            self.user.cancel_membership()
