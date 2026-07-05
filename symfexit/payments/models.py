@@ -397,10 +397,13 @@ class OrderManager(models.Manager):
 
 class Order(models.Model):
     # For now only one order item per order is possible
+    # We store all values in the order, such that the information of the original order is not lost,
+    # when the related order is changed.
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     product_sku = models.CharField(_("product sku"), max_length=100)
     product_name = models.CharField(_("product name"), max_length=100)
     product_price_euros = models.DecimalField(max_digits=8, decimal_places=2)
+    product_type = models.CharField(choices=ProductType, default=ProductType.SUBSCRIPTION)
     subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True)
     subscription_period_unit = models.CharField(choices=PeriodUnit, blank=True)
     subscription_period = models.IntegerField(
@@ -605,8 +608,8 @@ class PaymentObligation(models.Model):
 
 
 class Payment(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
     obligation = models.ForeignKey(PaymentObligation, on_delete=models.SET_NULL, null=True)
+    # This transaction is different from the `transaction` in PaymentObligation.
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     paid_using = models.ForeignKey("PaymentProvider", on_delete=models.SET_NULL, null=True)
     # When this payment was made according to the payer
