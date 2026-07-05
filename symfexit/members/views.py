@@ -65,7 +65,7 @@ class MemberData(LoginRequiredMixin, TemplateView):
         payment_provider = _("an unknown provider")
         if active_order:
             payment_qs = (
-                Payment.objects.filter(order=active_order)
+                Payment.objects.filter(obligation__order=active_order)
                 .select_related("transaction")
                 .order_by("-paid_at")
             )

@@ -10,6 +10,7 @@ from django.db.models import Exists, OuterRef
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from symfexit.payments.models import (
@@ -252,10 +253,34 @@ class OrderAdmin(admin.ModelAdmin):
     change_form_template = "admin/payments/change_form.html"
     delete_confirmation_template = "admin/payments/order_cancel_confirm.html"
     autocomplete_fields = ("ordered_for", "ordered_for_billing_address")
-    inlines = (PaidPaymentObligationInline, PaymentObligationInline, PaymentInline)
+    inlines = (PaidPaymentObligationInline, PaymentObligationInline)
     list_display = ("product_name", "ordered_for", "created_at", "cancelled_at")
     list_filter = (OrderStatusFilter,)
     show_change_link = True
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    # ...
+                    "payments_overview",
+                )
+            },
+        ),
+    )
+
+    def payments_overview(self, obj):
+        payments = Payment.objects.filter(obligation__order=obj)
+
+        if not payments.exists():
+            return "No payments"
+
+        return format_html(
+            "<br>".join(f'<a href="/admin/app/payment/{p.pk}/change/">{p}</a>' for p in payments)
+        )
+
+    payments_overview.short_description = "Payments"
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
@@ -268,6 +293,7 @@ class OrderAdmin(admin.ModelAdmin):
                 "subscription_period",
                 "ordered_for",
                 "cancelled_at",
+                "payments_overview",
             )
         return super().get_readonly_fields(request, obj)
 
