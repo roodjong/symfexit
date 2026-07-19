@@ -2,6 +2,8 @@ import logging
 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from mollie.api.client import Client
+from mollie.api.objects.customer import Customer as MollieApiCustomer
 
 from symfexit.payments.mollie.admin import MollieSettingsInline
 from symfexit.payments.mollie.models import MollieCustomer, MolliePayment, MollieSettings
@@ -25,12 +27,11 @@ def _get_or_create_mollie_customer(client, user):
 
 
 def _create_mollie_customer(client, name, email):
-    customer = client.customers.create({"name": name, "email": email})
-    return customer["id"]
+    return client.customers.create({"name": name, "email": email})
 
 
-def _has_valid_mandate(client, mollie_customer_id):
-    mandates = client.customer_mandates.with_parent_id(mollie_customer_id).list()
+def _has_valid_mandate(mollie_customer: MollieApiCustomer):
+    mandates = mollie_customer.mandates.list()
     return any(m["status"] == "valid" for m in mandates["_embedded"]["mandates"])
 
 
@@ -90,7 +91,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         if obligation.is_fully_paid:
             return HttpResponseRedirect(request.build_absolute_uri(return_url))
 
-        client = self.mollie_settings.get_mollie_client()
+        client: Client = self.mollie_settings.get_mollie_client()
 
         webhook_url = request.build_absolute_uri(reverse("payments_mollie:webhook"))
         pending_url = build_pending_url(request, obligation, return_url)
@@ -114,16 +115,18 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         user = obligation.order.ordered_for
 
         if user is not None:
-            mollie_customer = _get_or_create_mollie_customer(client, user)
-            customer_id = mollie_customer.mollie_customer_id
+            symfexit_customer = _get_or_create_mollie_customer(client, user)
+            customer_id = symfexit_customer.mollie_customer_id
+            mollie_customer = client.customers.get(customer_id)
         else:
             # Signup flow — create Mollie customer from billing address
             billing = obligation.ordered_for_billing_address
-            customer_id = _create_mollie_customer(client, billing.name, billing.email)
+            mollie_customer = _create_mollie_customer(client, billing.name, billing.email)
+            customer_id = mollie_customer.mollie_customer_id
 
         payment_data["customerId"] = customer_id
 
-        if user is not None and _has_valid_mandate(client, customer_id):
+        if user is not None and _has_valid_mandate(mollie_customer):
             # Recurring payment — charge directly, no checkout needed
             payment_data["sequenceType"] = "recurring"
             payment = client.payments.create(payment_data)
@@ -163,7 +166,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
 
         client = self.mollie_settings.get_mollie_client()
 
-        if not _has_valid_mandate(client, mollie_customer.mollie_customer_id):
+        if not _has_valid_mandate(mollie_customer):
             return False
 
         webhook_path = reverse("payments_mollie:webhook")
