@@ -25,7 +25,7 @@ from symfexit.payments.models import Account, Order, Payment, PaymentObligation
 from symfexit.payments.mollie.models import MollieCustomer, MolliePayment
 from symfexit.signup.models import MembershipApplication
 
-AMSTERDAM = ZoneInfo("Europe/Amsterdam")
+AMSTERDAM_TZ = ZoneInfo("Europe/Amsterdam")
 
 HEADERS = {
     "admin_membershipstatus": ["id", "name", "allowed_access"],
@@ -582,7 +582,7 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertTrue(piet.is_active)
         self.assertEqual(piet.member_type, User.MemberType.MEMBER)
         self.assertEqual(piet.membership_type.slug, "lidmaatschap")
-        self.assertEqual(piet.date_joined.astimezone(AMSTERDAM).date(), date(2020, 1, 15))
+        self.assertEqual(piet.date_joined.astimezone(AMSTERDAM_TZ).date(), date(2020, 1, 15))
         # being a division contact also puts piet in the "Contact person" permission group
         self.assertEqual([g.name for g in LocalGroup.objects.filter(user=piet)], ["Amsterdam"])
         # duplicate email row was skipped
@@ -635,7 +635,7 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertEqual(sofie.member_type, User.MemberType.SUPPORT_MEMBER)
         self.assertEqual(sofie.legacy_member_number, 999)
         self.assertEqual(sofie.membership_type.slug, "steunlidmaatschap")
-        self.assertEqual(sofie.date_joined.astimezone(AMSTERDAM).date(), date(2018, 3, 1))
+        self.assertEqual(sofie.date_joined.astimezone(AMSTERDAM_TZ).date(), date(2018, 3, 1))
         jan = User.objects.get(email="jan@example.org")
         self.assertIsNone(jan.legacy_member_number)
 
@@ -657,7 +657,7 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertEqual(order.subscription_period_unit, "month")
         self.assertEqual(order.subscription_period, 1)
         self.assertEqual(order.product_price_euros, Decimal("7.50"))
-        self.assertEqual(order.created_at.astimezone(AMSTERDAM).date(), date(2020, 1, 15))
+        self.assertEqual(order.created_at.astimezone(AMSTERDAM_TZ).date(), date(2020, 1, 15))
 
         obligations = order.paymentobligation_set.order_by("period")
         self.assertEqual([(o.year, o.period) for o in obligations], [(2026, 0), (2026, 1)])
@@ -670,13 +670,13 @@ class ImportMijnroodTest(FastTenantTestCase):
         kees_obligation = PaymentObligation.objects.get(order__ordered_for=kees)
         self.assertEqual((kees_obligation.year, kees_obligation.period), (2026, 2026))
         self.assertEqual(
-            kees_obligation.pay_before.astimezone(AMSTERDAM).date(), date(2026, 12, 31)
+            kees_obligation.pay_before.astimezone(AMSTERDAM_TZ).date(), date(2026, 12, 31)
         )
 
         # 3 for piet, 1 for anna, 1 for kees; pending + unknown-member skipped
         self.assertEqual(Payment.objects.count(), 5)
         paid_at = Payment.objects.get(transaction__amount_cents=2250).paid_at
-        self.assertEqual(paid_at, datetime(2026, 1, 10, 9, 0, tzinfo=AMSTERDAM))
+        self.assertEqual(paid_at, datetime(2026, 1, 10, 9, 0, tzinfo=AMSTERDAM_TZ))
 
         bank_account, _ = Account.get_bank_account()
         self.assertEqual(bank_account.balance_cents(), 750 * 3 + 2250 + 9000)
@@ -737,7 +737,7 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertIsNone(reglement.parent)
         self.assertEqual(reglement.content.read(), b"PDFDATA")
         self.assertEqual(reglement.content_type, "application/pdf")
-        self.assertEqual(reglement.created_at, datetime(2021, 5, 1, 12, 0, tzinfo=AMSTERDAM))
+        self.assertEqual(reglement.created_at, datetime(2021, 5, 1, 12, 0, tzinfo=AMSTERDAM_TZ))
         # duplicate name in the same folder was renamed
         renamed = File.objects.get(name="notulen (2).txt")
         self.assertEqual(renamed.parent, notulen)
@@ -747,7 +747,7 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertEqual(Event.objects.count(), 2)
         feest = Event.objects.get(event_name="Zomerfeest")
         self.assertEqual(feest.event_organiser, "Amsterdam")
-        self.assertEqual(feest.event_date, datetime(2026, 8, 1, 14, 0, tzinfo=AMSTERDAM))
+        self.assertEqual(feest.event_date, datetime(2026, 8, 1, 14, 0, tzinfo=AMSTERDAM_TZ))
         congres = Event.objects.get(event_name="Congres")
         self.assertEqual(congres.event_organiser, "")
 
