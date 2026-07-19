@@ -40,8 +40,6 @@
               {% translate 'Different bank account' %}
             </a>
           </li>
-        {% else %}
-          <li>{% translate 'Different bank account' %}</li>
         {% endif %}
         <li>{% translate 'Adjust amount' %}</li>
       </ul>
@@ -72,8 +70,8 @@
       >{% translate 'Start subscription' %}</a>
     {% endif %}
     <h2 class="font-header text-3xl mb-4 mt-8">{% translate 'Cancel membership' %}</h2>
-    <a 
-      class="btn bg-primary text-white p-3 cursor-pointer" 
+    <a
+      class="btn bg-primary text-white p-3 cursor-pointer"
       href="{% url 'members:membership-cancellation' %}"
     >{% translate 'Cancel membership...' %}</a>
   </div>
