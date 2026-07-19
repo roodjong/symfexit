@@ -204,8 +204,8 @@ msgstr "Voer een bedrag in."
 
 #: symfexit/members/forms.py:201
 #, python-format
-msgid "Please enter an amount of at least \\u20ac%(amount).2f."
-msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
+msgid "Please enter an amount of at least €%(amount).2f."
+msgstr "Voer een bedrag van minimaal €%(amount).2f in."
 
 #: symfexit/members/forms.py:208
 msgid "Invalid choice."
@@ -333,7 +333,7 @@ msgstr "gebruikers"
 
 #: symfexit/members/models.py:141
 msgid "Can cancel memberships"
-msgstr "Lidmaatschap opzeggen"
+msgstr "Kan lidmaatschap opzeggen"
 
 #: symfexit/members/models.py:241
 msgid "local group"
@@ -568,7 +568,3 @@ msgid ""
 "subscription."
 msgstr ""
 "Vul je adres, woonplaats en postcode in voordat je een abonnement start."
-
-#, python-format
-#~ msgid "Please enter an amount of at least €%(amount).2f."
-#~ msgstr "Voer een bedrag van minimaal €%(amount).2f in."

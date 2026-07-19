@@ -85,5 +85,5 @@ msgstr "taak"
 msgid "tasks"
 msgstr "taken"
 
-#~ msgid "(done)"
-#~ msgstr "(klaar)"
+msgid "(done)"
+msgstr "(klaar)"
