@@ -711,8 +711,12 @@ class Command(BaseCommand):
                 period = year
             else:
                 period = month_start - 1
+            # Initial payments created when an application was accepted are
+            # anchored to the registration month and can wrap the year
+            # (e.g. Nov-Feb); month_end then falls in the next calendar year.
+            end_year = year + 1 if month_end < month_start else year
             pay_before = datetime.combine(
-                last_day_of_month(year, month_end), time(23, 59, 59), tzinfo=AMSTERDAM_TZ
+                last_day_of_month(end_year, month_end), time(23, 59, 59), tzinfo=AMSTERDAM_TZ
             )
 
             obligation = order.paymentobligation_set.filter(year=year, period=period).first()

@@ -440,6 +440,18 @@ class ImportMijnroodTest(FastTenantTestCase):
                     "period_month_start": "1",
                     "period_month_end": "3",
                 },
+                # initial payment from an accepted application: anchored to the
+                # registration month and wrapping the year (Nov-Feb)
+                {
+                    "id": "8",
+                    "member_id": "11",
+                    "amount_in_cents": "2250",
+                    "payment_time": "2025-11-05 09:00:00",
+                    "status": "1",
+                    "period_year": "2025",
+                    "period_month_start": "11",
+                    "period_month_end": "2",
+                },
                 {
                     "id": "6",
                     "member_id": "12",
@@ -673,13 +685,26 @@ class ImportMijnroodTest(FastTenantTestCase):
             kees_obligation.pay_before.astimezone(AMSTERDAM_TZ).date(), date(2026, 12, 31)
         )
 
-        # 3 for piet, 1 for anna, 1 for kees; pending + unknown-member skipped
-        self.assertEqual(Payment.objects.count(), 5)
-        paid_at = Payment.objects.get(transaction__amount_cents=2250).paid_at
-        self.assertEqual(paid_at, datetime(2026, 1, 10, 9, 0, tzinfo=AMSTERDAM_TZ))
+        # anna's Nov-Feb initial payment wraps the year: pay_before falls in
+        # the next calendar year
+        anna = User.objects.get(legacy_member_number=11)
+        wrapped = PaymentObligation.objects.get(order__ordered_for=anna, year=2025)
+        self.assertEqual(wrapped.period, 10)
+        self.assertEqual(wrapped.pay_before.astimezone(AMSTERDAM_TZ).date(), date(2026, 2, 28))
+
+        # 3 for piet, 2 for anna, 1 for kees; pending + unknown-member skipped
+        self.assertEqual(Payment.objects.count(), 6)
+        paid_ats = {p.paid_at for p in Payment.objects.filter(transaction__amount_cents=2250)}
+        self.assertEqual(
+            paid_ats,
+            {
+                datetime(2025, 11, 5, 9, 0, tzinfo=AMSTERDAM_TZ),
+                datetime(2026, 1, 10, 9, 0, tzinfo=AMSTERDAM_TZ),
+            },
+        )
 
         bank_account, _ = Account.get_bank_account()
-        self.assertEqual(bank_account.balance_cents(), 750 * 3 + 2250 + 9000)
+        self.assertEqual(bank_account.balance_cents(), 750 * 3 + 2250 * 2 + 9000)
 
     def test_mollie_records(self):
         self.assertEqual(
