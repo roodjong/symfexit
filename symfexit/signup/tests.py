@@ -1,11 +1,14 @@
 from datetime import date
 from decimal import Decimal
 
+from django.contrib import admin
+from django.test import RequestFactory
 from django_tenants.test.cases import FastTenantTestCase
 from django_tenants.test.client import TenantClient
 
 from symfexit.payments.models import (
     Account,
+    BillingAddress,
     Order,
     Payment,
     PaymentProvider,
@@ -15,6 +18,7 @@ from symfexit.payments.models import (
     Subscription,
     Transaction,
 )
+from symfexit.signup.admin import MembershipApplicationAdmin
 from symfexit.signup.models import MembershipApplication
 
 
@@ -128,6 +132,92 @@ class ReturnViewTest(FastTenantTestCase):
         self._record_payment(obligation, 1500)
         response = self._get()
         self.assertTemplateUsed(response, "signup/return.html")
+
+
+class MembershipApplicationAdminTest(FastTenantTestCase):
+    def setUp(self):
+        super().setUp()
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.provider = PaymentProvider.objects.create(
+            name="Dummy",
+            type="dummy",
+            default=True,
+        )
+        self.product = Product.objects.create(
+            enabled=True,
+            sku="signup-admin-product",
+            name="Signup Admin Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=self.product, period_unit=PeriodUnit.MONTH, period=1)
+
+        self.admin = MembershipApplicationAdmin(model=MembershipApplication, admin_site=admin.site)
+        self.request = RequestFactory().get("/admin/signup/membershipapplication/")
+
+    def _create_application(self, **overrides):
+        defaults = {
+            "first_name": "Test",
+            "last_name": "User",
+            "email": "signup-admin@example.com",
+            "phone_number": "+31600000000",
+            "birth_date": date(2000, 1, 1),
+            "address": "Teststraat 1",
+            "city": "Amsterdam",
+            "postal_code": "1000AA",
+            "payment_amount_euros": Decimal("10.00"),
+        }
+        defaults.update(overrides)
+        return MembershipApplication.objects.create(**defaults)
+
+    def _create_order_for_application(self, application):
+        billing = BillingAddress.objects.create(
+            user=None,
+            name=f"{application.first_name} {application.last_name}",
+            email=application.email,
+            address=application.address,
+            city=application.city,
+            postal_code=application.postal_code,
+        )
+        order, obligation = Order.objects.create_with_obligation(
+            product=self.product,
+            billing_address=billing,
+            price_euros=Decimal("10.00"),
+            paid_using=self.provider,
+        )
+        application._order = order
+        application.save(update_fields=["_order"])
+        return order, obligation
+
+    def test_queryset_annotations_report_paid_status(self):
+        self._create_application(email="unpaid@example.com")
+        paid_application = self._create_application(email="paid@example.com")
+        self._create_order_for_application(paid_application)
+
+        from django.utils import timezone  # noqa: PLC0415
+
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account,
+            debit_account=bank_account,
+            amount_cents=1000,
+        )
+        Payment.objects.create(
+            obligation=paid_application._order.paymentobligation_set.get(),
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=tx,
+        )
+
+        queryset = self.admin.get_queryset(self.request)
+        states = dict(queryset.values_list("email", "payment_state"))
+
+        self.assertEqual(states["unpaid@example.com"], "unpaid")
+        self.assertEqual(states["paid@example.com"], "paid")
 
 
 class CreateUserSignupOverpaymentTest(FastTenantTestCase):
