@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 15:36+0200\n"
+"POT-Creation-Date: 2026-07-19 20:12+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,7 +53,7 @@ msgstr "Nee"
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:102 symfexit/members/models.py:241
+#: symfexit/members/admin.py:102 symfexit/members/models.py:242
 msgid "local groups"
 msgstr "groepen"
 
@@ -61,7 +61,7 @@ msgstr "groepen"
 msgid "permission groups"
 msgstr "rechtengroepen"
 
-#: symfexit/members/admin.py:136 symfexit/members/admin.py:549
+#: symfexit/members/admin.py:136 symfexit/members/admin.py:575
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
@@ -81,27 +81,31 @@ msgstr "Financiën"
 msgid "credit balance"
 msgstr "krediet balans"
 
-#: symfexit/members/admin.py:468
+#: symfexit/members/admin.py:418
+msgid "Membership cancelled successfully."
+msgstr "Lidmaatschap succesvol opgezegd"
+
+#: symfexit/members/admin.py:494
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:469
+#: symfexit/members/admin.py:495
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:487
+#: symfexit/members/admin.py:513
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:488
+#: symfexit/members/admin.py:514
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:521
+#: symfexit/members/admin.py:547
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:522
+#: symfexit/members/admin.py:548
 msgid "local group members"
 msgstr "groepsleden"
 
@@ -327,28 +331,32 @@ msgstr "gebruiker"
 msgid "users"
 msgstr "gebruikers"
 
-#: symfexit/members/models.py:240
+#: symfexit/members/models.py:141
+msgid "Can cancel memberships"
+msgstr "Kan lidmaatschap opzeggen"
+
+#: symfexit/members/models.py:241
 msgid "local group"
 msgstr "groep"
 
-#: symfexit/members/models.py:247 symfexit/members/models.py:268
+#: symfexit/members/models.py:248 symfexit/members/models.py:269
 msgid "contact people"
 msgstr "contactpersonen"
 
-#: symfexit/members/models.py:251
+#: symfexit/members/models.py:252
 msgid "selectable"
 msgstr "selecteerbaar"
 
-#: symfexit/members/models.py:253
+#: symfexit/members/models.py:254
 msgid "Whether this group can be selected by new members signing up"
 msgstr ""
 "Of deze groep geselecteerd kan worder door nieuwe leden die zich inschrijven"
 
-#: symfexit/members/models.py:259
+#: symfexit/members/models.py:260
 msgid "work group"
 msgstr "werkgroep"
 
-#: symfexit/members/models.py:260
+#: symfexit/members/models.py:261
 msgid "work groups"
 msgstr "werkgroepen"
 
@@ -407,7 +415,7 @@ msgstr "Opslaan en bekijken"
 msgid "Close"
 msgstr "Sluiten"
 
-#: symfexit/members/templates/admin/members/submit_line.html:16
+#: symfexit/members/templates/admin/members/submit_line.html:15
 msgid "Cancel Membership"
 msgstr "Lidmaatschap opzeggen"
 
@@ -441,7 +449,7 @@ msgstr ""
 "lidmaatschap verliezen."
 
 #: symfexit/members/templates/members/membership_cancellation.html:26
-#: symfexit/members/templates/members/user_form.html:74
+#: symfexit/members/templates/members/user_form.html:72
 msgid "Cancel membership"
 msgstr "Lidmaatschap opzeggen"
 
@@ -490,35 +498,34 @@ msgid "Cancel subscription"
 msgstr "Abonnement opzeggen"
 
 #: symfexit/members/templates/members/user_form.html:40
-#: symfexit/members/templates/members/user_form.html:44
 msgid "Different bank account"
 msgstr "Andere bankrekening"
 
-#: symfexit/members/templates/members/user_form.html:46
+#: symfexit/members/templates/members/user_form.html:44
 msgid "Adjust amount"
 msgstr "Bedrag aanpassen"
 
-#: symfexit/members/templates/members/user_form.html:49
+#: symfexit/members/templates/members/user_form.html:47
 msgid "Payment history"
 msgstr "Betalingsgeschiedenis"
 
-#: symfexit/members/templates/members/user_form.html:53
+#: symfexit/members/templates/members/user_form.html:51
 msgid "Date"
 msgstr "Datum"
 
-#: symfexit/members/templates/members/user_form.html:54
+#: symfexit/members/templates/members/user_form.html:52
 msgid "Amount"
 msgstr "Bedrag"
 
-#: symfexit/members/templates/members/user_form.html:68
+#: symfexit/members/templates/members/user_form.html:66
 msgid "Setup your membership payments now"
 msgstr "Stel nu je lidmaatschapsbetalingen in"
 
-#: symfexit/members/templates/members/user_form.html:72
+#: symfexit/members/templates/members/user_form.html:70
 msgid "Start subscription"
 msgstr "Start automatische betaling"
 
-#: symfexit/members/templates/members/user_form.html:78
+#: symfexit/members/templates/members/user_form.html:76
 msgid "Cancel membership..."
 msgstr "Lidmaatschap opzeggen..."
 
@@ -590,11 +597,3 @@ msgid "Changing your bank account is not supported for your payment method."
 msgstr ""
 "Het wijzigen van je bankrekening wordt niet ondersteund voor jouw "
 "betaalmethode."
-
-#: symfexit/members/admin.py:418
-msgid "Membership cancelled successfully."
-msgstr "Lidmaatschap succesvol opgezegd"
-
-#: symfexit/members/models.py:141
-msgid "Can cancel memberships"
-msgstr "Kan lidmaatschap opzeggen"
