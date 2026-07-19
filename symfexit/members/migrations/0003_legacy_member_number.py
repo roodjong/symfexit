@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             model_name="user",
             name="legacy_member_number",
             field=models.PositiveIntegerField(
-                blank=True, null=True, unique=True, verbose_name="legacy member number"
+                blank=True, null=True, verbose_name="legacy member number"
             ),
         ),
     ]

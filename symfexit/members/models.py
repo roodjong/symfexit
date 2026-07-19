@@ -52,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Only kept for reference to the old administration; no longer assigned
     # for new members.
     legacy_member_number = models.PositiveIntegerField(
-        _("legacy member number"), unique=True, null=True, blank=True
+        _("legacy member number"), null=True, blank=True
     )
     first_name = models.TextField(_("first name"))
     last_name = models.TextField(_("last name"))
