@@ -57,50 +57,50 @@ class SignupForm(forms.Form):
     required_css_class = "required"
 
     first_name = forms.CharField(
-        label="Voornaam",
+        label=_("First name"),
         max_length=100,
         widget=forms.TextInput(attrs={"autocomplete": "given-name"}),
     )
     last_name = forms.CharField(
-        label="Achternaam",
+        label=_("Last name"),
         max_length=100,
         widget=forms.TextInput(attrs={"autocomplete": "family-name"}),
     )
     email = two_wide(
         forms.EmailField(
-            label="E-mailadres",
+            label=_("E-mail address"),
             widget=forms.TextInput(attrs={"autocomplete": "email"}),
         )
     )
     phone_number = two_wide(
         forms.CharField(
-            label="Telefoonnummer",
+            label=_("Phone number"),
             max_length=20,
             widget=forms.TextInput(attrs={"autocomplete": "tel"}),
         )
     )
     birth_date = two_wide(
         forms.DateField(
-            label="Geboortedatum", widget=AutocompleteSelectDateWidget(years=birthday_years())
+            label=_("Date of birth"), widget=AutocompleteSelectDateWidget(years=birthday_years())
         )
     )
     address = two_wide(
         forms.CharField(
-            label="Adres",
+            label=_("Address"),
             max_length=100,
             widget=forms.TextInput(attrs={"autocomplete": "street-address"}),
         )
     )
     city = two_wide(
         forms.CharField(
-            label="Plaats",
+            label=_("City"),
             max_length=100,
             widget=forms.TextInput(attrs={"autocomplete": "address-level2"}),
         )
     )
     postal_code = two_wide(
         forms.CharField(
-            label="Postcode",
+            label=_("Postal code"),
             max_length=7,
             widget=forms.TextInput(attrs={"autocomplete": "postal"}),
         )
@@ -110,7 +110,7 @@ class SignupForm(forms.Form):
         forms.ModelChoiceField(
             required=False,
             empty_label=_("None"),
-            label="Bij welke groep wil je je aansluiten",
+            label=_("Which group would you like to join?"),
             queryset=LocalGroup.objects.filter(selectable=True),
         )
     )
@@ -118,7 +118,7 @@ class SignupForm(forms.Form):
     membership_type = forms.ModelChoiceField(
         queryset=MembershipType.objects.filter(enabled=True),
         widget=forms.HiddenInput,
-        label="Lidmaatschapstype",
+        label=_("Membership type"),
         required=True,
     )
 
@@ -126,14 +126,14 @@ class SignupForm(forms.Form):
         forms.ChoiceField(
             widget=forms.RadioSelect,
             choices=[],
-            label="Selecteer wat er voor jou van toepassing is:",
+            label=_("Select what is applicable to you:"),
         ),
         ["col-span-2", "payment-tier"],
     )
 
     pay_more = with_classes(
         forms.DecimalField(
-            label="Ik wil meer betalen, namelijk:",
+            label=_("I would like to pay more:"),
             required=False,
             max_digits=6,
             decimal_places=2,
@@ -143,7 +143,7 @@ class SignupForm(forms.Form):
 
     privacy_check = with_classes(
         forms.BooleanField(
-            label="Ik heb het privacybeleid gelezen en ik ga daarmee akkoord.",
+            label=_("I have read the privacy policy and accept it."),
         ),
         ["checkmark"],
     )
@@ -236,7 +236,7 @@ class SignupForm(forms.Form):
                 first_tier_value, desc = choices[num_choices // 2]
 
         if membership_type.allow_custom_amount:
-            choices.append((CUSTOM_TIER_VALUE, "Ik wil meer betalen, namelijk:"))
+            choices.append((CUSTOM_TIER_VALUE, _("I would like to pay more:")))
         self.fields["payment_tier"].choices = choices
         if first_tier_value is not None:
             self.fields["payment_tier"].initial = first_tier_value
@@ -252,26 +252,31 @@ class SignupForm(forms.Form):
 
         if payment_tier == CUSTOM_TIER_VALUE:
             if not membership_type.allow_custom_amount:
-                self.add_error("payment_tier", "Dit lidmaatschapstype staat geen eigen bedrag toe.")
+                self.add_error(
+                    "payment_tier",
+                    _("This membership type does not permit a custom contribution amount."),
+                )
                 return
             if not pay_more:
-                self.add_error("pay_more", "Vul een bedrag in")
+                self.add_error("pay_more", _("Enter an amount"))
                 return
             minimum_euros = membership_type.custom_amount_product.price_euros
             if pay_more < minimum_euros:
                 self.add_error(
                     "pay_more",
-                    f"Vul een bedrag van minimaal €{minimum_euros:.2f} in",
+                    _("Enter an amount of at least €{:.2f}").format(minimum_euros),
                 )
         # Validate that the tier belongs to the selected membership type
         elif payment_tier:
             try:
                 tier = MembershipTier.objects.get(pk=int(payment_tier))
             except MembershipTier.DoesNotExist, ValueError:
-                self.add_error("payment_tier", "Ongeldige keuze.")
+                self.add_error("payment_tier", _("Invalid choice."))
                 return
             if tier.membership_type_id != membership_type.pk:
-                self.add_error("payment_tier", "Deze keuze hoort niet bij het gekozen type.")
+                self.add_error(
+                    "payment_tier", _("This choice does not belong to the selected type.")
+                )
 
     def payment_amount_euros(self):
         payment_tier = self.cleaned_data["payment_tier"]
