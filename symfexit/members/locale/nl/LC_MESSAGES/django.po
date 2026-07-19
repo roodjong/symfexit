@@ -591,6 +591,14 @@ msgstr ""
 "Het wijzigen van je bankrekening wordt niet ondersteund voor jouw "
 "betaalmethode."
 
+#: symfexit/members/admin.py:418
+msgid "Membership cancelled successfully."
+msgstr "Lidmaatschap succesvol opgezegd"
+
+#: symfexit/members/models.py:141
+msgid "Can cancel memberships"
+msgstr "Kan lidmaatschap opzeggen"
+
 #, python-format
 #~ msgid "Please enter an amount of at least \\u20ac%(amount).2f."
 #~ msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."

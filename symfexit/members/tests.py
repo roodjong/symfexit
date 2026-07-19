@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 from django_tenants.test.cases import FastTenantTestCase
 from django_tenants.test.client import TenantClient
 
@@ -45,6 +46,24 @@ class MembersPageTest(FastTenantTestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_cancel_membership_admin_action_cancels_user(self):
+        member = User.objects.create_user(
+            email="member@example.com",
+            password="password",
+            member_identifier=1001,
+            first_name="Jane",
+            last_name="Doe",
+        )
+
+        response = self.client.post(
+            reverse("admin:members_member_cancel_membership", args=[member.pk])
+        )
+
+        member.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(member.is_active)
+        self.assertIsNotNone(member.date_left)
 
 
 class StartPaymentDeduplicationTest(TestCase):

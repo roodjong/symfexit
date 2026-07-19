@@ -88,8 +88,10 @@ class ExportDataBuilder:
         row = []
         for field in export_fields:
             value = None
-            if isinstance(field, tuple) and isinstance(field[1], list):
-                attr, config = field
+            if isinstance(field, tuple) and isinstance(
+                field[1], list
+            ):  # related model field with nested export fields
+                attr, config = field[0], field[1]
                 if obj is not None:
                     value = getattr(obj, attr)
                 if isinstance(value, Manager):
@@ -104,7 +106,11 @@ class ExportDataBuilder:
             if obj is not None:  # make nested fields of null objects also null
                 if isinstance(field, str):  # field only
                     value = getattr(obj, field)
-                elif isinstance(field, tuple):  # field with label
+                elif isinstance(field, tuple) and callable(
+                    field[-1]
+                ):  # field with label and lambda
+                    value = field[-1](obj)
+                elif isinstance(field, tuple):
                     value = getattr(obj, field[0])
             if not isinstance(value, (str, int, float, bool, type(None))):
                 value = str(value)

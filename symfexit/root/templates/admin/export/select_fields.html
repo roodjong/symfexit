@@ -69,6 +69,12 @@
   </fieldset>
 
   <div class="submit-row">
+    <label for="exporter-select">{% trans "Format" %}</label>
+    <select id="exporter-select" name="exporter">
+      {% for key in exporters %}
+      <option value="{{ key }}">{{ key }}</option>
+      {% endfor %}
+    </select>
     <input type="submit" name="_export_confirm" value="{% trans 'Export' %}" class="default">
     <a href="{{ request.META.HTTP_REFERER|default:'.' }}">{% trans "Cancel" %}</a>
   </div>

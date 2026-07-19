@@ -14,7 +14,23 @@ from symfexit.signup.models import DuplicateEmailError, MembershipApplication
 @admin.register(MembershipApplication)
 class MembershipApplicationAdmin(admin.ModelAdmin):
     list_display = ("first_name", "last_name", "email", "membership_type", "status", "created_at")
+    list_filter = ("status",)
     change_form_template = "signup/admin/change_form.html"
+
+    def changelist_view(self, request, extra_context=None):
+        # Set default filter to status=created only on true initial page load
+        # Check referer to see if user is coming from the same page (clicked "All")
+        referer = request.META.get("HTTP_REFERER", "")
+        is_from_same_page = "membershipapplication" in referer.lower()
+
+        # Only apply default if no query params AND not coming from the same page
+        if not request.GET and not is_from_same_page:
+            q = request.GET.copy()
+            q["status__exact"] = MembershipApplication.Status.CREATED
+            request.GET = q
+            request.META["QUERY_STRING"] = request.GET.urlencode()
+        return super().changelist_view(request, extra_context=extra_context)
+
     fields = (
         "created_at",
         "first_name",
