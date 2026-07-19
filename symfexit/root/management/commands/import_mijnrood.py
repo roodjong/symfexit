@@ -113,10 +113,6 @@ def date_to_datetime(value):
     return datetime.combine(value, time(12, 0), tzinfo=AMSTERDAM_TZ)
 
 
-def parse_bool(value):
-    return value == "1"
-
-
 def parse_int(value, default=None):
     if value in ("", None):
         return default
@@ -396,7 +392,7 @@ class Command(BaseCommand):
 
     def import_statuses(self):
         for row in self.rows("admin_membershipstatus"):
-            self.statuses[row["id"]] = (row["name"], parse_bool(row["allowed_access"]))
+            self.statuses[row["id"]] = (row["name"], row["allowed_access"] == "1")
 
     def validate_status_flags(self):
         """Catch typos in --cadre-status/--active-status before importing anything."""
@@ -412,7 +408,7 @@ class Command(BaseCommand):
         for row in self.rows("admin_division"):
             group = LocalGroup.objects.create(
                 name=row["name"],
-                selectable=parse_bool(row["can_be_selected_on_application"]),
+                selectable=row["can_be_selected_on_application"] == "1",
             )
             self.groups[row["id"]] = group
             self.count("local groups")
@@ -752,7 +748,7 @@ class Command(BaseCommand):
                 MembershipApplication.objects.filter(pk=application.pk).update(
                     created_at=registration
                 )
-            if parse_bool(row["paid"]):
+            if row["paid"] == "1":
                 self.warn(
                     f"{description}: was already paid in mijnrood; the payment was not "
                     "carried over, accept the application without charging again"
