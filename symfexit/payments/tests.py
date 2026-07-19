@@ -480,3 +480,42 @@ class TestGeneratePaymentObligations(FastTenantTestCase):
         self.assertEqual(obligations.count(), 4)
         periods = list(obligations.values_list("period", flat=True))
         self.assertEqual(periods, [0, 3, 6, 9])  # Jan, Apr, Jul, Oct
+
+    def test_quarterly_billing_with_price_increase(self):
+        """Simulate quarterly billing where the subscription price increases mid-year."""
+        order = self._create_order()
+        order.created_at = datetime(2026, 1, 1, tzinfo=UTC)
+        order.save()
+
+        # Q1: Generate first obligation at €10
+        gen_obligations(now=datetime(2026, 1, 15, tzinfo=UTC))
+        q1_obligation = PaymentObligation.objects.get(order=order, year=2026, period=0)
+        self.assertEqual(q1_obligation.outstanding_cents, 1000)  # €10
+
+        # Pay Q1 obligation
+        record_receipt(q1_obligation, amount_cents=1000)
+
+        # Q2: Generate second obligation at €10
+        gen_obligations(now=datetime(2026, 4, 1, tzinfo=UTC))
+        q2_obligation = PaymentObligation.objects.get(order=order, year=2026, period=3)
+        self.assertEqual(q2_obligation.outstanding_cents, 1000)  # €10
+
+        # Price increase: Update the order's price to €20 for future periods
+        order.product_price_euros = Decimal("20.00")
+        order.save()
+
+        # Q3: Generate third obligation - should now be €20
+        gen_obligations(now=datetime(2026, 7, 1, tzinfo=UTC))
+        q3_obligation = PaymentObligation.objects.get(order=order, year=2026, period=6)
+        self.assertEqual(q3_obligation.outstanding_cents, 2000)  # €20
+
+        # Q4: Generate fourth obligation - should remain €20
+        gen_obligations(now=datetime(2026, 10, 1, tzinfo=UTC))
+        q4_obligation = PaymentObligation.objects.get(order=order, year=2026, period=9)
+        self.assertEqual(q4_obligation.outstanding_cents, 2000)  # €20
+
+        # Verify all 4 obligations exist with correct prices
+        obligations = PaymentObligation.objects.filter(order=order).order_by("period")
+        self.assertEqual(obligations.count(), 4)
+        amounts = list(obligations.values_list("transaction__amount_cents", flat=True))
+        self.assertEqual(amounts, [1000, 1000, 2000, 2000])  # €10, €10, €20, €20
