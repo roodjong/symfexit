@@ -78,6 +78,7 @@ msgid "I have read the privacy policy and accept it."
 msgstr "Ik heb het privacybeleid gelezen en ga daarmee akoord"
 
 #: symfexit/signup/forms.py:220
+#, python-brace-format
 msgid "{} (€{:.2f} per {})"
 msgstr "{} (€{:.2f} per {})"
 
