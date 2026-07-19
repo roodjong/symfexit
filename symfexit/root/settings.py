@@ -135,7 +135,7 @@ RUN_TASKS_SYNC = setting_from_env(
 ALLOWED_HOSTS = setting(development=["*"], production=os.getenv("ALLOWED_HOSTS", "").split(","))
 
 if SYMFEXIT_ENV == "development":
-    CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
+    CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app", "https://*.ngrok-free.dev"]
 else:
     CSRF_TRUSTED_ORIGINS = []
 
