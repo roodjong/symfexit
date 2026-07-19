@@ -515,6 +515,7 @@ msgid "quarter"
 msgstr "kwartaal"
 
 #: symfexit/members/views.py:32
+#, python-brace-format
 msgid "{} months"
 msgstr "{} maanden"
 
@@ -523,6 +524,7 @@ msgid "year"
 msgstr "jaar"
 
 #: symfexit/members/views.py:37
+#, python-brace-format
 msgid "{} years"
 msgstr "{} jaren"
 
@@ -531,6 +533,7 @@ msgid "week"
 msgstr "week"
 
 #: symfexit/members/views.py:42
+#, python-brace-format
 msgid "{} weeks"
 msgstr "{} weken"
 
@@ -539,6 +542,7 @@ msgid "day"
 msgstr "dag"
 
 #: symfexit/members/views.py:47
+#, python-brace-format
 msgid "{} days"
 msgstr "{} dagen"
 

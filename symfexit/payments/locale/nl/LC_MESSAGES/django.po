@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-07 14:34+0200\n"
+"POT-Creation-Date: 2026-07-19 11:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,31 +17,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/payments/admin.py:169
+#: symfexit/payments/admin.py:171
 msgid "Paid payment obligation"
 msgstr "Betaalde betalingsverplichting"
 
-#: symfexit/payments/admin.py:170
+#: symfexit/payments/admin.py:172
 msgid "Paid payment obligations"
 msgstr "Betaalde betalingsverplichtingen"
 
-#: symfexit/payments/admin.py:225
+#: symfexit/payments/admin.py:227
 msgid "status"
 msgstr "status"
 
-#: symfexit/payments/admin.py:229
+#: symfexit/payments/admin.py:231
 msgid "Active"
 msgstr "Actief"
 
-#: symfexit/payments/admin.py:229
+#: symfexit/payments/admin.py:231
 msgid "Cancelled"
 msgstr "Geannuleerd"
 
-#: symfexit/payments/admin.py:229
+#: symfexit/payments/admin.py:231
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/payments/admin.py:362
+#: symfexit/payments/admin.py:388
 msgid "User has not setup full address yet"
 msgstr "Gebruiker heeft nog geen volledig adres ingesteld"
 
@@ -194,11 +194,11 @@ msgstr "Abonnement"
 msgid "enabled"
 msgstr "ingeschakeld"
 
-#: symfexit/payments/models.py:320 symfexit/payments/models.py:401
+#: symfexit/payments/models.py:320 symfexit/payments/models.py:403
 msgid "product sku"
 msgstr "product-SKU"
 
-#: symfexit/payments/models.py:321 symfexit/payments/models.py:402
+#: symfexit/payments/models.py:321 symfexit/payments/models.py:404
 msgid "product name"
 msgstr "productnaam"
 
@@ -210,15 +210,15 @@ msgstr "gemaakt op"
 msgid "updated at"
 msgstr "bijgewerkt op"
 
-#: symfexit/payments/models.py:354 symfexit/payments/models.py:407
+#: symfexit/payments/models.py:354 symfexit/payments/models.py:410
 msgid "How many of the period unit before the subscription repeats."
 msgstr "Hoeveel periode-eenheden voordat het abonnement herhaalt."
 
-#: symfexit/payments/models.py:414
+#: symfexit/payments/models.py:417
 msgid "cancelled at"
 msgstr "geannuleerd op"
 
-#: symfexit/payments/models.py:584
+#: symfexit/payments/models.py:587
 msgid "external identifier"
 msgstr "externe identifier"
 
@@ -234,7 +234,8 @@ msgstr "Jouw betaling wordt verwerkt"
 msgid ""
 "We're confirming your payment with Mollie. This usually takes just a few "
 "seconds."
-msgstr "Wij vragen Mollie om jouw betaling te bevestigen. Dit duurt enkele seconden."
+msgstr ""
+"Wij vragen Mollie om jouw betaling te bevestigen. Dit duurt enkele seconden."
 
 #: symfexit/payments/mollie/templates/payments_mollie/pending.html:17
 msgid "It's taking a bit longer than expected. Continuing anyway..."
