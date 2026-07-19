@@ -67,9 +67,12 @@ def apply_member_credit(obligation: PaymentObligation) -> Payment | None:
             debit_account=locked_user.credit_account,
             amount_cents=apply_cents,
         )
+        # paid_using stays empty: this payment is funded from member credit,
+        # not by a payment provider — the provider (e.g. Mollie) has no
+        # matching transaction, and labeling it with one is confusing.
         payment = Payment.objects.create(
             obligation=obligation,
-            paid_using=obligation.order.paid_using,
+            paid_using=None,
             paid_at=timezone.now(),
             transaction=tx,
         )
@@ -80,8 +83,14 @@ def record_receipt(obligation: PaymentObligation, amount_cents: int) -> Payment 
     """Apply a received payment to its obligation; bank any surplus in the
     member's credit account.
 
-    Returns the created Payment, or None if the full amount went to credit
-    (because the obligation was already fully paid).
+    The surplus is also recorded as a Payment on the obligation, so every
+    received amount (e.g. the one-cent bank account change payment on an
+    already-paid obligation) stays visible in the admin and the member's
+    payment history.
+
+    Returns the Payment applied to the obligation, or the surplus Payment if
+    the full amount went to credit (because the obligation was already fully
+    paid).
 
     Caller is responsible for idempotency: this function will create a fresh
     Payment + Transaction every time it's called, so processors that may fire
@@ -138,10 +147,18 @@ def record_receipt(obligation: PaymentObligation, amount_cents: int) -> Payment 
 
         if surplus > 0:
             credit_account = user.get_or_create_credit_account()
-            Transaction.objects.create(
+            surplus_tx = Transaction.objects.create(
                 credit_account=credit_account,
                 debit_account=credit_to_account,
                 amount_cents=surplus,
             )
+            surplus_payment = Payment.objects.create(
+                obligation=locked_obligation,
+                paid_using=order.paid_using,
+                paid_at=timezone.now(),
+                transaction=surplus_tx,
+            )
+            if payment is None:
+                payment = surplus_payment
 
     return payment

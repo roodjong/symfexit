@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.conf import settings
 from django.core.management import BaseCommand
 from django_tenants.utils import get_public_schema_name, get_tenant_model, tenant_context
@@ -8,7 +10,22 @@ from symfexit.worker.registry import add_task
 class Command(BaseCommand):
     help = "Queue recurring payment charging for all tenants"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--now",
+            type=date.fromisoformat,
+            default=None,
+            help=(
+                "For advanced usage only. Override the 'current time' used to decide which "
+                "obligation periods have started. Format: YYYY-MM-DD. Interpreted as "
+                "start-of-day in each tenant's payments timezone. Defaults to the actual "
+                "current time."
+            ),
+        )
+
     def handle(self, *args, **options):
+        now = options["now"]
+
         TenantModel = get_tenant_model()
         if settings.SINGLE_SITE:
             tenants = TenantModel.objects.all()
@@ -18,6 +35,7 @@ class Command(BaseCommand):
         for tenant in tenants:
             self.stdout.write(f"Queuing for tenant: {tenant.name}")
             with tenant_context(tenant):
-                add_task("charge_obligations")
+                add_task("charge_obligations", now=now)
 
-        self.stdout.write(self.style.SUCCESS(f"Queued for {tenants.count()} tenant(s)"))
+        suffix = f" (override now={now.isoformat()})" if now else ""
+        self.stdout.write(self.style.SUCCESS(f"Queued for {tenants.count()} tenant(s){suffix}"))

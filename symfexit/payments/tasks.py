@@ -3,10 +3,22 @@ from datetime import date, datetime, time
 
 from django.db import connection
 
-from symfexit.payments.models import Order, PaymentObligation
+from symfexit.payments.models import Order, PaymentObligation, _tenant_payments_timezone
 from symfexit.payments.registry import payments_registry
 from symfexit.worker import logger
 from symfexit.worker.registry import task_registry
+
+
+def _normalize_now(now, timezone_name):
+    """Make a `now` override tz-aware in the given timezone. Accepts a `date`
+    (interpreted as start-of-day) or a `datetime` (made tz-aware if naive)."""
+    tz = zoneinfo.ZoneInfo(timezone_name)
+    if isinstance(now, datetime):
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=tz)
+    elif isinstance(now, date):
+        now = datetime.combine(now, time.min, tzinfo=tz)
+    return now
 
 
 @task_registry.register("gen_obligations")
@@ -22,12 +34,7 @@ def gen_obligations(now=None):
     timezone_name = tenant.payments_timezone
 
     if now is not None:
-        tz = zoneinfo.ZoneInfo(timezone_name)
-        if isinstance(now, datetime):
-            if now.tzinfo is None:
-                now = now.replace(tzinfo=tz)
-        elif isinstance(now, date):
-            now = datetime.combine(now, time.min, tzinfo=tz)
+        now = _normalize_now(now, timezone_name)
 
     orders = Order.objects.filter(
         subscription__isnull=False,
@@ -49,7 +56,20 @@ def gen_obligations(now=None):
 
 
 @task_registry.register("charge_obligations")
-def charge_obligations():
+def charge_obligations(now=None):
+    """Charge every outstanding payment obligation whose period has started.
+
+    `now` is an optional override for "current time" — useful for testing a
+    future charge run against pre-generated obligations. Same semantics as
+    `gen_obligations`: accepts a `date` or (naive) `datetime`, interpreted in
+    the tenant's payments timezone.
+    """
+    timezone_name = _tenant_payments_timezone()
+    if now is None:
+        now = datetime.now(tz=zoneinfo.ZoneInfo(timezone_name))
+    else:
+        now = _normalize_now(now, timezone_name)
+
     # Note: no payment__isnull=True filter — an obligation can have a credit-funded
     # Payment that still leaves an outstanding amount, which we want to charge here.
     # The processor's charge_obligation must short-circuit on is_fully_paid.
@@ -68,6 +88,12 @@ def charge_obligations():
 
     for obligation in obligations.iterator():
         try:
+            # Skip obligations for periods that haven't started yet (they can
+            # exist when gen_obligations ran with a future `now` override).
+            if (obligation.year, obligation.period) > obligation.order._get_current_period(now):
+                skipped += 1
+                continue
+
             if obligation.is_fully_paid:
                 skipped += 1
                 continue
