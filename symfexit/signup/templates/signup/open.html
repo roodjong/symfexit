@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% load static l10n %} {% block body %}
+{% extends "base.html" %} {% load static i18n l10n %} {% block body %}
 <div
   id="loginscreen"
   class="flex justify-center place-items-center flex-col pt-8"
@@ -15,20 +15,25 @@
       <h2
         class="text-3xl uppercase font-header font-bold"
       >
-        Inschrijven bij {{ config.SITE_TITLE }}
+        {% blocktrans with site_title=config.SITE_TITLE%}Sign up for {{ site_title }}{% endblocktrans %}
       </h2>
       <p>
-        Je betaling wordt nog verwerkt. Zodra deze is afgerond ontvang je een
-        bevestiging per e-mail.
+        {% blocktrans %}
+        Your payment is being processed. As soon as this is completed you
+        will receive a confirmation e-mail.
+        {% endblocktrans %}
       </p>
       <p>
-        Heb je de betaling nog niet voltooid? Dan kan je hieronder alsnog
-        betalen.
+        {% blocktrans %}
+        If you did not complete your payment then you can try again below.
+        {% endblocktrans %}
       </p>
       <form action="{% url "signup:retry" application.eid %}" method="POST">
         {% csrf_token %}
         <p>
-          Klik <input type="submit" class="text-primary inline cursor-pointer" value="hier" /> om terug te gaan naar de betaalpagina.
+          {% blocktrans %}
+          Click <input type="submit" class="text-primary inline cursor-pointer" value="here" /> to return to the payment page
+          {% endblocktrans %}
         </p>
       </form>
     </div>

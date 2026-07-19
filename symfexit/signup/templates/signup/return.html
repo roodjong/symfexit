@@ -15,13 +15,13 @@
       <h2
         class="text-3xl uppercase font-header font-bold"
       >
-        {% blocktranslate with site_title=config.SITE_TITLE%}Sign up for {{ site_title }}{% endblocktranslate %}
+        {% blocktrans with site_title=config.SITE_TITLE%}Sign up for {{ site_title }}{% endblocktrans %}
       </h2>
       <p>
-        {% translate 'Thanks for your payment!' %}
+        {% trans 'Thanks for your payment!' %}
       </p>
       <p>
-        {% translate 'Your signup is now completed. You will receive a confirmation email on your provided email address when your signup has been approved.' %}
+        {% trans 'Your signup is now completed. You will receive a confirmation email on your provided email address when your signup has been approved.' %}
       </p>
     </div>
   </div>

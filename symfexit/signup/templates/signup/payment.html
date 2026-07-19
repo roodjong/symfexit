@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% load static l10n %} {% block body %}
+{% extends "base.html" %} {% load static i18n l10n %} {% block body %}
 <div
   id="loginscreen"
   class="flex justify-center place-items-center flex-col pt-8"
@@ -15,15 +15,18 @@
       <h2
         class="text-3xl uppercase font-header font-bold"
       >
-        Inschrijven bij {{ config.SITE_TITLE }}
+        {% blocktrans with site_title=config.SITE_TITLE%}Sign up for {{ site_title }}{% endblocktrans %}s
       </h2>
       <p>
-        Hoi {{ application.first_name }}, bedankt voor het aanmelden! Rond je
-        betaling af door de eerste betaling €{{ payment_amount_euros }} te doen.
+        {% blocktrans with first_name=application.first_name amount_euros=payment_amount_euros%}
+        Hi {{ first_name }}, thanks for registering! Complete your
+        membership by making the first payment of €{{ amount_euros }}.
+        {% endblocktrans %}
       </p>
       <p>
-        Na je eerste betaling zal elk kwartaal automatisch het
-        lidmaatschapsbedrag worden afgeschreven.
+        {% blocktrans %}
+        After your first payment consecutive payments will de deducted automatically.
+        {% endblocktrans %}
       </p>
       <div class="border-2 p-4 w-full">
       </div>

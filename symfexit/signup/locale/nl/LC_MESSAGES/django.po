@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-05 16:35+0200\n"
+"POT-Creation-Date: 2026-07-19 13:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,13 +21,85 @@ msgstr ""
 msgid "Signup"
 msgstr "Aanmelden"
 
+#: symfexit/signup/forms.py:60
+msgid "First name"
+msgstr "Voornaam"
+
+#: symfexit/signup/forms.py:65
+msgid "Last name"
+msgstr "Achternaam"
+
+#: symfexit/signup/forms.py:71
+msgid "E-mail address"
+msgstr "E-mailadres"
+
+#: symfexit/signup/forms.py:77
+msgid "Phone number"
+msgstr "Telefoonnummer"
+
+#: symfexit/signup/forms.py:84
+msgid "Date of birth"
+msgstr "Geboortedatum"
+
+#: symfexit/signup/forms.py:89
+msgid "Address"
+msgstr "Adres"
+
+#: symfexit/signup/forms.py:96
+msgid "City"
+msgstr "Plaats"
+
+#: symfexit/signup/forms.py:103
+msgid "Postal code"
+msgstr "Postcode"
+
 #: symfexit/signup/forms.py:112
 msgid "None"
 msgstr "Geen"
 
+#: symfexit/signup/forms.py:113
+msgid "Which group would you like to join?"
+msgstr "Bij welke groep wil je aansluiten?"
+
+#: symfexit/signup/forms.py:121
+msgid "Membership type"
+msgstr "Lidmaatschapstype"
+
+#: symfexit/signup/forms.py:129
+msgid "Select what is applicable to you:"
+msgstr "Selecteer wat voor jouw van toepassing is:"
+
+#: symfexit/signup/forms.py:136 symfexit/signup/forms.py:239
+msgid "I would like to pay more:"
+msgstr "Ik wil meer betalen:"
+
+#: symfexit/signup/forms.py:146
+msgid "I have read the privacy policy and accept it."
+msgstr "Ik heb het privacybeleid gelezen en ga daarmee akoord"
+
 #: symfexit/signup/forms.py:220
 msgid "{} (€{:.2f} per {})"
 msgstr "{} (€{:.2f} per {})"
+
+#: symfexit/signup/forms.py:257
+msgid "This membership type does not permit a custom contribution amount."
+msgstr "Dit lidmaatschapstype staat geen aangepaste bedragen toe."
+
+#: symfexit/signup/forms.py:261
+msgid "Enter an amount"
+msgstr "Kies een bedrag"
+
+#: symfexit/signup/forms.py:267
+msgid "Enter an amount of at least €{:.2f}"
+msgstr "Kies een bedrag van ten minste €{:.2f}"
+
+#: symfexit/signup/forms.py:274
+msgid "Invalid choice."
+msgstr "Ongeldige keuze."
+
+#: symfexit/signup/forms.py:278
+msgid "This choice does not belong to the selected type."
+msgstr "Deze keuze hoort niet bij het geselecteerde type."
 
 #: symfexit/signup/models.py:26
 msgid "Created"
@@ -121,10 +193,94 @@ msgstr "lidmaatschap aanmeldingen"
 msgid "external identifier"
 msgstr "externe identifier"
 
+#: symfexit/signup/templates/signup/admin/change_form.html:7
+msgid "Resend accepted email"
+msgstr "Stuur acceptatie email nog een keer"
+
+#: symfexit/signup/templates/signup/cancelled.html:18
+#: symfexit/signup/templates/signup/open.html:18
+#: symfexit/signup/templates/signup/payment.html:18
 #: symfexit/signup/templates/signup/return.html:18
+#: symfexit/signup/templates/signup/signup.html:15
 #, python-format
 msgid "Sign up for %(site_title)s"
 msgstr "Inschrijven bij %(site_title)s"
+
+#: symfexit/signup/templates/signup/cancelled.html:21
+msgid ""
+"\n"
+"        You have cancelled your payment. To finish your registration you "
+"must\n"
+"        complete the contribution payment.\n"
+"        "
+msgstr ""
+"\n"
+"        Je hebt jouw betaling geannuleerd. Om jouw registratie te voltooien "
+"moet\n"
+"        je een contributiebetaling doen.\n"
+"        "
+
+#: symfexit/signup/templates/signup/cancelled.html:29
+#: symfexit/signup/templates/signup/open.html:34
+msgid ""
+"\n"
+"          Click <input type=\"submit\" class=\"text-primary inline cursor-"
+"pointer\" value=\"here\" /> to return to the payment page\n"
+"          "
+msgstr ""
+"\n"
+"          Klik <input type=\"submit\" class=\"text-primary inline cursor-"
+"pointer\" value=\"hier\" /> om terug te gaan naar de betalingspagina\n"
+"          "
+
+#: symfexit/signup/templates/signup/open.html:21
+msgid ""
+"\n"
+"        Your payment is being processed. As soon as this is completed you\n"
+"        will receive a confirmation e-mail.\n"
+"        "
+msgstr ""
+"\n"
+"        Jouw betaling wordt verwerkt. Zodra deze voltooid is\n"
+"        krijg je een bevestigingsmail.\n"
+"        "
+
+#: symfexit/signup/templates/signup/open.html:27
+msgid ""
+"\n"
+"        If you did not complete your payment then you can try again below.\n"
+"        "
+msgstr ""
+"\n"
+"        Als je jouw betaling niet af hebt gemaakt dan kun je het hieronder "
+"nog een keer proberen.\n"
+"        "
+
+#: symfexit/signup/templates/signup/payment.html:21
+#, python-format
+msgid ""
+"\n"
+"        Hi %(first_name)s, thanks for registering! Complete your\n"
+"        membership by making the first payment of €%(amount_euros)s.\n"
+"        "
+msgstr ""
+"\n"
+"        Hoi %(first_name)s, dank je wel voor jouw aanmelding! Maakt jouw\n"
+"        lidmaatschapsaanmedling af door een contributiebetaling te doen van €"
+"%(amount_euros)s.\n"
+"        "
+
+#: symfexit/signup/templates/signup/payment.html:27
+msgid ""
+"\n"
+"        After your first payment consecutive payments will de deducted "
+"automatically.\n"
+"        "
+msgstr ""
+"\n"
+"        Na je eerste betaling worden alle vervolgbetalingen automatisch "
+"afgeschreven.\n"
+"        "
 
 #: symfexit/signup/templates/signup/return.html:21
 msgid "Thanks for your payment!"
@@ -137,3 +293,19 @@ msgid ""
 msgstr ""
 "Je inschrijving is nu voltooid. Je ontvangt een bevestigingsmail op het "
 "opgegeven e-mailadres wanneer je inschrijving is goedgekeurd."
+
+#: symfexit/signup/templates/signup/signup.html:20
+msgid "Register"
+msgstr "Aanmelden"
+
+#: symfexit/signup/templates/signup/signup.html:23
+msgid "Registration is currently not possible."
+msgstr "Aanmelden is nu niet mogelijk."
+
+#: symfexit/signup/templates/signup/signup.html:25
+msgid ""
+"For admins: no active membership types are configured. Create a new one via "
+"admin then Membership &gt; Membership types."
+msgstr ""
+"Voor admins: er is geen actief lidmaatschapstype geconfigureerd. Creëer een "
+"nieuwe via admin dan Lidmaatschap &gt; Lidmaatschapstypes."
