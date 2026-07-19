@@ -141,12 +141,12 @@ def convert_password_hash(symfony_hash):
     return None
 
 
-DECEMBER = 12
+MONTH_DECEMBER = 12
 
 
 def last_day_of_month(year, month):
-    if month == DECEMBER:
-        return date(year, 12, 31)
+    if month == MONTH_DECEMBER:
+        return date(year, MONTH_DECEMBER, 31)
     return date(year, month + 1, 1) - timedelta(days=1)
 
 
