@@ -138,6 +138,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = _("user")
         verbose_name_plural = _("users")
+        permissions = [("user_cancel_membership", _("Can cancel memberships"))]
         constraints = [
             models.UniqueConstraint(fields=["email"], name="members_user_unique_email_key"),
         ]

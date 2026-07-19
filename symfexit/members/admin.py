@@ -275,6 +275,11 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
                 self.admin_site.admin_view(self.user_change_password),
                 name="auth_user_password_change",
             ),
+            path(
+                "<id>/cancel-membership/",
+                self.admin_site.admin_view(self.user_cancel_membership),
+                name="members_member_cancel_membership",
+            ),
         ] + super().get_urls()
 
     def lookup_allowed(self, lookup, value, request):
@@ -388,19 +393,35 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
         return super().response_add(request, obj, post_url_continue)
 
     def render_change_form(self, request, context, add=False, change=False, form_url="", obj=None):
-        context.update({"delete_is_cancel": True})
+        context.update(
+            {
+                "show_delete_link": False,
+                "show_cancel_membership_button": self.has_cancel_membership_permission(
+                    request, obj
+                ),
+            }
+        )
         return super().render_change_form(request, context, add, change, form_url, obj)
 
-    def delete_view(self, request, object_id, extra_context=None):
-        if extra_context is None:
-            extra_context = {}
-        obj = self.get_object(request, unquote(object_id))
-        if obj is not None:
-            extra_context["active_orders"] = obj.order_set.filter(cancelled_at__isnull=True)
-        return super().delete_view(request, object_id, extra_context)
+    def user_cancel_membership(self, request, id):
+        try:
+            user = User.objects.get(pk=unquote(id))
+        except User.DoesNotExist as exc:
+            raise Http404(
+                f"{self.model._meta.verbose_name} object with primary key {escape(id)!r} does not exist."
+            ) from exc
 
-    def delete_model(self, request, obj: User):
-        obj.cancel_membership()
+        if not self.has_cancel_membership_permission(request, user):
+            raise PermissionDenied
+
+        user.cancel_membership()
+        messages.success(request, _("Membership cancelled successfully."))
+        return HttpResponseRedirect(
+            reverse(
+                f"{self.admin_site.name}:{self.model._meta.app_label}_{self.model._meta.model_name}_change",
+                args=(user.pk,),
+            )
+        )
 
     def has_add_permission(self, request):
         return False
@@ -410,6 +431,11 @@ class BaseUserAdmin(ExportMixin, admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def has_cancel_membership_permission(self, request, obj=None):
+        return request.user.has_perm("members.user_cancel_membership") and (
+            obj is None or obj.date_left is None
+        )
 
 
 class AbstractUserAdmin(BaseUserAdmin):
