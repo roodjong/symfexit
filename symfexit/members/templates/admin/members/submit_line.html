@@ -10,13 +10,12 @@
     {% url opts|admin_urlname:'changelist' as changelist_url %}
     <a role="button" href="{% add_preserved_filters changelist_url %}" class="closelink">{% translate 'Close' %}</a>
 {% endif %}
-{% if show_delete_link and original %}
-    {% if delete_is_cancel %}
-    {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
-    <a role="button" href="{% add_preserved_filters delete_url %}" class="deletelink">{% translate "Cancel Membership" %}</a>
-    {% else %}
+{% if show_cancel_membership_button and original %}
+    {% url opts|admin_urlname:'cancel_membership' original.pk|admin_urlquote as cancel_membership_url %}
+    <a role="button" href="{% add_preserved_filters cancel_membership_url %}" class="deletelink">{% translate "Cancel Membership" %}</a>
+{% endif %}
+{% if show_delete_link and original and not show_cancel_membership_button %}
     {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
     <a role="button" href="{% add_preserved_filters delete_url %}" class="deletelink">{% translate "Delete" %}</a>
-    {% endif %}
 {% endif %}
 {% endblock %}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 13:36+0200\n"
+"POT-Creation-Date: 2026-07-19 14:28+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,7 +53,7 @@ msgstr "Nee"
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/members/admin.py:102 symfexit/members/models.py:241
+#: symfexit/members/admin.py:102 symfexit/members/models.py:242
 msgid "local groups"
 msgstr "groepen"
 
@@ -61,7 +61,7 @@ msgstr "groepen"
 msgid "permission groups"
 msgstr "rechtengroepen"
 
-#: symfexit/members/admin.py:136 symfexit/members/admin.py:549
+#: symfexit/members/admin.py:136 symfexit/members/admin.py:575
 msgid "Personal info"
 msgstr "Persoonlijke informatie"
 
@@ -81,27 +81,31 @@ msgstr "Financiën"
 msgid "credit balance"
 msgstr "krediet balans"
 
-#: symfexit/members/admin.py:468
+#: symfexit/members/admin.py:418
+msgid "Membership cancelled successfully."
+msgstr "Lidmaatschap succesvol opgezegd"
+
+#: symfexit/members/admin.py:494
 msgid "member"
 msgstr "lid"
 
-#: symfexit/members/admin.py:469
+#: symfexit/members/admin.py:495
 msgid "members"
 msgstr "leden"
 
-#: symfexit/members/admin.py:487
+#: symfexit/members/admin.py:513
 msgid "support member"
 msgstr "steunlid"
 
-#: symfexit/members/admin.py:488
+#: symfexit/members/admin.py:514
 msgid "support members"
 msgstr "steunleden"
 
-#: symfexit/members/admin.py:521
+#: symfexit/members/admin.py:547
 msgid "local group member"
 msgstr "groepslid"
 
-#: symfexit/members/admin.py:522
+#: symfexit/members/admin.py:548
 msgid "local group members"
 msgstr "groepsleden"
 
@@ -202,6 +206,11 @@ msgstr "Voer een bedrag in."
 #, python-format
 msgid "Please enter an amount of at least €%(amount).2f."
 msgstr "Voer een bedrag van minimaal €%(amount).2f in."
+
+#: symfexit/members/forms.py:201
+#, python-format
+msgid "Please enter an amount of at least \\u20ac%(amount).2f."
+msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
 
 #: symfexit/members/forms.py:208
 msgid "Invalid choice."
@@ -327,28 +336,32 @@ msgstr "gebruiker"
 msgid "users"
 msgstr "gebruikers"
 
-#: symfexit/members/models.py:240
+#: symfexit/members/models.py:141
+msgid "Can cancel memberships"
+msgstr "Kan lidmaatschap opzeggen"
+
+#: symfexit/members/models.py:241
 msgid "local group"
 msgstr "groep"
 
-#: symfexit/members/models.py:247 symfexit/members/models.py:268
+#: symfexit/members/models.py:248 symfexit/members/models.py:269
 msgid "contact people"
 msgstr "contactpersonen"
 
-#: symfexit/members/models.py:251
+#: symfexit/members/models.py:252
 msgid "selectable"
 msgstr "selecteerbaar"
 
-#: symfexit/members/models.py:253
+#: symfexit/members/models.py:254
 msgid "Whether this group can be selected by new members signing up"
 msgstr ""
 "Of deze groep geselecteerd kan worder door nieuwe leden die zich inschrijven"
 
-#: symfexit/members/models.py:259
+#: symfexit/members/models.py:260
 msgid "work group"
 msgstr "werkgroep"
 
-#: symfexit/members/models.py:260
+#: symfexit/members/models.py:261
 msgid "work groups"
 msgstr "werkgroepen"
 
@@ -407,7 +420,7 @@ msgstr "Opslaan en bekijken"
 msgid "Close"
 msgstr "Sluiten"
 
-#: symfexit/members/templates/admin/members/submit_line.html:16
+#: symfexit/members/templates/admin/members/submit_line.html:15
 msgid "Cancel Membership"
 msgstr "Lidmaatschap opzeggen"
 
@@ -515,7 +528,6 @@ msgid "quarter"
 msgstr "kwartaal"
 
 #: symfexit/members/views.py:32
-#, python-brace-format
 msgid "{} months"
 msgstr "{} maanden"
 
@@ -524,7 +536,6 @@ msgid "year"
 msgstr "jaar"
 
 #: symfexit/members/views.py:37
-#, python-brace-format
 msgid "{} years"
 msgstr "{} jaren"
 
@@ -533,7 +544,6 @@ msgid "week"
 msgstr "week"
 
 #: symfexit/members/views.py:42
-#, python-brace-format
 msgid "{} weeks"
 msgstr "{} weken"
 
@@ -542,7 +552,6 @@ msgid "day"
 msgstr "dag"
 
 #: symfexit/members/views.py:47
-#, python-brace-format
 msgid "{} days"
 msgstr "{} dagen"
 
@@ -564,7 +573,3 @@ msgid ""
 "subscription."
 msgstr ""
 "Vul je adres, woonplaats en postcode in voordat je een abonnement start."
-
-#, python-format
-#~ msgid "Please enter an amount of at least \\u20ac%(amount).2f."
-#~ msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
