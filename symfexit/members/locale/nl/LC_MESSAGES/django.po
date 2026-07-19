@@ -207,6 +207,11 @@ msgstr "Voer een bedrag in."
 msgid "Please enter an amount of at least €%(amount).2f."
 msgstr "Voer een bedrag van minimaal €%(amount).2f in."
 
+#: symfexit/members/forms.py:201
+#, python-format
+msgid "Please enter an amount of at least \\u20ac%(amount).2f."
+msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
+
 #: symfexit/members/forms.py:208
 msgid "Invalid choice."
 msgstr "Ongeldige keuze"
