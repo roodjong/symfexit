@@ -291,6 +291,7 @@ class MollieStartPaymentFlowTest(TestCase):
     def _mock_customer(self, customer_id="cst_test123"):
         mock = MagicMock()
         mock.__getitem__ = lambda s, k: customer_id if k == "id" else None
+        mock.id = customer_id
         return mock
 
     def _assert_pending_url_carries_return(self, url, expected_return):
@@ -310,9 +311,7 @@ class MollieStartPaymentFlowTest(TestCase):
         mock_client = MagicMock()
         mock_client.payments.create.return_value = self._mock_payment()
         mock_client.customers.create.return_value = self._mock_customer()
-        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
-            _make_mock_mandates([])
-        )
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates([])
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
             instance = MollieProcessorInstance(self.mollie_settings)
@@ -348,8 +347,8 @@ class MollieStartPaymentFlowTest(TestCase):
 
         mock_client = MagicMock()
         mock_client.payments.create.return_value = self._mock_payment()
-        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
-            _make_mock_mandates([{"status": "valid"}])
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
         )
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
@@ -408,8 +407,8 @@ class MollieStartPaymentFlowTest(TestCase):
 
         mock_client = MagicMock()
         mock_client.payments.create.return_value = self._mock_payment()
-        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
-            _make_mock_mandates([{"status": "invalid"}])
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "invalid"}]
         )
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
@@ -477,8 +476,8 @@ class MollieStartPaymentFlowTest(TestCase):
 
         mock_client = MagicMock()
         mock_client.payments.create.return_value = self._mock_payment()
-        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
-            _make_mock_mandates([{"status": "valid"}])
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
         )
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
@@ -619,8 +618,8 @@ class ChargeObligationsTest(TestCase):
         mock_payment.__getitem__ = lambda s, k: "tr_recurring" if k == "id" else None
 
         mock_client = MagicMock()
-        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
-            _make_mock_mandates([{"status": "valid"}])
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
         )
         mock_client.payments.create.return_value = mock_payment
 
@@ -649,8 +648,8 @@ class ChargeObligationsTest(TestCase):
         MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_nomandate")
 
         mock_client = MagicMock()
-        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
-            _make_mock_mandates([{"status": "invalid"}])
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "invalid"}]
         )
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
@@ -723,8 +722,8 @@ class ChargeObligationsTest(TestCase):
         mock_payment.__getitem__ = lambda s, k: "tr_remainder" if k == "id" else None
 
         mock_client = MagicMock()
-        mock_client.customer_mandates.with_parent_id.return_value.list.return_value = (
-            _make_mock_mandates([{"status": "valid"}])
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
         )
         mock_client.payments.create.return_value = mock_payment
 
