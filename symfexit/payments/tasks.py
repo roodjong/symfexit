@@ -1,8 +1,6 @@
 import zoneinfo
 from datetime import date, datetime, time
 
-from django.db import connection
-
 from symfexit.payments.models import Order, PaymentObligation, _tenant_payments_timezone
 from symfexit.payments.registry import payments_registry
 from symfexit.worker import logger
@@ -10,14 +8,19 @@ from symfexit.worker.registry import task_registry
 
 
 def _normalize_now(now, timezone_name):
-    """Make a `now` override tz-aware in the given timezone. Accepts a `date`
-    (interpreted as start-of-day) or a `datetime` (made tz-aware if naive)."""
+    """Resolve a `now` override into an aware datetime in the given timezone.
+
+    None becomes the actual current time; a `date` is interpreted as
+    start-of-day; a naive `datetime` is made tz-aware."""
     tz = zoneinfo.ZoneInfo(timezone_name)
+    if now is None:
+        return datetime.now(tz=tz)
     if isinstance(now, datetime):
         if now.tzinfo is None:
             now = now.replace(tzinfo=tz)
-    elif isinstance(now, date):
-        now = datetime.combine(now, time.min, tzinfo=tz)
+        return now
+    if isinstance(now, date):
+        return datetime.combine(now, time.min, tzinfo=tz)
     return now
 
 
@@ -30,11 +33,8 @@ def gen_obligations(now=None):
     tenant's payments timezone) or a `datetime` (made tz-aware in the tenant's
     payments timezone if naive).
     """
-    tenant = connection.tenant
-    timezone_name = tenant.payments_timezone
-
-    if now is not None:
-        now = _normalize_now(now, timezone_name)
+    timezone_name = _tenant_payments_timezone()
+    now = _normalize_now(now, timezone_name)
 
     orders = Order.objects.filter(
         subscription__isnull=False,
@@ -65,10 +65,7 @@ def charge_obligations(now=None):
     the tenant's payments timezone.
     """
     timezone_name = _tenant_payments_timezone()
-    if now is None:
-        now = datetime.now(tz=zoneinfo.ZoneInfo(timezone_name))
-    else:
-        now = _normalize_now(now, timezone_name)
+    now = _normalize_now(now, timezone_name)
 
     # Note: no payment__isnull=True filter — an obligation can have a credit-funded
     # Payment that still leaves an outstanding amount, which we want to charge here.
