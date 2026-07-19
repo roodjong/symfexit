@@ -169,7 +169,7 @@ class MembershipSelectionForm(forms.Form):
             value = str(tier.pk)
             if first_tier_value is None:
                 first_tier_value = value
-            choices.append((value, f"{tier.name} (\u20ac{tier.price_euros():.2f})"))
+            choices.append((value, f"{tier.name} (€{tier.price_euros():.2f})"))
         if membership_type.allow_custom_amount:
             choices.append((CUSTOM_TIER_VALUE, _("I want to pay more, namely:")))
         self.fields["payment_tier"].choices = choices
@@ -198,7 +198,7 @@ class MembershipSelectionForm(forms.Form):
             if pay_more < minimum_euros:
                 self.add_error(
                     "pay_more",
-                    _("Please enter an amount of at least \u20ac%(amount).2f.")
+                    _("Please enter an amount of at least €%(amount).2f.")
                     % {"amount": minimum_euros},
                 )
         elif payment_tier:

@@ -158,7 +158,8 @@ class MollieWebhookTest(TestCase):
         self.assertEqual(payment.transaction.amount_cents, 400)
 
     def test_overpayment_credits_user_account(self):
-        """Mollie reports €15 paid against €10 obligation — €10 to obligation, €5 to credit."""
+        """Mollie reports €15 paid against €10 obligation — €10 to obligation, €5 to credit.
+        Both amounts are visible as Payments."""
         mock_client = MagicMock()
         mock_client.payments.get.return_value = self._make_mock_mollie_data(
             "paid", True, amount="15.00"
@@ -167,8 +168,12 @@ class MollieWebhookTest(TestCase):
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
             self._post_webhook("tr_test123")
 
-        payment = Payment.objects.get(obligation=self.obligation)
-        self.assertEqual(payment.transaction.amount_cents, 1000)
+        amounts = sorted(
+            Payment.objects.filter(obligation=self.obligation).values_list(
+                "transaction__amount_cents", flat=True
+            )
+        )
+        self.assertEqual(amounts, [500, 1000])
 
         self.user.refresh_from_db()
         self.assertIsNotNone(self.user.credit_account)
@@ -180,7 +185,8 @@ class MollieWebhookTest(TestCase):
         self.assertEqual(credit_txs.first().amount_cents, 500)
 
     def test_overpayment_when_obligation_already_paid(self):
-        """Second Mollie payment of €5 against an already-paid obligation goes entirely to credit."""
+        """Second Mollie payment of €5 against an already-paid obligation goes
+        entirely to credit, but stays visible as a Payment."""
         from symfexit.payments.models import Account, Transaction  # noqa: PLC0415
 
         # First payment fully covers the obligation.
@@ -204,8 +210,10 @@ class MollieWebhookTest(TestCase):
         with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
             self._post_webhook("tr_test123")
 
-        # Only the original Payment exists (no Payment for the surplus).
-        self.assertEqual(Payment.objects.filter(obligation=self.obligation).count(), 1)
+        # The surplus gets its own Payment row so it shows up in the admin.
+        payments = Payment.objects.filter(obligation=self.obligation).order_by("created_at")
+        self.assertEqual(payments.count(), 2)
+        self.assertEqual(payments.last().transaction.amount_cents, 500)
 
         # Surplus is parked in user's credit account.
         self.user.refresh_from_db()
@@ -488,6 +496,163 @@ class MollieStartPaymentFlowTest(TestCase):
         self.assertEqual(call_args["amount"]["value"], "5.50")
 
 
+class MollieBankAccountChangeTest(TestCase):
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.provider = PaymentProvider.objects.create(
+            name="Mollie Test",
+            type="mollie",
+            default=True,
+        )
+        self.mollie_settings = MollieSettings.objects.create(
+            payment_provider=self.provider,
+            test_api_key="test_xxx",
+        )
+
+        self.user = Member.objects.create_user(email="change@example.com")
+        self.billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="test-change",
+            name="Change Product",
+            price_euros=Decimal("15.50"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+
+        self.order = product.order(for_user=self.user, billing_address=self.billing_address)
+        self.order.paid_using = self.provider
+        self.order.save()
+
+        self.obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_change")
+        self.factory = RequestFactory()
+
+    def _make_request(self):
+        request = self.factory.get("/change/")
+        request.META["SERVER_NAME"] = "testserver"
+        request.META["SERVER_PORT"] = "80"
+        return request
+
+    def _mock_payment(
+        self, payment_id="tr_change123", checkout_url="https://www.mollie.com/checkout/change"
+    ):
+        mock = MagicMock()
+        mock.__getitem__ = lambda s, k: payment_id if k == "id" else None
+        mock.checkout_url = checkout_url
+        return mock
+
+    def _start_flow(self, mock_client):
+        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            instance = MollieProcessorInstance(self.mollie_settings)
+            return instance.start_bank_account_change_flow(
+                self._make_request(), self.obligation, "/return/"
+            )
+
+    def test_revokes_mandates_and_charges_verification_cent(self):
+        """Valid mandates are revoked; a one-cent first payment creates the
+        mandate for the new account while the subscription keeps running."""
+        mock_client = MagicMock()
+        mock_client.payments.create.return_value = self._mock_payment()
+        mock_customer = mock_client.customers.get.return_value
+        mock_customer.mandates.list.return_value = _make_mock_mandates(
+            [
+                {"id": "mdt_valid", "status": "valid"},
+                {"id": "mdt_pending", "status": "pending"},
+                {"id": "mdt_invalid", "status": "invalid"},
+            ]
+        )
+
+        response = self._start_flow(mock_client)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "https://www.mollie.com/checkout/change")
+
+        revoked = [call.args[0] for call in mock_customer.mandates.delete.call_args_list]
+        self.assertEqual(revoked, ["mdt_valid", "mdt_pending"])
+
+        call_args = mock_client.payments.create.call_args[0][0]
+        self.assertEqual(call_args["sequenceType"], "first")
+        self.assertEqual(call_args["customerId"], "cst_change")
+        self.assertEqual(call_args["amount"]["value"], "0.01")
+        self.assertIn("/mollie/pending/", call_args["redirectUrl"])
+
+        mollie_payment = MolliePayment.objects.get(mollie_payment_id="tr_change123")
+        self.assertEqual(mollie_payment.obligation, self.obligation)
+        self.assertEqual(mollie_payment.mollie_customer_id, "cst_change")
+
+    def test_fully_paid_obligation_still_charges_verification_cent(self):
+        """Nothing outstanding — the flow doesn't short-circuit like
+        start_payment_flow; the one-cent payment still goes through checkout so
+        the new mandate is created."""
+        from symfexit.payments.models import Payment, Transaction  # noqa: PLC0415
+
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1550
+        )
+        Payment.objects.create(
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=tx,
+        )
+
+        mock_client = MagicMock()
+        mock_client.payments.create.return_value = self._mock_payment()
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates([])
+
+        response = self._start_flow(mock_client)
+
+        self.assertEqual(response.status_code, 302)
+        call_args = mock_client.payments.create.call_args[0][0]
+        self.assertEqual(call_args["sequenceType"], "first")
+        self.assertEqual(call_args["amount"]["value"], "0.01")
+
+    def test_uses_configured_webhook_base_url(self):
+        """When webhook_base_url is set (e.g. an ngrok tunnel in development),
+        it is used instead of the request's host."""
+        self.mollie_settings.webhook_base_url = "https://tunnel.example.com/"
+        self.mollie_settings.save()
+
+        mock_client = MagicMock()
+        mock_client.payments.create.return_value = self._mock_payment()
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates([])
+
+        self._start_flow(mock_client)
+
+        call_args = mock_client.payments.create.call_args[0][0]
+        self.assertEqual(call_args["webhookUrl"], "https://tunnel.example.com/mollie/webhook/")
+
+    def test_revoke_failure_does_not_abort_flow(self):
+        """A mandate that fails to revoke is logged; the checkout still starts."""
+        mock_client = MagicMock()
+        mock_client.payments.create.return_value = self._mock_payment()
+        mock_customer = mock_client.customers.get.return_value
+        mock_customer.mandates.list.return_value = _make_mock_mandates(
+            [{"id": "mdt_valid", "status": "valid"}]
+        )
+        mock_customer.mandates.delete.side_effect = Exception("already revoked")
+
+        response = self._start_flow(mock_client)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "https://www.mollie.com/checkout/change")
+        mock_client.payments.create.assert_called_once()
+
+
 class LinkMollieCustomerTest(TestCase):
     def setUp(self):
         Account.get_accounts_receivable_account()
@@ -634,6 +799,52 @@ class ChargeObligationsTest(TestCase):
         self.assertEqual(call_args["sequenceType"], "recurring")
         self.assertEqual(call_args["customerId"], "cst_charge")
         self.assertIn("/mollie/webhook/", call_args["webhookUrl"])
+
+    def test_future_period_obligation_charged_only_with_now_override(self):
+        """A pre-generated obligation for a future period is not charged until
+        its period starts; passing `now` simulates the future charge run."""
+        from datetime import timedelta  # noqa: PLC0415
+
+        from symfexit.payments.models import Account, Payment, Transaction  # noqa: PLC0415
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_future")
+
+        # Fully pay the current obligation so only the future one is outstanding.
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1000
+        )
+        Payment.objects.create(
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=tx,
+        )
+
+        future_now = self.obligation.pay_before + timedelta(days=1)
+        future_obligation = self.order.get_or_create_next_payment_obligation(
+            timezone="UTC", now=future_now
+        )
+        self.assertNotEqual(future_obligation.pk, self.obligation.pk)
+
+        mock_payment = MagicMock()
+        mock_payment.__getitem__ = lambda s, k: "tr_future" if k == "id" else None
+        mock_client = MagicMock()
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
+        )
+        mock_client.payments.create.return_value = mock_payment
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            charge_obligations()
+            self.assertFalse(MolliePayment.objects.exists())
+
+            charge_obligations(now=future_now)
+
+        mollie_payment = MolliePayment.objects.get(mollie_payment_id="tr_future")
+        self.assertEqual(mollie_payment.obligation, future_obligation)
 
     def test_skips_obligation_without_customer(self):
         from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415

@@ -119,3 +119,16 @@ class PaymentProcessorInstance(metaclass=abc.ABCMeta):
         Raises on error.
         """
         return False
+
+    def supports_bank_account_change(self) -> bool:
+        """Returns whether this processor lets a user register a new bank account
+        (payment mandate) for their recurring payments."""
+        return False
+
+    def start_bank_account_change_flow(self, request, obligation, return_url):
+        """Starts a flow in which the user registers a new bank account for
+        their recurring payments.
+
+        Should return an HttpResponse (either a redirect or a rendered template).
+        """
+        raise NotImplementedError

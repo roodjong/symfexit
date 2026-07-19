@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 14:28+0200\n"
+"POT-Creation-Date: 2026-07-19 20:12+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -206,11 +206,6 @@ msgstr "Voer een bedrag in."
 #, python-format
 msgid "Please enter an amount of at least €%(amount).2f."
 msgstr "Voer een bedrag van minimaal €%(amount).2f in."
-
-#: symfexit/members/forms.py:201
-#, python-format
-msgid "Please enter an amount of at least \\u20ac%(amount).2f."
-msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
 
 #: symfexit/members/forms.py:208
 msgid "Invalid choice."
@@ -424,6 +419,21 @@ msgstr "Sluiten"
 msgid "Cancel Membership"
 msgstr "Lidmaatschap opzeggen"
 
+#: symfexit/members/templates/members/bank_account_change.html:4
+#: symfexit/members/templates/members/bank_account_change.html:11
+msgid "Change bank account"
+msgstr "Bankrekening wijzigen"
+
+#: symfexit/members/templates/members/bank_account_change.html:7
+msgid ""
+"You will be redirected to our payment provider to make a one cent payment "
+"from your new bank account. Future contributions will then be debited from "
+"that account."
+msgstr ""
+"Je wordt doorgestuurd naar onze betaalprovider om een betaling van één cent "
+"vanaf je nieuwe bankrekening te doen. Toekomstige contributies worden daarna "
+"van die rekening afgeschreven."
+
 #: symfexit/members/templates/members/membership_cancellation.html:17
 msgid "Confirm cancellation"
 msgstr "Bevestig opzegging"
@@ -439,7 +449,7 @@ msgstr ""
 "lidmaatschap verliezen."
 
 #: symfexit/members/templates/members/membership_cancellation.html:26
-#: symfexit/members/templates/members/user_form.html:66
+#: symfexit/members/templates/members/user_form.html:72
 msgid "Cancel membership"
 msgstr "Lidmaatschap opzeggen"
 
@@ -487,35 +497,35 @@ msgstr ""
 msgid "Cancel subscription"
 msgstr "Abonnement opzeggen"
 
-#: symfexit/members/templates/members/user_form.html:37
+#: symfexit/members/templates/members/user_form.html:40
 msgid "Different bank account"
 msgstr "Andere bankrekening"
 
-#: symfexit/members/templates/members/user_form.html:38
+#: symfexit/members/templates/members/user_form.html:44
 msgid "Adjust amount"
 msgstr "Bedrag aanpassen"
 
-#: symfexit/members/templates/members/user_form.html:41
+#: symfexit/members/templates/members/user_form.html:47
 msgid "Payment history"
 msgstr "Betalingsgeschiedenis"
 
-#: symfexit/members/templates/members/user_form.html:45
+#: symfexit/members/templates/members/user_form.html:51
 msgid "Date"
 msgstr "Datum"
 
-#: symfexit/members/templates/members/user_form.html:46
+#: symfexit/members/templates/members/user_form.html:52
 msgid "Amount"
 msgstr "Bedrag"
 
-#: symfexit/members/templates/members/user_form.html:60
+#: symfexit/members/templates/members/user_form.html:66
 msgid "Setup your membership payments now"
 msgstr "Stel nu je lidmaatschapsbetalingen in"
 
-#: symfexit/members/templates/members/user_form.html:64
+#: symfexit/members/templates/members/user_form.html:70
 msgid "Start subscription"
 msgstr "Start automatische betaling"
 
-#: symfexit/members/templates/members/user_form.html:70
+#: symfexit/members/templates/members/user_form.html:76
 msgid "Cancel membership..."
 msgstr "Lidmaatschap opzeggen..."
 
@@ -528,6 +538,7 @@ msgid "quarter"
 msgstr "kwartaal"
 
 #: symfexit/members/views.py:32
+#, python-brace-format
 msgid "{} months"
 msgstr "{} maanden"
 
@@ -536,6 +547,7 @@ msgid "year"
 msgstr "jaar"
 
 #: symfexit/members/views.py:37
+#, python-brace-format
 msgid "{} years"
 msgstr "{} jaren"
 
@@ -544,6 +556,7 @@ msgid "week"
 msgstr "week"
 
 #: symfexit/members/views.py:42
+#, python-brace-format
 msgid "{} weeks"
 msgstr "{} weken"
 
@@ -552,6 +565,7 @@ msgid "day"
 msgstr "dag"
 
 #: symfexit/members/views.py:47
+#, python-brace-format
 msgid "{} days"
 msgstr "{} dagen"
 
@@ -559,7 +573,7 @@ msgstr "{} dagen"
 msgid "an unknown provider"
 msgstr "een onbekende provider"
 
-#: symfexit/members/views.py:190
+#: symfexit/members/views.py:194
 msgid ""
 "No membership type is configured for your account. Please contact the "
 "administrator."
@@ -567,9 +581,19 @@ msgstr ""
 "Er is geen lidmaatschapstype geconfigureerd voor je account. Neem contact op "
 "met de beheerder."
 
-#: symfexit/members/views.py:199
+#: symfexit/members/views.py:203
 msgid ""
 "Please fill in your address, city, and postal code before starting a "
 "subscription."
 msgstr ""
 "Vul je adres, woonplaats en postcode in voordat je een abonnement start."
+
+#: symfexit/members/views.py:256
+msgid "You have no active subscription to change the bank account for."
+msgstr "Je hebt geen actief abonnement om de bankrekening voor te wijzigen."
+
+#: symfexit/members/views.py:264
+msgid "Changing your bank account is not supported for your payment method."
+msgstr ""
+"Het wijzigen van je bankrekening wordt niet ondersteund voor jouw "
+"betaalmethode."

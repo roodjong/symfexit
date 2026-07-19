@@ -6,7 +6,8 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef
+from django.db.models import F, Sum
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -29,6 +30,21 @@ from symfexit.payments.models import (
 from symfexit.payments.registry import payments_registry
 
 User = get_user_model()
+
+
+def _annotate_paid_cents(qs):
+    """Annotate an obligation queryset with the total cents paid, so callers
+    can split on outstanding amount rather than mere existence of a Payment
+    (a partial payment, e.g. the one-cent bank account change, is not paid)."""
+    return qs.annotate(paid_cents=Coalesce(Sum("payment__transaction__amount_cents"), 0))
+
+
+def _unpaid_obligations(qs):
+    return _annotate_paid_cents(qs).filter(paid_cents__lt=F("amount_euros") * 100)
+
+
+def _paid_obligations(qs):
+    return _annotate_paid_cents(qs).filter(paid_cents__gte=F("amount_euros") * 100)
 
 
 @admin.register(BillingAddress)
@@ -161,8 +177,7 @@ class PaymentObligationInline(admin.TabularInline):
         return super().get_formset(request, obj, **kwargs)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.filter(~Exists(Payment.objects.filter(obligation=OuterRef("pk"))))
+        return _unpaid_obligations(super().get_queryset(request))
 
 
 class PaidPaymentObligationInline(admin.TabularInline):
@@ -182,8 +197,7 @@ class PaidPaymentObligationInline(admin.TabularInline):
         return False
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.filter(Exists(Payment.objects.filter(obligation=OuterRef("pk"))))
+        return _paid_obligations(super().get_queryset(request))
 
 
 class PaymentInlineForm(forms.ModelForm):
@@ -208,8 +222,8 @@ class PaymentInline(admin.TabularInline):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "obligation" and hasattr(self, "parent_obj"):
-            kwargs["queryset"] = PaymentObligation.objects.filter(order=self.parent_obj).filter(
-                ~Exists(Payment.objects.filter(obligation=OuterRef("pk")))
+            kwargs["queryset"] = _unpaid_obligations(
+                PaymentObligation.objects.filter(order=self.parent_obj)
             )
         if db_field.name == "paid_using":
             manual_types = [
@@ -413,7 +427,9 @@ class PaymentObligationPaymentInline(admin.TabularInline):
         return ()
 
     def has_add_permission(self, request, obj=None):
-        if obj and obj.payment_set.exists():
+        # A partially paid obligation (e.g. after the one-cent bank account
+        # change payment) can still receive a manual payment for the remainder.
+        if obj and obj.is_fully_paid:
             return False
         return True
 
@@ -434,7 +450,36 @@ class PaymentObligationPaymentInline(admin.TabularInline):
 
 @admin.register(PaymentObligation)
 class PaymentObligationAdmin(admin.ModelAdmin):
-    readonly_fields = ("transaction", "order")
+    readonly_fields = ("transaction", "order", "remaining_amount")
+
+    @admin.display(description=_("amount"))
+    def amount(self, obj):
+        if obj is None or obj.pk is None:
+            return "-"
+        return f"€ {obj.amount_euros:.2f}"
+
+    @admin.display(description=_("remaining amount"))
+    def remaining_amount(self, obj):
+        if obj is None or obj.pk is None:
+            return "-"
+        return f"€ {obj.outstanding_cents / 100:.2f}"
+
+    def get_fields(self, request, obj=None):
+        # On the view-only page, show the amount with a euro sign; while the
+        # obligation is still editable, keep the raw amount_euros input.
+        fields = super().get_fields(request, obj)
+        if obj is not None and not self.has_change_permission(request, obj):
+            fields = ["amount" if f == "amount_euros" else f for f in fields]
+            # get_fields appends readonly_fields (which include "amount"), so
+            # drop the duplicate while keeping the amount_euros position.
+            seen = set()
+            fields = [f for f in fields if not (f in seen or seen.add(f))]
+        return fields
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None and not self.has_change_permission(request, obj):
+            return (*self.readonly_fields, "amount")
+        return self.readonly_fields
 
     def get_inlines(self, request, obj):
         inlines = [PaymentObligationPaymentInline]

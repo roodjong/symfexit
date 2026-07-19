@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 11:18+0200\n"
+"POT-Creation-Date: 2026-07-19 15:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,33 +17,41 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/payments/admin.py:171
+#: symfexit/payments/admin.py:186
 msgid "Paid payment obligation"
 msgstr "Betaalde betalingsverplichting"
 
-#: symfexit/payments/admin.py:172
+#: symfexit/payments/admin.py:187
 msgid "Paid payment obligations"
 msgstr "Betaalde betalingsverplichtingen"
 
-#: symfexit/payments/admin.py:227
+#: symfexit/payments/admin.py:241
 msgid "status"
 msgstr "status"
 
-#: symfexit/payments/admin.py:231
+#: symfexit/payments/admin.py:245
 msgid "Active"
 msgstr "Actief"
 
-#: symfexit/payments/admin.py:231
+#: symfexit/payments/admin.py:245
 msgid "Cancelled"
 msgstr "Geannuleerd"
 
-#: symfexit/payments/admin.py:231
+#: symfexit/payments/admin.py:245
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/payments/admin.py:388
+#: symfexit/payments/admin.py:402
 msgid "User has not setup full address yet"
 msgstr "Gebruiker heeft nog geen volledig adres ingesteld"
+
+#: symfexit/payments/admin.py:455
+msgid "amount"
+msgstr "bedrag"
+
+#: symfexit/payments/admin.py:461
+msgid "remaining amount"
+msgstr "resterend bedrag"
 
 #: symfexit/payments/apps.py:28
 msgid "Payments"
