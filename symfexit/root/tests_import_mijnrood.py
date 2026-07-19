@@ -30,49 +30,144 @@ AMSTERDAM = ZoneInfo("Europe/Amsterdam")
 HEADERS = {
     "admin_membershipstatus": ["id", "name", "allowed_access"],
     "admin_division": [
-        "id", "name", "phone", "city", "address", "post_code",
-        "facebook", "instagram", "twitter", "email_id", "can_be_selected_on_application",
+        "id",
+        "name",
+        "phone",
+        "city",
+        "address",
+        "post_code",
+        "facebook",
+        "instagram",
+        "twitter",
+        "email_id",
+        "can_be_selected_on_application",
     ],
     "division_member": ["division_id", "member_id"],
     "admin_member": [
-        "id", "division_id", "first_name", "last_name", "email", "phone", "iban",
-        "address", "city", "post_code", "registration_time", "mollie_subscription_id",
-        "contribution_period", "contribution_per_period_in_cents", "roles", "password_hash",
-        "new_password_token_generated_time", "new_password_token", "country", "date_of_birth",
-        "accept_use_personal_information", "mollie_customer_id",
-        "create_subscription_after_payment", "current_membership_status_id", "comments",
+        "id",
+        "division_id",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "iban",
+        "address",
+        "city",
+        "post_code",
+        "registration_time",
+        "mollie_subscription_id",
+        "contribution_period",
+        "contribution_per_period_in_cents",
+        "roles",
+        "password_hash",
+        "new_password_token_generated_time",
+        "new_password_token",
+        "country",
+        "date_of_birth",
+        "accept_use_personal_information",
+        "mollie_customer_id",
+        "create_subscription_after_payment",
+        "current_membership_status_id",
+        "comments",
         "middle_name",
     ],
     "admin_support_member": [
-        "id", "first_name", "last_name", "email", "phone", "iban", "address", "city",
-        "post_code", "country", "date_of_birth", "registration_time", "mollie_customer_id",
-        "mollie_subscription_id", "contribution_period", "contribution_per_period_in_cents",
-        "original_id", "original_registration_time",
+        "id",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "iban",
+        "address",
+        "city",
+        "post_code",
+        "country",
+        "date_of_birth",
+        "registration_time",
+        "mollie_customer_id",
+        "mollie_subscription_id",
+        "contribution_period",
+        "contribution_per_period_in_cents",
+        "original_id",
+        "original_registration_time",
     ],
     "admin_support_membership_application": [
-        "id", "first_name", "last_name", "email", "phone", "iban", "address", "city",
-        "post_code", "country", "date_of_birth", "registration_time", "mollie_customer_id",
-        "mollie_subscription_id", "contribution_period", "contribution_per_period_in_cents",
+        "id",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "iban",
+        "address",
+        "city",
+        "post_code",
+        "country",
+        "date_of_birth",
+        "registration_time",
+        "mollie_customer_id",
+        "mollie_subscription_id",
+        "contribution_period",
+        "contribution_per_period_in_cents",
     ],
     "admin_contribution_payment": [
-        "id", "member_id", "amount_in_cents", "payment_time", "status", "mollie_payment_id",
-        "period_year", "period_month_start", "period_month_end",
+        "id",
+        "member_id",
+        "amount_in_cents",
+        "payment_time",
+        "status",
+        "mollie_payment_id",
+        "period_year",
+        "period_month_start",
+        "period_month_end",
     ],
     "admin_membership_application": [
-        "id", "first_name", "last_name", "email", "phone", "iban", "address", "city",
-        "post_code", "country", "date_of_birth", "registration_time", "contribution_period",
-        "contribution_per_period_in_cents", "preferred_division_id", "mollie_customer_id",
-        "paid", "middle_name", "has_sent_initial_email",
+        "id",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "iban",
+        "address",
+        "city",
+        "post_code",
+        "country",
+        "date_of_birth",
+        "registration_time",
+        "contribution_period",
+        "contribution_per_period_in_cents",
+        "preferred_division_id",
+        "mollie_customer_id",
+        "paid",
+        "middle_name",
+        "has_sent_initial_email",
     ],
     "admin_member_revision": [
-        "id", "member_id", "own", "revision_time", "first_name", "last_name", "email",
-        "phone", "iban", "address", "city", "post_code", "country", "date_of_birth",
+        "id",
+        "member_id",
+        "own",
+        "revision_time",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "iban",
+        "address",
+        "city",
+        "post_code",
+        "country",
+        "date_of_birth",
         "current_membership_status_id",
     ],
     "admin_document_folder": ["id", "parent_id", "member_created_id", "name"],
     "admin_document": [
-        "id", "folder_id", "member_uploaded_id", "name", "size_in_bytes",
-        "upload_file_name", "date_uploaded", "api_download_url",
+        "id",
+        "folder_id",
+        "member_uploaded_id",
+        "name",
+        "size_in_bytes",
+        "upload_file_name",
+        "date_uploaded",
+        "api_download_url",
     ],
     "admin_email_domain": ["id", "domain"],
     "admin_email": ["id", "user", "domain_id", "manager_id"],
@@ -126,7 +221,13 @@ class ImportMijnroodTest(FastTenantTestCase):
             (self.cache_dir / doc_id).write_bytes(content)
 
     def import_args(self):
-        return []
+        # A subset of the rood instance's contribution.tiers config; amounts
+        # are per quarter in cents.
+        return [
+            "--contribution-tier", "750:Minimum",
+            "--contribution-tier", "1500:Basis",
+            "--contribution-tier", "10000:Heel hoog",
+        ]  # fmt: skip
 
     def write_csv(self, table, rows):
         with (self.export_dir / f"{table}.csv").open("w", newline="", encoding="utf-8") as f:
@@ -285,46 +386,81 @@ class ImportMijnroodTest(FastTenantTestCase):
             "admin_contribution_payment",
             [
                 {
-                    "id": "1", "member_id": "10", "amount_in_cents": "750",
-                    "payment_time": "2026-01-05 10:00:00", "status": "1",
-                    "mollie_payment_id": "tr_1", "period_year": "2026",
-                    "period_month_start": "1", "period_month_end": "1",
+                    "id": "1",
+                    "member_id": "10",
+                    "amount_in_cents": "750",
+                    "payment_time": "2026-01-05 10:00:00",
+                    "status": "1",
+                    "mollie_payment_id": "tr_1",
+                    "period_year": "2026",
+                    "period_month_start": "1",
+                    "period_month_end": "1",
                 },
                 {
-                    "id": "2", "member_id": "10", "amount_in_cents": "750",
-                    "payment_time": "2026-02-05 10:00:00", "status": "1",
-                    "mollie_payment_id": "tr_2", "period_year": "2026",
-                    "period_month_start": "2", "period_month_end": "2",
+                    "id": "2",
+                    "member_id": "10",
+                    "amount_in_cents": "750",
+                    "payment_time": "2026-02-05 10:00:00",
+                    "status": "1",
+                    "mollie_payment_id": "tr_2",
+                    "period_year": "2026",
+                    "period_month_start": "2",
+                    "period_month_end": "2",
                 },
                 # second receipt for the same period -> merged onto the same obligation
                 {
-                    "id": "3", "member_id": "10", "amount_in_cents": "750",
-                    "payment_time": "2026-01-20 10:00:00", "status": "1",
-                    "mollie_payment_id": "tr_3", "period_year": "2026",
-                    "period_month_start": "1", "period_month_end": "1",
+                    "id": "3",
+                    "member_id": "10",
+                    "amount_in_cents": "750",
+                    "payment_time": "2026-01-20 10:00:00",
+                    "status": "1",
+                    "mollie_payment_id": "tr_3",
+                    "period_year": "2026",
+                    "period_month_start": "1",
+                    "period_month_end": "1",
                 },
                 # pending -> skipped
                 {
-                    "id": "4", "member_id": "10", "amount_in_cents": "750",
-                    "payment_time": "2026-03-05 10:00:00", "status": "0",
-                    "period_year": "2026", "period_month_start": "3", "period_month_end": "3",
+                    "id": "4",
+                    "member_id": "10",
+                    "amount_in_cents": "750",
+                    "payment_time": "2026-03-05 10:00:00",
+                    "status": "0",
+                    "period_year": "2026",
+                    "period_month_start": "3",
+                    "period_month_end": "3",
                 },
                 {
-                    "id": "5", "member_id": "11", "amount_in_cents": "2250",
-                    "payment_time": "2026-01-10 09:00:00", "status": "1",
-                    "period_year": "2026", "period_month_start": "1", "period_month_end": "3",
+                    "id": "5",
+                    "member_id": "11",
+                    "amount_in_cents": "2250",
+                    "payment_time": "2026-01-10 09:00:00",
+                    "status": "1",
+                    "period_year": "2026",
+                    "period_month_start": "1",
+                    "period_month_end": "3",
                 },
                 {
-                    "id": "6", "member_id": "12", "amount_in_cents": "9000",
-                    "payment_time": "2026-01-02 08:00:00", "status": "1",
-                    "mollie_payment_id": "tr_6", "period_year": "2026",
-                    "period_month_start": "1", "period_month_end": "12",
+                    "id": "6",
+                    "member_id": "12",
+                    "amount_in_cents": "9000",
+                    "payment_time": "2026-01-02 08:00:00",
+                    "status": "1",
+                    "mollie_payment_id": "tr_6",
+                    "period_year": "2026",
+                    "period_month_start": "1",
+                    "period_month_end": "12",
                 },
                 # payment of a member that is not in the export anymore -> skipped
                 {
-                    "id": "7", "member_id": "404", "amount_in_cents": "500",
-                    "payment_time": "2026-01-01 00:00:00", "status": "1",
-                    "period_year": "2026", "period_month_start": "1", "period_month_end": "1",
+                    "id": "7",
+                    "member_id": "404",
+                    "amount_in_cents": "500",
+                    "payment_time": "2026-01-01 00:00:00",
+                    "status": "1",
+                    "period_year": "2026",
+                    "period_month_start": "1",
+                    "period_month_end": "1",
                 },
             ],
         )
@@ -371,10 +507,16 @@ class ImportMijnroodTest(FastTenantTestCase):
             "admin_member_revision",
             [
                 {
-                    "id": "1", "member_id": "10", "own": "1",
-                    "revision_time": "2024-01-01 10:00:00", "first_name": "Piet",
-                    "last_name": "Jansen", "email": "piet@example.org",
-                    "phone": "0612345678", "city": "Amsterdam", "post_code": "1011AB",
+                    "id": "1",
+                    "member_id": "10",
+                    "own": "1",
+                    "revision_time": "2024-01-01 10:00:00",
+                    "first_name": "Piet",
+                    "last_name": "Jansen",
+                    "email": "piet@example.org",
+                    "phone": "0612345678",
+                    "city": "Amsterdam",
+                    "post_code": "1011AB",
                     "country": "NL",
                 }
             ],
@@ -415,13 +557,19 @@ class ImportMijnroodTest(FastTenantTestCase):
             "admin_event",
             [
                 {
-                    "id": "1", "division_id": "1", "name": "Zomerfeest",
+                    "id": "1",
+                    "division_id": "1",
+                    "name": "Zomerfeest",
                     "description": "Feest in het park",
-                    "time_start": "2026-08-01 14:00:00", "time_end": "2026-08-01 22:00:00",
+                    "time_start": "2026-08-01 14:00:00",
+                    "time_end": "2026-08-01 22:00:00",
                 },
                 {
-                    "id": "2", "name": "Congres", "description": "Landelijk congres",
-                    "time_start": "2026-11-14 10:00:00", "time_end": "2026-11-15 17:00:00",
+                    "id": "2",
+                    "name": "Congres",
+                    "description": "Landelijk congres",
+                    "time_start": "2026-11-14 10:00:00",
+                    "time_end": "2026-11-15 17:00:00",
                 },
             ],
         )
@@ -436,9 +584,7 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertEqual(piet.membership_type.slug, "lidmaatschap")
         self.assertEqual(piet.date_joined.astimezone(AMSTERDAM).date(), date(2020, 1, 15))
         # being a division contact also puts piet in the "Contact person" permission group
-        self.assertEqual(
-            [g.name for g in LocalGroup.objects.filter(user=piet)], ["Amsterdam"]
-        )
+        self.assertEqual([g.name for g in LocalGroup.objects.filter(user=piet)], ["Amsterdam"])
         # duplicate email row was skipped
         self.assertFalse(User.objects.filter(legacy_member_number=13).exists())
 
@@ -462,7 +608,9 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertFalse(anna.is_active)
 
     def test_unknown_status_name_aborts(self):
-        with self.assertRaisesMessage(CommandError, "Unknown membership status name(s): bestaatniet"):
+        with self.assertRaisesMessage(
+            CommandError, "Unknown membership status name(s): bestaatniet"
+        ):
             call_command(
                 "import_mijnrood",
                 str(self.export_dir),
@@ -548,8 +696,27 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertEqual(MembershipType.objects.count(), 2)
         lidmaatschap = MembershipType.objects.get(slug="lidmaatschap")
         self.assertTrue(lidmaatschap.allow_custom_amount)
-        # minimum monthly contribution seen in the export (support member sofie's 500)
-        self.assertEqual(lidmaatschap.custom_amount_product.price_euros, Decimal("5.00"))
+        # new custom-amount members pay quarterly; the minimum is the smallest
+        # fixed tier, like in the old signup form
+        self.assertEqual(lidmaatschap.custom_amount_product.subscription.period, 3)
+        self.assertEqual(lidmaatschap.custom_amount_product.price_euros, Decimal("7.50"))
+
+        tiers = list(lidmaatschap.tiers.all())
+        self.assertEqual(
+            [(tier.position, tier.name, tier.price_euros()) for tier in tiers],
+            [
+                (0, "Minimum", Decimal("7.50")),
+                (1, "Basis", Decimal("15.00")),
+                (2, "Heel hoog", Decimal("100.00")),
+            ],
+        )
+        for tier in tiers:
+            self.assertEqual(tier.product.subscription.period_unit, "month")
+            self.assertEqual(tier.product.subscription.period, 3)
+
+        steun = MembershipType.objects.get(slug="steunlidmaatschap")
+        self.assertFalse(steun.enabled)
+        self.assertEqual(steun.tiers.count(), 0)
 
     def test_applications(self):
         self.assertEqual(MembershipApplication.objects.count(), 1)
@@ -570,9 +737,7 @@ class ImportMijnroodTest(FastTenantTestCase):
         self.assertIsNone(reglement.parent)
         self.assertEqual(reglement.content.read(), b"PDFDATA")
         self.assertEqual(reglement.content_type, "application/pdf")
-        self.assertEqual(
-            reglement.created_at, datetime(2021, 5, 1, 12, 0, tzinfo=AMSTERDAM)
-        )
+        self.assertEqual(reglement.created_at, datetime(2021, 5, 1, 12, 0, tzinfo=AMSTERDAM))
         # duplicate name in the same folder was renamed
         renamed = File.objects.get(name="notulen (2).txt")
         self.assertEqual(renamed.parent, notulen)
@@ -597,7 +762,8 @@ class ImportMijnroodTest(FastTenantTestCase):
 
 class ImportMijnroodFromSourceDirTest(ImportMijnroodTest):
     """Re-runs the whole import suite with document bytes coming from a local
-    copy of mijnrood's var/documents directory instead of the download cache."""
+    copy of mijnrood's var/documents directory instead of the download cache,
+    and without --contribution-tier flags."""
 
     def populate_documents(self):
         for doc_id, _, _, content, _ in self.document_fixtures:
@@ -606,3 +772,11 @@ class ImportMijnroodFromSourceDirTest(ImportMijnroodTest):
 
     def import_args(self):
         return ["--documents-source-dir", str(self.source_dir)]
+
+    def test_membership_types(self):
+        lidmaatschap = MembershipType.objects.get(slug="lidmaatschap")
+        self.assertEqual(lidmaatschap.tiers.count(), 0)
+        # without tiers the minimum custom amount falls back to the smallest
+        # quarterly contribution seen in the export (anna's 2250)
+        self.assertEqual(lidmaatschap.custom_amount_product.subscription.period, 3)
+        self.assertEqual(lidmaatschap.custom_amount_product.price_euros, Decimal("22.50"))

@@ -20,6 +20,10 @@ What is imported:
 - mollie_customer_id      -> payments.mollie.MollieCustomer
 - contribution settings   -> membership.MembershipType + payments Product/
                              Subscription/BillingAddress/Order per user
+- --contribution-tier     -> membership.MembershipTier; the old fixed tiers
+                             live in mijnrood's instance config
+                             (config/instances/<name>.yaml, contribution.tiers),
+                             not in the export, so pass them on the command line
 - admin_contribution_payment (status=paid)
                           -> payments.PaymentObligation/Payment/Transaction
                              (+ MolliePayment when a Mollie id is present)
@@ -57,11 +61,12 @@ from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.utils.text import slugify
 
 from symfexit.documents.models import Directory, File
 from symfexit.events.models import Event
 from symfexit.members.models import LocalGroup, User
-from symfexit.membership.models import MembershipType
+from symfexit.membership.models import MembershipTier, MembershipType
 from symfexit.payments.models import (
     Account,
     BillingAddress,
@@ -204,6 +209,17 @@ class Command(BaseCommand):
             "case-insensitive.",
         )
         parser.add_argument(
+            "--contribution-tier",
+            action="append",
+            default=[],
+            metavar="CENTS:NAME",
+            help="Fixed contribution tier to create as a selectable membership tier, e.g. "
+            "750:Minimum. The amount is per quarter in cents, matching contribution.tiers "
+            "in the old instance config (config/instances/<name>.yaml); repeat the flag in "
+            "display order and leave out the null-amount tier (the custom amount option "
+            "always exists). The smallest tier also becomes the minimum custom amount.",
+        )
+        parser.add_argument(
             "--dry-run",
             action="store_true",
             help="Run the whole import and roll back at the end",
@@ -216,6 +232,14 @@ class Command(BaseCommand):
         self.skip_duplicate_emails = options["skip_duplicate_emails"]
         self.cadre_statuses = {name.lower() for name in options["cadre_status"]}
         self.inactive_statuses = {name.lower() for name in options["inactive_status"]}
+        self.contribution_tiers = []
+        for value in options["contribution_tier"]:
+            cents, _, name = value.partition(":")
+            if not cents.isdigit() or int(cents) <= 0 or not name.strip():
+                raise CommandError(
+                    f"--contribution-tier expects CENTS:NAME with a positive amount, got {value!r}"
+                )
+            self.contribution_tiers.append((int(cents), name.strip()))
         self.warnings = []
         self.counts = {}
 
@@ -422,7 +446,10 @@ class Command(BaseCommand):
         """One MembershipType per member kind, with custom-amount products per period.
 
         The old system stored a free-form amount and a period per member, so
-        everything maps to "custom amount" products; there are no fixed tiers.
+        every imported order maps to a "custom amount" product. The old fixed
+        tiers shown on signup live in mijnrood's instance YAML config, not in
+        the export; they are created (as quarterly tiers, like the old form)
+        from the --contribution-tier flags.
         """
         bank_account, _ = Account.get_bank_account()
         self.provider = PaymentProvider.objects.filter(type="mollie").first()
@@ -451,6 +478,10 @@ class Command(BaseCommand):
                 cents = parse_int(row["contribution_per_period_in_cents"], default=0)
                 if cents > 0 and (period not in minimums or cents < minimums[period]):
                     minimums[period] = cents
+        if self.contribution_tiers:
+            # The old signup form validated custom amounts against the smallest
+            # configured tier, not against what members actually paid.
+            minimums[PERIOD_QUARTERLY] = min(cents for cents, _ in self.contribution_tiers)
 
         self.products = {}
         for period, (sku, name, unit, count) in periods.items():
@@ -468,14 +499,30 @@ class Command(BaseCommand):
             name="Lidmaatschap",
             slug="lidmaatschap",
             allow_custom_amount=True,
-            custom_amount_product=self.products[PERIOD_MONTHLY],
+            custom_amount_product=self.products[PERIOD_QUARTERLY],
         )
+        for position, (cents, name) in enumerate(self.contribution_tiers):
+            product = Product.objects.create(
+                enabled=True,
+                sku=f"contributie-tier-{slugify(name)}",
+                name=name,
+                price_euros=Decimal(cents) / 100,
+                type="subscription",
+            )
+            Subscription.objects.create(product=product, period_unit="month", period=3)
+            MembershipTier.objects.create(
+                membership_type=self.member_type,
+                name=name,
+                product=product,
+                position=position,
+            )
+            self.count("membership tiers")
         self.support_type = MembershipType.objects.create(
             name="Steunlidmaatschap",
             slug="steunlidmaatschap",
             enabled=False,
             allow_custom_amount=True,
-            custom_amount_product=self.products[PERIOD_MONTHLY],
+            custom_amount_product=self.products[PERIOD_QUARTERLY],
         )
 
     def build_user(self, row, *, member_type, legacy_number, description):
