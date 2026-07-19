@@ -74,8 +74,12 @@ class DummyPayViewTest(FastTenantTestCase):
 
     def test_paid_overpayment_credits_user(self):
         self._post("paid", "15.00")
-        payment = Payment.objects.get(obligation=self.obligation)
-        self.assertEqual(payment.transaction.amount_cents, 1000)
+        amounts = sorted(
+            Payment.objects.filter(obligation=self.obligation).values_list(
+                "transaction__amount_cents", flat=True
+            )
+        )
+        self.assertEqual(amounts, [500, 1000])
 
         self.user.refresh_from_db()
         self.assertIsNotNone(self.user.credit_account)

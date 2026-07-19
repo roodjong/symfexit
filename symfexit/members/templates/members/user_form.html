@@ -34,7 +34,15 @@
       </p>
       <ul class="list-disc pl-5 mb-6 space-y-1">
         <li>{% translate 'Cancel subscription' %}</li>
-        <li>{% translate 'Different bank account' %}</li>
+        {% if can_change_bank_account %}
+          <li>
+            <a class="underline" href="{% url 'members:bank-account-change' %}">
+              {% translate 'Different bank account' %}
+            </a>
+          </li>
+        {% else %}
+          <li>{% translate 'Different bank account' %}</li>
+        {% endif %}
         <li>{% translate 'Adjust amount' %}</li>
       </ul>
       {% if payments %}

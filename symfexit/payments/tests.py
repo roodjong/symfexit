@@ -3,12 +3,14 @@ from decimal import Decimal
 from uuid import uuid4
 
 from django.test import TestCase
+from django.utils import timezone
 from django_tenants.test.cases import FastTenantTestCase
 
 from symfexit.members.admin import Member
 from symfexit.payments.models import (
     Account,
     BillingAddress,
+    Payment,
     PaymentObligation,
     PeriodUnit,
     Product,
@@ -200,6 +202,10 @@ class TestApplyMemberCredit(TestCase):
         obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
         self.assertEqual(obligation.outstanding_cents, 600)
         self.assertEqual(self.user.credit_balance_cents, 0)
+        # Credit-funded payments carry no provider — Mollie et al. have no
+        # matching transaction for them.
+        credit_payment = Payment.objects.get(obligation=obligation)
+        self.assertIsNone(credit_payment.paid_using)
 
     def test_credit_fully_covers_obligation(self):
         self._credit_user(1500)  # €15 credit; obligation €10
@@ -436,3 +442,106 @@ class TestGeneratePaymentObligations(FastTenantTestCase):
         self.assertGreaterEqual(
             (new.year, new.period), (first_obligation.year, first_obligation.period)
         )
+
+
+class AdminObligationPaidSplitTest(TestCase):
+    """The admin splits obligations on outstanding amount, so a partially paid
+    obligation (e.g. after the one-cent bank account change payment) is still
+    listed as unpaid."""
+
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.user = Member.objects.create_user(email="split@example.com")
+        self.billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="split",
+            name="Split Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+        order = product.order(for_user=self.user, billing_address=self.billing_address)
+        self.obligation = order.get_or_create_next_payment_obligation(timezone="UTC")
+
+    def _pay(self, cents):
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=cents
+        )
+        Payment.objects.create(obligation=self.obligation, paid_at=timezone.now(), transaction=tx)
+
+    def test_partially_paid_obligation_is_listed_unpaid(self):
+        from symfexit.payments.admin import _paid_obligations, _unpaid_obligations  # noqa: PLC0415
+
+        qs = PaymentObligation.objects.all()
+
+        self._pay(1)
+        self.assertIn(self.obligation, _unpaid_obligations(qs))
+        self.assertNotIn(self.obligation, _paid_obligations(qs))
+
+        self._pay(999)
+        self.assertNotIn(self.obligation, _unpaid_obligations(qs))
+        self.assertIn(self.obligation, _paid_obligations(qs))
+
+
+class PaymentObligationAdminPageTest(FastTenantTestCase):
+    def setUp(self):
+        super().setUp()
+        from django_tenants.test.client import TenantClient  # noqa: PLC0415
+
+        self.client = TenantClient(self.tenant)
+        self.client.force_login(Member.objects.create_superuser(email="admin@example.com"))
+
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.user = Member.objects.create_user(email="obligation@example.com")
+        billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="page",
+            name="Page Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+        order = product.order(for_user=self.user, billing_address=billing_address)
+        self.obligation = order.get_or_create_next_payment_obligation(timezone="UTC")
+        self.url = f"/admin/payments/paymentobligation/{self.obligation.pk}/change/"
+
+    def test_editable_page_has_amount_input(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="amount_euros"')
+
+    def test_view_page_shows_euro_amounts(self):
+        ar_account, _ = Account.get_accounts_receivable_account()
+        bank_account, _ = Account.get_bank_account()
+        tx = Transaction.objects.create(
+            credit_account=ar_account, debit_account=bank_account, amount_cents=1
+        )
+        Payment.objects.create(obligation=self.obligation, paid_at=timezone.now(), transaction=tx)
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "€ 10.00", count=1)
+        self.assertContains(response, "€ 9.99", count=1)
+        self.assertNotContains(response, 'name="amount_euros"')
