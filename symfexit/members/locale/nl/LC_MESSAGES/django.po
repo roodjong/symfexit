@@ -449,7 +449,7 @@ msgstr ""
 "lidmaatschap verliezen."
 
 #: symfexit/members/templates/members/membership_cancellation.html:26
-#: symfexit/members/templates/members/user_form.html:74
+#: symfexit/members/templates/members/user_form.html:72
 msgid "Cancel membership"
 msgstr "Lidmaatschap opzeggen"
 
@@ -498,35 +498,34 @@ msgid "Cancel subscription"
 msgstr "Abonnement opzeggen"
 
 #: symfexit/members/templates/members/user_form.html:40
-#: symfexit/members/templates/members/user_form.html:44
 msgid "Different bank account"
 msgstr "Andere bankrekening"
 
-#: symfexit/members/templates/members/user_form.html:46
+#: symfexit/members/templates/members/user_form.html:44
 msgid "Adjust amount"
 msgstr "Bedrag aanpassen"
 
-#: symfexit/members/templates/members/user_form.html:49
+#: symfexit/members/templates/members/user_form.html:47
 msgid "Payment history"
 msgstr "Betalingsgeschiedenis"
 
-#: symfexit/members/templates/members/user_form.html:53
+#: symfexit/members/templates/members/user_form.html:51
 msgid "Date"
 msgstr "Datum"
 
-#: symfexit/members/templates/members/user_form.html:54
+#: symfexit/members/templates/members/user_form.html:52
 msgid "Amount"
 msgstr "Bedrag"
 
-#: symfexit/members/templates/members/user_form.html:68
+#: symfexit/members/templates/members/user_form.html:66
 msgid "Setup your membership payments now"
 msgstr "Stel nu je lidmaatschapsbetalingen in"
 
-#: symfexit/members/templates/members/user_form.html:72
+#: symfexit/members/templates/members/user_form.html:70
 msgid "Start subscription"
 msgstr "Start automatische betaling"
 
-#: symfexit/members/templates/members/user_form.html:78
+#: symfexit/members/templates/members/user_form.html:76
 msgid "Cancel membership..."
 msgstr "Lidmaatschap opzeggen..."
 
