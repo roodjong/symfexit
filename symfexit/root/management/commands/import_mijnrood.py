@@ -76,7 +76,7 @@ from symfexit.payments.models import (
 from symfexit.payments.mollie.models import MollieCustomer, MolliePayment
 from symfexit.signup.models import MembershipApplication
 
-AMSTERDAM = ZoneInfo("Europe/Amsterdam")
+AMSTERDAM_TZ = ZoneInfo("Europe/Amsterdam")
 
 # admin_member.contribution_period / admin_support_member.contribution_period
 PERIOD_MONTHLY = 0
@@ -98,7 +98,7 @@ def parse_datetime(value):
     """Naive 'YYYY-MM-DD HH:MM:SS' in server-local (Amsterdam) time -> aware."""
     if not value:
         return None
-    return datetime.strptime(value, "%Y-%m-%d %H:%M:%S").replace(tzinfo=AMSTERDAM)
+    return datetime.strptime(value, "%Y-%m-%d %H:%M:%S").replace(tzinfo=AMSTERDAM_TZ)
 
 
 def parse_date(value):
@@ -110,7 +110,7 @@ def parse_date(value):
 def date_to_datetime(value):
     if value is None:
         return None
-    return datetime.combine(value, time(12, 0), tzinfo=AMSTERDAM)
+    return datetime.combine(value, time(12, 0), tzinfo=AMSTERDAM_TZ)
 
 
 def parse_bool(value):
@@ -290,7 +290,9 @@ class Command(BaseCommand):
             self.warn(f"{description}: empty email address, skipped")
             return False
         if key in self.seen_emails:
-            message = f"{description}: duplicate email {email} (also used by {self.seen_emails[key]})"
+            message = (
+                f"{description}: duplicate email {email} (also used by {self.seen_emails[key]})"
+            )
             if not self.skip_duplicate_emails:
                 raise CommandError(
                     message + ". Clean up the export or pass --skip-duplicate-emails."
@@ -525,7 +527,7 @@ class Command(BaseCommand):
             extra_information="\n".join(extra_lines),
             is_active=is_active,
             cadre=cadre,
-            date_joined=date_to_datetime(registration) or datetime.now(tz=AMSTERDAM),
+            date_joined=date_to_datetime(registration) or datetime.now(tz=AMSTERDAM_TZ),
             password=password,
         )
         user.save()
@@ -667,7 +669,7 @@ class Command(BaseCommand):
             else:
                 period = month_start - 1
             pay_before = datetime.combine(
-                last_day_of_month(year, month_end), time(23, 59, 59), tzinfo=AMSTERDAM
+                last_day_of_month(year, month_end), time(23, 59, 59), tzinfo=AMSTERDAM_TZ
             )
 
             obligation = order.paymentobligation_set.filter(year=year, period=period).first()
@@ -721,8 +723,7 @@ class Command(BaseCommand):
     def import_applications(self):
         for row in self.rows("admin_membership_application"):
             description = (
-                f"admin_membership_application {row['id']} "
-                f"({row['first_name']} {row['last_name']})"
+                f"admin_membership_application {row['id']} ({row['first_name']} {row['last_name']})"
             )
             birth_date = parse_date(row["date_of_birth"])
             if birth_date is None:
@@ -799,7 +800,9 @@ class Command(BaseCommand):
                 else:
                     name = f"{row['name']} ({suffix})"
             if name != row["name"]:
-                self.warn(f"admin_document {row['id']}: renamed duplicate '{row['name']}' to '{name}'")
+                self.warn(
+                    f"admin_document {row['id']}: renamed duplicate '{row['name']}' to '{name}'"
+                )
             used_names[(parent, name)] = True
             document = File.objects.create(
                 name=name,
