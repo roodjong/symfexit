@@ -122,7 +122,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
             # Signup flow — create Mollie customer from billing address
             billing = obligation.ordered_for_billing_address
             mollie_customer = _create_mollie_customer(client, billing.name, billing.email)
-            customer_id = mollie_customer.mollie_customer_id
+            customer_id = mollie_customer.id
 
         payment_data["customerId"] = customer_id
 
@@ -166,7 +166,8 @@ class MollieProcessorInstance(PaymentProcessorInstance):
 
         client = self.mollie_settings.get_mollie_client()
 
-        if not _has_valid_mandate(mollie_customer):
+        api_customer = client.customers.get(mollie_customer.mollie_customer_id)
+        if not _has_valid_mandate(api_customer):
             return False
 
         webhook_path = reverse("payments_mollie:webhook")
