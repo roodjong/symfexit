@@ -63,6 +63,7 @@ class MemberData(LoginRequiredMixin, TemplateView):
         payments = []
         subscription_period = ""
         payment_provider = _("an unknown provider")
+        can_change_bank_account = False
         if active_order:
             payment_qs = (
                 Payment.objects.filter(obligation__order=active_order)
@@ -79,6 +80,8 @@ class MemberData(LoginRequiredMixin, TemplateView):
             )
             if active_order.paid_using:
                 payment_provider = active_order.paid_using.get_processor().name()
+                instance = payments_registry.get_instance_for_provider(active_order.paid_using)
+                can_change_bank_account = instance.supports_bank_account_change()
 
         return render(
             request,
@@ -90,6 +93,7 @@ class MemberData(LoginRequiredMixin, TemplateView):
                 "payments": payments,
                 "subscription_period": subscription_period,
                 "payment_provider": payment_provider,
+                "can_change_bank_account": can_change_bank_account,
             },
         )
 
@@ -201,13 +205,32 @@ def _start_payment(request):
         return redirect("members:memberdata")
 
     default_provider = payments_registry.get_default_provider()
-    order, obligation = Order.objects.create_with_obligation(
-        product=product,
-        billing_address=billing_address,
-        for_user=user,
-        price_euros=price_euros,
-        paid_using=default_provider,
-    )
+
+    # A member has at most one running subscription. Reuse the active order if
+    # it still matches the chosen product and price; cancel any others so only
+    # one order keeps generating payment obligations.
+    order = None
+    for active_order in Order.objects.filter(ordered_for=user, cancelled_at__isnull=True):
+        if (
+            order is None
+            and active_order.product_id == product.id
+            and active_order.product_price_euros == price_euros
+            and active_order.paid_using is not None
+        ):
+            order = active_order
+        else:
+            active_order.cancel()
+
+    if order is None:
+        order, obligation = Order.objects.create_with_obligation(
+            product=product,
+            billing_address=billing_address,
+            for_user=user,
+            price_euros=price_euros,
+            paid_using=default_provider,
+        )
+    else:
+        obligation = order.get_or_create_next_payment_obligation()
 
     instance = payments_registry.get_instance_for_provider(order.paid_using)
     return instance.start_payment_flow(request, obligation, reverse("members:memberdata"))
@@ -219,6 +242,46 @@ def payment_start(request):
     if not request.user.is_authenticated:
         return redirect("login")
     return _start_payment(request)
+
+
+class BankAccountChange(LoginRequiredMixin, TemplateView):
+    template_name = "members/bank_account_change.html"
+
+    def _get_order_and_instance(self, request):
+        active_order = Order.objects.filter(
+            ordered_for=request.user, cancelled_at__isnull=True
+        ).first()
+        if active_order is None or active_order.paid_using is None:
+            messages.error(
+                request, _("You have no active subscription to change the bank account for.")
+            )
+            return None, None
+
+        instance = payments_registry.get_instance_for_provider(active_order.paid_using)
+        if not instance.supports_bank_account_change():
+            messages.error(
+                request,
+                _("Changing your bank account is not supported for your payment method."),
+            )
+            return None, None
+
+        return active_order, instance
+
+    def get(self, request, *args, **kwargs):
+        active_order, instance = self._get_order_and_instance(request)
+        if instance is None:
+            return redirect("members:memberdata")
+        return render(request, self.template_name, {"active_order": active_order})
+
+    def post(self, request, *args, **kwargs):
+        active_order, instance = self._get_order_and_instance(request)
+        if instance is None:
+            return redirect("members:memberdata")
+
+        obligation = active_order.get_or_create_next_payment_obligation()
+        return instance.start_bank_account_change_flow(
+            request, obligation, reverse("members:memberdata")
+        )
 
 
 class MembershipCancellation(LoginRequiredMixin, FormView):
