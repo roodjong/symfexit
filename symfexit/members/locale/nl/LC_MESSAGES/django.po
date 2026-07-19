@@ -598,7 +598,3 @@ msgid "Changing your bank account is not supported for your payment method."
 msgstr ""
 "Het wijzigen van je bankrekening wordt niet ondersteund voor jouw "
 "betaalmethode."
-
-#, python-format
-#~ msgid "Please enter an amount of at least \\u20ac%(amount).2f."
-#~ msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."
