@@ -9,6 +9,7 @@ from symfexit.members.admin import Member
 from symfexit.payments.models import (
     Account,
     BillingAddress,
+    Payment,
     PaymentObligation,
     PeriodUnit,
     Product,
@@ -16,6 +17,7 @@ from symfexit.payments.models import (
     Subscription,
     Transaction,
 )
+from symfexit.payments.services import record_receipt
 from symfexit.payments.tasks import gen_obligations
 
 
@@ -94,7 +96,6 @@ class TestObligationOutstanding(TestCase):
         self.obligation = order.get_or_create_next_payment_obligation(timezone="UTC")
 
     def _record_payment(self, amount_cents):
-        from symfexit.payments.models import Payment  # noqa: PLC0415
 
         ar_account, _ = Account.get_accounts_receivable_account()
         bank_account, _ = Account.get_bank_account()
@@ -191,7 +192,6 @@ class TestApplyMemberCredit(TestCase):
     def test_no_credit_no_payment_applied(self):
         obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
         self.assertEqual(obligation.outstanding_cents, 1000)
-        from symfexit.payments.models import Payment  # noqa: PLC0415
 
         self.assertFalse(Payment.objects.filter(obligation=obligation).exists())
 
@@ -436,3 +436,47 @@ class TestGeneratePaymentObligations(FastTenantTestCase):
         self.assertGreaterEqual(
             (new.year, new.period), (first_obligation.year, first_obligation.period)
         )
+
+    def test_quarterly_billing_over_year_with_credit_carryforward(self):
+        """Simulate a full year of quarterly billing with overpayment credit carrying forward."""
+        order = self._create_order()
+        order.created_at = datetime(2026, 1, 1, tzinfo=UTC)
+        order.save()
+
+        # Q1: Generate first obligation and overpay by €5
+        gen_obligations(now=datetime(2026, 1, 15, tzinfo=UTC))
+        q1_obligation = PaymentObligation.objects.get(order=order, year=2026, period=0)
+        self.assertEqual(q1_obligation.outstanding_cents, 1000)  # €10
+
+        # Simulate overpayment: pay €15 for a €10 obligation
+        # This will create a €10 payment and €5 credit for the user
+        record_receipt(q1_obligation, amount_cents=1500)
+
+        # Verify €5 credit was created for the user
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.credit_balance_cents, 500)
+
+        # Q2: Generate second obligation - credit should be auto-applied
+        gen_obligations(now=datetime(2026, 4, 1, tzinfo=UTC))
+        q2_obligation = PaymentObligation.objects.get(order=order, year=2026, period=3)
+        # €10 obligation minus €5 credit = €5 outstanding
+        self.assertEqual(q2_obligation.outstanding_cents, 500)
+        # Credit should be consumed
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.credit_balance_cents, 0)
+
+        # Q3: Generate third obligation - no credit, full amount outstanding
+        gen_obligations(now=datetime(2026, 7, 1, tzinfo=UTC))
+        q3_obligation = PaymentObligation.objects.get(order=order, year=2026, period=6)
+        self.assertEqual(q3_obligation.outstanding_cents, 1000)
+
+        # Q4: Generate fourth obligation
+        gen_obligations(now=datetime(2026, 10, 1, tzinfo=UTC))
+        q4_obligation = PaymentObligation.objects.get(order=order, year=2026, period=9)
+        self.assertEqual(q4_obligation.outstanding_cents, 1000)
+
+        # Verify all 4 quarterly obligations were created with correct periods
+        obligations = PaymentObligation.objects.filter(order=order).order_by("period")
+        self.assertEqual(obligations.count(), 4)
+        periods = list(obligations.values_list("period", flat=True))
+        self.assertEqual(periods, [0, 3, 6, 9])  # Jan, Apr, Jul, Oct
