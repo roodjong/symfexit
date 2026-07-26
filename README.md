@@ -158,23 +158,20 @@ This will start the webserver, the worker for the background tasks, and the watc
 Whenever you make changes to the Python code, the server will automatically reload.
 The watcher for Tailwind will also automatically rebuild the CSS.
 
-## Payment Testing (Mollie with Ngrok)
+## Payments
 
-To test Mollie webhooks locally, you need to expose your local server to the internet using [ngrok](httpshttps://ngrok.com/).
+Payments cover sellable products, member subscriptions, recurring billing, and the
+double-entry ledger that records every euro that moves.
 
-1.  **Register an account** at [ngrok.com](https://ngrok.com/).
-2.  **Install the ngrok client** using your distribution's package manager or download from [download.ngrok.com/linux](https://download.ngrok.com/linux).
-3.  **Authenticate your agent**: Find your authentication token at [dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) and register it with your client:
-    ```bash
-    ngrok config add-authtoken <YOUR AUTH TOKEN HERE>
-    ```
-4.  **Start ngrok**: Expose the local development port:
-    ```bash
-    ngrok http 8000
-    ```
-5.  **Configure using the Ngrok URL**: Using the URL shown in the **Forwarding** row of your ngrok output. Set `test_api_key` with your Mollie API key.
-6.  **Add the domain to the tenant**: To make this URL work, you need to add the ngrok domain to your tenant. A quick way to do this is to duplicate an existing entry in the `tenants_domain` database table and update the `domain` column with your new ngrok address.
-7.  **Access the application**: Open the ngrok URL provided in the **Forwarding** row instead of `localhost:8000`.
+See the [README.md](symfexit/payments/README.md) in the payments directory for how
+the module works: the chart of accounts, obligations, the provider registry, and
+how to add a payment provider of your own.
+
+Mollie is the provider used in production. Testing it locally takes some setup,
+because Mollie has to be able to reach your machine to call its webhooks. See the
+[README.md](symfexit/payments/mollie/README.md) in the Mollie directory for that
+setup and for how to drive the recurring charge flow: generating obligations,
+charging them, and setting the outcome of a test payment.
 
 
 ## Email
