@@ -30,6 +30,18 @@ def _create_mollie_customer(client, name, email):
     return client.customers.create({"name": name, "email": email})
 
 
+def _log_debug_changepaymentstate_url(payment):
+    """Surface Mollie's test-mode `changePaymentState` link.
+
+    Recurring payments have no checkout URL — the customer isn't involved — so in
+    test mode Mollie returns this link instead, which lets you set the final state
+    of the payment (and afterwards create a refund or chargeback for it).
+    Absent in live mode."""
+    url = payment.changepaymentstate_url
+    if url:
+        logger.info("Mollie payment %s: set its state in test mode at %s", payment["id"], url)
+
+
 def _has_valid_mandate(mollie_customer: MollieApiCustomer):
     mandates = mollie_customer.mandates.list()
     return any(m["status"] == "valid" for m in mandates["_embedded"]["mandates"])
@@ -83,7 +95,7 @@ class MollieProcessor(PaymentProcessor):
 
 
 class MollieProcessorInstance(PaymentProcessorInstance):
-    def __init__(self, mollie_settings):
+    def __init__(self, mollie_settings: MollieSettings):
         self.mollie_settings = mollie_settings
 
     def start_payment_flow(self, request, obligation, return_url):
@@ -198,5 +210,8 @@ class MollieProcessorInstance(PaymentProcessorInstance):
             mollie_payment_id=payment["id"],
             mollie_customer_id=mollie_customer.mollie_customer_id,
         )
+
+        if not self.mollie_settings.live_mode:
+            _log_debug_changepaymentstate_url(payment)
 
         return True
