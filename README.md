@@ -162,9 +162,9 @@ The watcher for Tailwind will also automatically rebuild the CSS.
 
 To test Mollie webhooks locally, you need to expose your local server to the internet using [ngrok](httpshttps://ngrok.com/).
 
-1.  **Register an account** at [ngrok.com](httpshttps://ngrok.com/).
-2.  **Install the ngrok client** using your distribution's package manager or download from [download.ngrok.com/linux](httpshttps://download.ngrok.com/linux).
-3.  **Authenticate your agent**: Find your authentication token at [dashboard.ngrok.com/get-started/your-authtoken](httpshttps://dashboard.ngrok.com/get-started/your-authtoken) and register it with your client:
+1.  **Register an account** at [ngrok.com](https://ngrok.com/).
+2.  **Install the ngrok client** using your distribution's package manager or download from [download.ngrok.com/linux](https://download.ngrok.com/linux).
+3.  **Authenticate your agent**: Find your authentication token at [dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) and register it with your client:
     ```bash
     ngrok config add-authtoken <YOUR AUTH TOKEN HERE>
     ```
