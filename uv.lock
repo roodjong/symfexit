@@ -229,14 +229,14 @@ wheels = [
 
 [[package]]
 name = "django-tenants"
-version = "3.10.2"
+version = "3.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d8/10/68a92b3ef50f7df48fb930d0d3732654f5b599da4751017a6e46e98d3ba2/django_tenants-3.10.2.tar.gz", hash = "sha256:1d696911989c330218dccb9da8bc0b4caa5512e02b675c82dd991cad95573105", size = 154765, upload-time = "2026-06-30T21:21:13.033Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/44/f78ed75c27e019be3ba915d88484bf57355cc7dd92745ff27d23431fe61c/django_tenants-3.14.0.tar.gz", hash = "sha256:55dc64bcd4293a03fab7108f4c4e1724c2f53ef09a1c7f9e5f75a136fccc3146", size = 168058, upload-time = "2026-08-05T15:19:37.753Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/0b/dad7316ef5e180fb4883a855e0a284cd349c4742f41603c7a1f4a26c52b5/django_tenants-3.10.2-py3-none-any.whl", hash = "sha256:200a5ec5be12812bda5436beaf21612fe15ae975c3211fc162e0dd70885b30e3", size = 216915, upload-time = "2026-06-30T21:21:08.155Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/a2/c4d45511b0c1c3868fafa9e745b6089c0e0b30959b8191ac4a5643bac9ae/django_tenants-3.14.0-py3-none-any.whl", hash = "sha256:f2c17b05d03c8b8d79c8e190ca2da14fdc36d52553d216b1dbb09c4adbda2eb6", size = 127095, upload-time = "2026-08-05T15:19:36.478Z" },
 ]
 
 [[package]]
@@ -820,7 +820,7 @@ requires-dist = [
     { name = "django", specifier = "~=6.0" },
     { name = "django-drf-filepond", specifier = ">=0.5.0" },
     { name = "django-tailwind", specifier = "~=4.5" },
-    { name = "django-tenants", specifier = "~=3.10.2" },
+    { name = "django-tenants", specifier = "~=3.14.0" },
     { name = "django-tinymce", specifier = "~=5.0" },
     { name = "fontawesomefree", specifier = "~=6.2" },
     { name = "hashids", specifier = "~=1.3" },
