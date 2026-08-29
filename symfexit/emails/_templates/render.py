@@ -33,7 +33,7 @@ DEFAULT_TEXT_BODY = """{{content}}"""
 
 
 # allow overriding of all email variables
-def send_email(  # noqa: PLR0913
+def send_email(  # noqa: PLR0913, PLR0917
     email_template: BodyTemplate,
     recipient_list: list[str] | str,
     lang: str | None = None,
