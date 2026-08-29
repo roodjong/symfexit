@@ -23,6 +23,7 @@ dependencies = [
     "python-magic>=0.4.27",
     "commonmark>=0.9.2",
     "openpyxl>=3.1.5",
+    "djangorestframework>=3.18",
 ]
 requires-python = ">= 3.14"
 
