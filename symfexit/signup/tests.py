@@ -214,10 +214,15 @@ class MembershipApplicationAdminTest(FastTenantTestCase):
         )
 
         queryset = self.admin.get_queryset(self.request)
-        states = dict(queryset.values_list("email", "payment_state"))
+        totals = {
+            email: (payment_total, order_price)
+            for email, payment_total, order_price in queryset.values_list(
+                "email", "payment_total", "order_price"
+            )
+        }
 
-        self.assertEqual(states["unpaid@example.com"], "unpaid")
-        self.assertEqual(states["paid@example.com"], "paid")
+        self.assertEqual(totals["unpaid@example.com"], (None, None))
+        self.assertEqual(totals["paid@example.com"], (1000, Decimal("10.00")))
 
 
 class CreateUserSignupOverpaymentTest(FastTenantTestCase):
