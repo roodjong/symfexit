@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.db.models import BooleanField, Case, Exists, OuterRef, Value, When
+from django.db.models import F, IntegerField, OuterRef, Subquery, Sum
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.encoding import force_bytes
@@ -29,20 +29,24 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
     change_form_template = "signup/admin/change_form.html"
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        has_payment = Exists(Payment.objects.filter(obligation__order=OuterRef("_order")))
-        return queryset.annotate(
-            has_payment=has_payment,
-            payment_state=Case(
-                When(condition=has_payment, then=Value("paid")),
-                default=Value("unpaid"),
-                output_field=BooleanField(),
-            ),
+        payment_total = Payment.objects.filter(obligation__order=OuterRef("_order"))
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                payment_total=Subquery(
+                    payment_total.values("obligation__order")
+                    .annotate(total=Sum("transaction__amount_cents"))
+                    .values("total"),
+                    output_field=IntegerField(),
+                ),
+                order_price=F("_order__product_price_euros"),
+            )
         )
 
     @admin.display(description=_("Paid"), boolean=True)
     def payment_status(self, obj):
-        return getattr(obj, "payment_state", "unpaid") == "paid"
+        return obj.payment_total is not None and obj.payment_total >= obj.order_price * 100
 
     def changelist_view(self, request, extra_context=None):
         # Set default filter to status=created only on true initial page load
