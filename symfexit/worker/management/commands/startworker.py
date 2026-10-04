@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 from django.core.management.base import CommandParser
-from django.db import DEFAULT_DB_ALIAS, connections, transaction
+from django.db import DEFAULT_DB_ALIAS, close_old_connections, connections, transaction
 from django.utils import timezone
 from django_tenants.utils import tenant_context
 
@@ -31,6 +31,11 @@ class Command(BaseCommand):
         # LISTEN for any NOTIFYs and handle them
         for notify in notifies:
             task_id = int(notify.payload)
+            # The worker never goes through Django's request cycle, so do what
+            # it does around each request: drop connections that are broken or
+            # past CONN_MAX_AGE, so a restarted or dropped Postgres connection
+            # doesn't make every following task fail. Must run outside atomic().
+            close_old_connections()
             with transaction.atomic():
                 task = (
                     Task.objects.select_for_update(skip_locked=True)
@@ -40,6 +45,7 @@ class Command(BaseCommand):
                 if task is None:
                     continue
                 self.handle_task(task)
+            close_old_connections()
 
     def handle_task(self, task):
         task.picked_up_at = timezone.now()
