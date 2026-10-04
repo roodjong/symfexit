@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 15:12+0200\n"
+"POT-Creation-Date: 2026-10-04 15:26+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -190,7 +190,7 @@ msgid "Select your membership tier:"
 msgstr "Selecteer je lidmaatschaptype:"
 
 #: symfexit/members/forms.py:134 symfexit/members/forms.py:174
-#: symfexit/members/templates/members/membership_selection.html:79
+#: symfexit/members/templates/members/membership_selection.html:80
 msgid "I want to pay more, namely:"
 msgstr "Ik wil meer betalen, namelijk"
 
@@ -392,7 +392,7 @@ msgstr "Nee, breng me terug"
 
 #: symfexit/members/templates/admin/members/submit_line.html:5
 #: symfexit/members/templates/members/user_form.html:11
-#: symfexit/members/views.py:221
+#: symfexit/members/views.py:242
 msgid "Save"
 msgstr "Opslaan"
 
@@ -450,7 +450,7 @@ msgstr ""
 "lidmaatschap verliezen."
 
 #: symfexit/members/templates/members/membership_cancellation.html:26
-#: symfexit/members/templates/members/user_form.html:76
+#: symfexit/members/templates/members/user_form.html:78
 msgid "Cancel membership"
 msgstr "Lidmaatschap opzeggen"
 
@@ -458,7 +458,7 @@ msgstr "Lidmaatschap opzeggen"
 msgid "Select your membership"
 msgstr "Selecteer je lidmaatschap"
 
-#: symfexit/members/templates/members/membership_selection.html:32
+#: symfexit/members/templates/members/membership_selection.html:33
 msgid "Continue"
 msgstr "Doorgaan"
 
@@ -502,84 +502,80 @@ msgstr "Abonnement opzeggen"
 msgid "Different bank account"
 msgstr "Andere bankrekening"
 
-#: symfexit/members/templates/members/user_form.html:46
-#: symfexit/members/views.py:220
+#: symfexit/members/templates/members/user_form.html:48
+#: symfexit/members/views.py:241
 msgid "Adjust amount"
 msgstr "Bedrag aanpassen"
 
-#: symfexit/members/templates/members/user_form.html:51
+#: symfexit/members/templates/members/user_form.html:53
 msgid "Payment history"
 msgstr "Betalingsgeschiedenis"
 
-#: symfexit/members/templates/members/user_form.html:55
+#: symfexit/members/templates/members/user_form.html:57
 msgid "Date"
 msgstr "Datum"
 
-#: symfexit/members/templates/members/user_form.html:56
+#: symfexit/members/templates/members/user_form.html:58
 msgid "Amount"
 msgstr "Bedrag"
 
-#: symfexit/members/templates/members/user_form.html:70
+#: symfexit/members/templates/members/user_form.html:72
 msgid "Setup your membership payments now"
 msgstr "Stel nu je lidmaatschapsbetalingen in"
 
-#: symfexit/members/templates/members/user_form.html:74
+#: symfexit/members/templates/members/user_form.html:76
 msgid "Start subscription"
 msgstr "Start automatische betaling"
 
-#: symfexit/members/templates/members/user_form.html:80
+#: symfexit/members/templates/members/user_form.html:82
 msgid "Cancel membership..."
 msgstr "Lidmaatschap opzeggen..."
 
-#: symfexit/members/views.py:29
+#: symfexit/members/views.py:30
 msgid "month"
 msgstr "maand"
 
-#: symfexit/members/views.py:31
+#: symfexit/members/views.py:32
 msgid "quarter"
 msgstr "kwartaal"
 
-#: symfexit/members/views.py:33
+#: symfexit/members/views.py:34
 #, python-brace-format
 msgid "{} months"
 msgstr "{} maanden"
 
-#: symfexit/members/views.py:36
+#: symfexit/members/views.py:37
 msgid "year"
 msgstr "jaar"
 
-#: symfexit/members/views.py:38
+#: symfexit/members/views.py:39
 #, python-brace-format
 msgid "{} years"
 msgstr "{} jaren"
 
-#: symfexit/members/views.py:41
+#: symfexit/members/views.py:42
 msgid "week"
 msgstr "week"
 
-#: symfexit/members/views.py:43
+#: symfexit/members/views.py:44
 #, python-brace-format
 msgid "{} weeks"
 msgstr "{} weken"
 
-#: symfexit/members/views.py:46
+#: symfexit/members/views.py:47
 msgid "day"
 msgstr "dag"
 
-#: symfexit/members/views.py:48
+#: symfexit/members/views.py:49
 #, python-brace-format
 msgid "{} days"
 msgstr "{} dagen"
 
-#: symfexit/members/views.py:66
+#: symfexit/members/views.py:67
 msgid "an unknown provider"
 msgstr "een onbekende provider"
 
-#: symfexit/members/views.py:195
-msgid "You have no active subscription to adjust."
-msgstr "Je hebt geen actief abonnement om aan te passen."
-
-#: symfexit/members/views.py:240
+#: symfexit/members/views.py:261
 #, python-format
 msgid ""
 "Your contribution amount has been updated. From your next payment on, you "
@@ -588,7 +584,7 @@ msgstr ""
 "Je bijdragebedrag is aangepast. Vanaf je volgende betaling betaal je €"
 "%(amount).2f per %(period)s."
 
-#: symfexit/members/views.py:266
+#: symfexit/members/views.py:287
 msgid ""
 "No membership type is configured for your account. Please contact the "
 "administrator."
@@ -596,19 +592,23 @@ msgstr ""
 "Er is geen lidmaatschapstype geconfigureerd voor je account. Neem contact op "
 "met de beheerder."
 
-#: symfexit/members/views.py:275
+#: symfexit/members/views.py:296
 msgid ""
 "Please fill in your address, city, and postal code before starting a "
 "subscription."
 msgstr ""
 "Vul je adres, woonplaats en postcode in voordat je een abonnement start."
 
-#: symfexit/members/views.py:328
+#: symfexit/members/views.py:349
 msgid "You have no active subscription to change the bank account for."
 msgstr "Je hebt geen actief abonnement om de bankrekening voor te wijzigen."
 
-#: symfexit/members/views.py:336
+#: symfexit/members/views.py:357
 msgid "Changing your bank account is not supported for your payment method."
 msgstr ""
 "Het wijzigen van je bankrekening wordt niet ondersteund voor jouw "
 "betaalmethode."
+
+#, python-format
+#~ msgid "Please enter an amount of at least \\u20ac%(amount).2f."
+#~ msgstr "Voer een bedrag van minimaal \\u20ac%(amount).2f in."

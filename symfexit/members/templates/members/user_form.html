@@ -42,9 +42,11 @@
           </li>
         {% endif %}
         <li>
-          <a class="underline" href="{% url 'members:amount-change' %}">
-            {% translate 'Adjust amount' %}
-          </a>
+          <form method="post" action="{% url 'members:amount-change' %}">
+            {% csrf_token %}
+            <input type="hidden" name="order_id" value="{{ active_order.pk }}" />
+            <button type="submit" class="underline cursor-pointer">{% translate 'Adjust amount' %}</button>
+          </form>
         </li>
       </ul>
       {% if payments %}

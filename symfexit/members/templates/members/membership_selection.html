@@ -3,6 +3,7 @@
   <h1 class="font-header text-5xl mb-6">{% if title %}{{ title }}{% else %}{% translate 'Select your membership' %}{% endif %}</h1>
   <form method="post" class="space-y-4">
     {% csrf_token %}
+    {% if order %}<input type="hidden" name="order_id" value="{{ order.pk }}" />{% endif %}
     {% if form.membership_type.is_hidden %}
     {{ form.membership_type }}
     {% else %}
