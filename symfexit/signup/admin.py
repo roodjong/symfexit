@@ -1,21 +1,52 @@
 from django.contrib import admin, messages
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
+from django.db.models import F, IntegerField, OuterRef, Subquery, Sum
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import gettext_lazy as _
 
 from symfexit.emails._templates.emails.signup_accepted import SignupAcceptedEmail
 from symfexit.emails._templates.render import send_email
+from symfexit.payments.models import Payment
 from symfexit.signup.models import DuplicateEmailError, MembershipApplication
 
 
 @admin.register(MembershipApplication)
 class MembershipApplicationAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "email", "membership_type", "status", "created_at")
+    list_display = (
+        "first_name",
+        "last_name",
+        "email",
+        "membership_type",
+        "status",
+        "payment_status",
+        "created_at",
+    )
     list_filter = ("status",)
     change_form_template = "signup/admin/change_form.html"
+
+    def get_queryset(self, request):
+        payment_total = Payment.objects.filter(obligation__order=OuterRef("_order"))
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                payment_total=Subquery(
+                    payment_total.values("obligation__order")
+                    .annotate(total=Sum("transaction__amount_cents"))
+                    .values("total"),
+                    output_field=IntegerField(),
+                ),
+                order_price=F("_order__product_price_euros"),
+            )
+        )
+
+    @admin.display(description=_("Paid"), boolean=True)
+    def payment_status(self, obj):
+        return obj.payment_total is not None and obj.payment_total >= obj.order_price * 100
 
     def changelist_view(self, request, extra_context=None):
         # Set default filter to status=created only on true initial page load
