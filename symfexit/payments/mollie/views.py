@@ -58,7 +58,9 @@ def _refresh_from_mollie(mollie_payment: MolliePayment) -> None:
 
     if mollie_data.is_paid():
         amount_cents = int(Decimal(mollie_data["amount"]["value"]) * 100)
-        _record_receipt(mollie_payment, amount_cents)
+        newly_processed = _record_receipt(mollie_payment, amount_cents)
+        if newly_processed:
+            _finish_bank_account_change(client, mollie_payment, mollie_data)
     # A `canceled` Mollie status only means this checkout attempt was
     # abandoned — the obligation stays outstanding so the user can retry
     # (or `charge_obligations` can re-attempt once a mandate exists).
@@ -126,13 +128,42 @@ def payment_pending_status(request, obligation_eid):
     return JsonResponse({"done": latest.status != "open"})
 
 
-def _record_receipt(mollie_payment: MolliePayment, amount_cents: int) -> None:
+def _finish_bank_account_change(client, mollie_payment: MolliePayment, mollie_data) -> None:
+    """Once the "first" payment of a bank account change is paid, revoke the
+    old mandates so recurring charges use the newly created one. Done here
+    rather than when the checkout starts, so a cancelled or expired checkout
+    doesn't leave the member without any mandate."""
+    from symfexit.payments.mollie.payments import (  # noqa: PLC0415
+        BANK_ACCOUNT_CHANGE_METADATA_KEY,
+        revoke_other_mandates,
+    )
+
+    metadata = mollie_data["metadata"] or {}
+    if not metadata.get(BANK_ACCOUNT_CHANGE_METADATA_KEY):
+        return
+
+    new_mandate_id = mollie_data["mandateId"]
+    if not new_mandate_id:
+        logger.warning(
+            "Paid bank account change payment %s has no mandate; keeping old mandates",
+            mollie_payment.mollie_payment_id,
+        )
+        return
+
+    mollie_customer = client.customers.get(mollie_payment.mollie_customer_id)
+    revoke_other_mandates(mollie_customer, keep_mandate_id=new_mandate_id)
+
+
+def _record_receipt(mollie_payment: MolliePayment, amount_cents: int) -> bool:
     """Idempotency wrapper around payments.services.record_receipt. Locks the
-    MolliePayment row so concurrent webhook + status-poll callers serialize."""
+    MolliePayment row so concurrent webhook + status-poll callers serialize.
+
+    Returns whether this call processed the receipt (False if it already was)."""
     with transaction.atomic():
         mp = MolliePayment.objects.select_for_update().get(pk=mollie_payment.pk)
         if mp.processed_at is not None:
-            return
+            return False
         record_receipt(mp.obligation, amount_cents)
         mp.processed_at = timezone.now()
         mp.save(update_fields=["processed_at"])
+    return True
