@@ -112,6 +112,29 @@ class PaymentProcessorInstance(metaclass=abc.ABCMeta):
         """
         ...
 
+    def refresh_payments(self) -> None:
+        """Update payments that are still in progress from the provider, in case
+        a status update (e.g. a webhook) was missed.
+
+        Runs before any obligation is charged. A payment that fails to refresh
+        should be logged and skipped, not raised.
+        """
+        return None
+
+    def refundable_cents(self, payment) -> int:
+        """How much of `payment` can be refunded online through this provider.
+        0 means it can't be (not paid through the provider, already refunded,
+        or the provider doesn't do refunds)."""
+        return 0
+
+    def refund(self, payment) -> None:
+        """Start an online refund of everything `refundable_cents` allows.
+
+        The refund is booked once the provider reports it as done, which may be
+        later than this call. Raises on error.
+        """
+        raise NotImplementedError
+
     def charge_obligation(self, obligation) -> bool:
         """Attempt to charge an unpaid obligation automatically (recurring).
 

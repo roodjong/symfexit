@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media }}
+    <script src="{% static 'admin/js/cancel.js' %}" async></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation delete-selected-confirmation{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; {% translate 'Refund payments' %}
+</div>
+{% endblock %}
+
+{% block content %}
+{% if refundable %}
+  <p>{% blocktranslate count counter=refundable|length with total=refundable_total %}This payment will be refunded online, €{{ total }} in total:{% plural %}These {{ counter }} payments will be refunded online, €{{ total }} in total:{% endblocktranslate %}</p>
+  <ul>
+    {% for row in refundable %}
+      <li>{{ row.payment }}, {{ row.member }}: €{{ row.amount }}</li>
+    {% endfor %}
+  </ul>
+  <p>{% translate "The money goes back to the payer and the obligations they paid are waived. Subscriptions keep running. This cannot be undone." %}</p>
+{% else %}
+  <p>{% translate "None of the selected payments can be refunded online." %}</p>
+{% endif %}
+
+{% if not_refundable %}
+  <h2>{% translate "Cannot be refunded online" %}</h2>
+  <p>{% translate "These payments will be skipped:" %}</p>
+  <ul>
+    {% for row in not_refundable %}
+      <li>{{ row.payment }}, {{ row.member }}: {{ row.reason }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post">{% csrf_token %}
+<div>
+  {% for payment in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ payment.pk }}">
+  {% endfor %}
+  <input type="hidden" name="action" value="refund_selected">
+  {% if refundable %}
+    <input type="hidden" name="post" value="yes">
+    <input type="submit" value="{% translate "Yes, refund them" %}">
+  {% endif %}
+  <a role="button" href="#" class="button cancel-link">{% translate "No, take me back" %}</a>
+</div>
+</form>
+{% endblock content %}
