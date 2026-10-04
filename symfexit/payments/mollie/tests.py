@@ -1,6 +1,7 @@
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
+import requests
 from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 from django_tenants.test.cases import FastTenantTestCase
@@ -756,6 +757,83 @@ class ChargeObligationsTest(TestCase):
             charge_obligations()
 
         mock_client.payments.create.assert_not_called()
+
+    def test_skips_obligation_with_payment_in_flight(self):
+        """A pending direct debit must not be followed by a second one."""
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_inflight")
+
+        mock_client = MagicMock()
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
+        )
+
+        for status in MolliePayment.IN_FLIGHT_STATUSES:
+            with self.subTest(status=status):
+                MolliePayment.objects.all().delete()
+                MolliePayment.objects.create(
+                    obligation=self.obligation,
+                    mollie_payment_id="tr_inflight",
+                    mollie_customer_id="cst_inflight",
+                    status=status,
+                )
+
+                with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+                    charge_obligations()
+
+                mock_client.payments.create.assert_not_called()
+
+    def test_charges_again_after_failed_payment(self):
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_retry")
+        MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_failed",
+            mollie_customer_id="cst_retry",
+            status="failed",
+        )
+
+        mock_payment = MagicMock()
+        mock_payment.__getitem__ = lambda s, k: "tr_retry" if k == "id" else None
+
+        mock_client = MagicMock()
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
+        )
+        mock_client.payments.create.return_value = mock_payment
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            charge_obligations()
+
+        mock_client.payments.create.assert_called_once()
+        self.assertTrue(MolliePayment.objects.filter(mollie_payment_id="tr_retry").exists())
+
+
+class MollieClientTest(TestCase):
+    def test_client_is_reused_per_api_key(self):
+        settings_a = MollieSettings(test_api_key="test_" + "a" * 30)
+        settings_b = MollieSettings(test_api_key="test_" + "b" * 30)
+
+        self.assertIs(settings_a.get_mollie_client(), settings_a.get_mollie_client())
+        self.assertIs(
+            settings_a.get_mollie_client(),
+            MollieSettings(test_api_key="test_" + "a" * 30).get_mollie_client(),
+        )
+        self.assertIsNot(settings_a.get_mollie_client(), settings_b.get_mollie_client())
+
+    def test_rate_limited_requests_are_retried(self):
+        client = MollieSettings(test_api_key="test_" + "c" * 30).get_mollie_client()
+        session = requests.Session()
+        client._client = session
+        client._setup_retry()
+
+        retry = session.get_adapter("https://api.mollie.com").max_retries
+        self.assertIn(429, retry.status_forcelist)
+        self.assertTrue(retry.is_retry("POST", 429))
+        self.assertTrue(retry.respect_retry_after_header)
+        del client._client
 
 
 class ReconcileMolliePaymentsTest(TestCase):
