@@ -12,6 +12,7 @@ class ConfigField:
 
 
 CONFIG_SCHEMA = {
+    "FAVICON": ConfigField(default="", label=_("Favicon for this site"), field_type="image_field"),
     "SITE_TITLE": ConfigField(default="Membersite", label=_("Main title of this site")),
     "LOGO_IMAGE": ConfigField(default="", label=_("Organisation logo"), field_type="image_field"),
     "MAIN_SITE": ConfigField(
