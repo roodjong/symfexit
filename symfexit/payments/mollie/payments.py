@@ -53,12 +53,17 @@ def _has_valid_mandate(mollie_customer: MollieApiCustomer):
     return any(m["status"] == "valid" for m in mandates["_embedded"]["mandates"])
 
 
-def _revoke_mandates(mollie_customer: MollieApiCustomer):
-    """Revoke all valid or pending mandates so the next "first" payment's
-    mandate becomes the only one used for recurring charges."""
+# Metadata flag on the "first" payment of a bank account change, so the
+# webhook knows to revoke the old mandates once the new one exists.
+BANK_ACCOUNT_CHANGE_METADATA_KEY = "bank_account_change"
+
+
+def revoke_other_mandates(mollie_customer: MollieApiCustomer, keep_mandate_id: str):
+    """Revoke all valid or pending mandates except `keep_mandate_id`, so the
+    new mandate becomes the only one used for recurring charges."""
     mandates = mollie_customer.mandates.list()
     for mandate in mandates["_embedded"]["mandates"]:
-        if mandate["status"] == "invalid":
+        if mandate["status"] == "invalid" or mandate["id"] == keep_mandate_id:
             continue
         try:
             mollie_customer.mandates.delete(mandate["id"])
@@ -203,19 +208,18 @@ class MollieProcessorInstance(PaymentProcessorInstance):
     def start_bank_account_change_flow(self, request, obligation, return_url):
         """Let the user register a new bank account for their recurring payments.
 
-        Revokes the existing mandates and sends the user through a new "first"
-        checkout payment of one cent, which creates a fresh mandate from
-        whichever account the user pays with. The regular subscription
-        charging then continues against the new mandate.
+        Sends the user through a new "first" checkout payment of one cent,
+        which creates a fresh mandate from whichever account the user pays
+        with. The existing mandates are only revoked once that payment is paid
+        (see the webhook), so an abandoned or expired checkout leaves the
+        current mandate in place. The regular subscription charging then
+        continues against the new mandate.
         """
         client: Client = self.mollie_settings.get_mollie_client()
 
         user = obligation.order.ordered_for
         symfexit_customer = _get_or_create_mollie_customer(client, user)
         customer_id = symfexit_customer.mollie_customer_id
-        mollie_customer = client.customers.get(customer_id)
-
-        _revoke_mandates(mollie_customer)
 
         webhook_url = self._build_webhook_url(request)
         pending_url = build_pending_url(request, obligation, return_url)
@@ -236,6 +240,7 @@ class MollieProcessorInstance(PaymentProcessorInstance):
                 "metadata": {
                     "obligation_id": str(obligation.id),
                     "order_id": str(obligation.order.id),
+                    BANK_ACCOUNT_CHANGE_METADATA_KEY: True,
                 },
             }
         )

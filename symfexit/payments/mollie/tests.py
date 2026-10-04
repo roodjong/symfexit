@@ -560,33 +560,27 @@ class MollieBankAccountChangeTest(TestCase):
                 self._make_request(), self.obligation, "/return/"
             )
 
-    def test_revokes_mandates_and_charges_verification_cent(self):
-        """Valid mandates are revoked; a one-cent first payment creates the
-        mandate for the new account while the subscription keeps running."""
+    def test_keeps_mandates_and_charges_verification_cent(self):
+        """A one-cent first payment creates the mandate for the new account;
+        existing mandates stay until that payment is paid, so an abandoned
+        checkout doesn't leave the member without a mandate."""
         mock_client = MagicMock()
         mock_client.payments.create.return_value = self._mock_payment()
         mock_customer = mock_client.customers.get.return_value
-        mock_customer.mandates.list.return_value = _make_mock_mandates(
-            [
-                {"id": "mdt_valid", "status": "valid"},
-                {"id": "mdt_pending", "status": "pending"},
-                {"id": "mdt_invalid", "status": "invalid"},
-            ]
-        )
 
         response = self._start_flow(mock_client)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "https://www.mollie.com/checkout/change")
 
-        revoked = [call.args[0] for call in mock_customer.mandates.delete.call_args_list]
-        self.assertEqual(revoked, ["mdt_valid", "mdt_pending"])
+        mock_customer.mandates.delete.assert_not_called()
 
         call_args = mock_client.payments.create.call_args[0][0]
         self.assertEqual(call_args["sequenceType"], "first")
         self.assertEqual(call_args["customerId"], "cst_change")
         self.assertEqual(call_args["amount"]["value"], "0.01")
         self.assertIn("/mollie/pending/", call_args["redirectUrl"])
+        self.assertTrue(call_args["metadata"]["bank_account_change"])
 
         mollie_payment = MolliePayment.objects.get(mollie_payment_id="tr_change123")
         self.assertEqual(mollie_payment.obligation, self.obligation)
@@ -636,21 +630,80 @@ class MollieBankAccountChangeTest(TestCase):
         call_args = mock_client.payments.create.call_args[0][0]
         self.assertEqual(call_args["webhookUrl"], "https://tunnel.example.com/mollie/webhook/")
 
-    def test_revoke_failure_does_not_abort_flow(self):
-        """A mandate that fails to revoke is logged; the checkout still starts."""
+    def _webhook_client(self, status, is_paid, metadata, mandate_id="mdt_new"):
+        data = {
+            "status": status,
+            "amount": {"currency": "EUR", "value": "0.01"},
+            "metadata": metadata,
+            "mandateId": mandate_id,
+        }
+        mollie_data = MagicMock()
+        mollie_data.__getitem__ = lambda s, k: data.get(k)
+        mollie_data.is_paid.return_value = is_paid
+
         mock_client = MagicMock()
-        mock_client.payments.create.return_value = self._mock_payment()
-        mock_customer = mock_client.customers.get.return_value
-        mock_customer.mandates.list.return_value = _make_mock_mandates(
-            [{"id": "mdt_valid", "status": "valid"}]
+        mock_client.payments.get.return_value = mollie_data
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [
+                {"id": "mdt_old", "status": "valid"},
+                {"id": "mdt_old_pending", "status": "pending"},
+                {"id": "mdt_invalid", "status": "invalid"},
+                {"id": "mdt_new", "status": "valid"},
+            ]
         )
-        mock_customer.mandates.delete.side_effect = Exception("already revoked")
+        return mock_client
 
-        response = self._start_flow(mock_client)
+    def _webhook(self, mock_client):
+        MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_change123",
+            mollie_customer_id="cst_change",
+        )
+        request = self.factory.post("/mollie/webhook/", {"id": "tr_change123"})
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            mollie_webhook(request)
+            # A repeated webhook doesn't revoke again.
+            mollie_webhook(request)
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "https://www.mollie.com/checkout/change")
-        mock_client.payments.create.assert_called_once()
+    def test_paid_change_revokes_old_mandates(self):
+        mock_client = self._webhook_client("paid", True, {"bank_account_change": True})
+
+        self._webhook(mock_client)
+
+        mock_customer = mock_client.customers.get.return_value
+        revoked = [call.args[0] for call in mock_customer.mandates.delete.call_args_list]
+        self.assertEqual(revoked, ["mdt_old", "mdt_old_pending"])
+
+    def test_cancelled_or_expired_change_keeps_mandates(self):
+        for status in ("canceled", "expired", "failed"):
+            with self.subTest(status=status):
+                MolliePayment.objects.all().delete()
+                mock_client = self._webhook_client(status, False, {"bank_account_change": True})
+
+                self._webhook(mock_client)
+
+                mock_client.customers.get.return_value.mandates.delete.assert_not_called()
+
+    def test_regular_paid_payment_keeps_mandates(self):
+        mock_client = self._webhook_client("paid", True, {"obligation_id": "1"})
+
+        self._webhook(mock_client)
+
+        mock_client.customers.get.return_value.mandates.delete.assert_not_called()
+
+    def test_revoke_failure_is_logged(self):
+        """A mandate that fails to revoke is logged; the receipt is still recorded."""
+        mock_client = self._webhook_client("paid", True, {"bank_account_change": True})
+        mock_client.customers.get.return_value.mandates.delete.side_effect = Exception(
+            "already revoked"
+        )
+
+        with self.assertLogs("symfexit.payments.mollie.payments", level="WARNING"):
+            self._webhook(mock_client)
+
+        self.assertIsNotNone(
+            MolliePayment.objects.get(mollie_payment_id="tr_change123").processed_at
+        )
 
 
 class LinkMollieCustomerTest(TestCase):
