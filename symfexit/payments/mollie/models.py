@@ -1,6 +1,41 @@
+from functools import cache
+
+import requests
 from django.conf import settings
 from django.db import models
 from mollie.api.client import Client
+from urllib3.util import Retry
+
+
+class _Client(Client):
+    """Mollie client that also retries rate-limited (429) requests.
+
+    A 429 means Mollie rejected the request without processing it, so retrying
+    is safe for POSTs too. Retry-After is honoured; once retries run out the
+    429 response is returned and the library raises a ResponseError as usual.
+    """
+
+    def _setup_retry(self) -> None:
+        retry = Retry(
+            connect=self.retry,
+            read=0,
+            status=5,
+            status_forcelist=[429],
+            allowed_methods=None,
+            backoff_factor=1,
+            raise_on_status=False,
+        )
+        self._client.mount("https://", requests.adapters.HTTPAdapter(max_retries=retry))
+
+
+@cache
+def _get_client(api_key: str) -> Client:
+    # One client per API key so connections are pooled and reused. A Client
+    # holds a reference cycle (its resources point back at it), so throwaway
+    # clients are only freed by the cyclic GC and leak their sockets until then.
+    client = _Client()
+    client.set_api_key(api_key)
+    return client
 
 
 class MollieSettings(models.Model):
@@ -40,9 +75,7 @@ class MollieSettings(models.Model):
         )
 
     def get_mollie_client(self):
-        client = Client()
-        client.set_api_key(self.api_key if self.live_mode else self.test_api_key)
-        return client
+        return _get_client(self.api_key if self.live_mode else self.test_api_key)
 
 
 class MollieCustomer(models.Model):
@@ -59,6 +92,10 @@ class MollieCustomer(models.Model):
 
 
 class MolliePayment(models.Model):
+    # Statuses where Mollie may still collect the money. A recurring SEPA
+    # direct debit stays `pending` for days before it becomes `paid`.
+    IN_FLIGHT_STATUSES = ("open", "pending", "authorized")
+
     obligation = models.ForeignKey(
         "payments.PaymentObligation",
         on_delete=models.CASCADE,

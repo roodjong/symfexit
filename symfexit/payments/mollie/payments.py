@@ -169,6 +169,11 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         if obligation.is_fully_paid:
             return False
 
+        # A previous charge may still be on its way; charging again would
+        # debit the member twice once both payments complete.
+        if obligation.mollie_payments.filter(status__in=MolliePayment.IN_FLIGHT_STATUSES).exists():
+            return False
+
         user = obligation.order.ordered_for
 
         try:
