@@ -112,6 +112,15 @@ class PaymentProcessorInstance(metaclass=abc.ABCMeta):
         """
         ...
 
+    def refresh_payments(self) -> None:
+        """Update payments that are still in progress from the provider, in case
+        a status update (e.g. a webhook) was missed.
+
+        Runs before any obligation is charged. A payment that fails to refresh
+        should be logged and skipped, not raised.
+        """
+        return None
+
     def charge_obligation(self, obligation) -> bool:
         """Attempt to charge an unpaid obligation automatically (recurring).
 

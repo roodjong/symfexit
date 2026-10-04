@@ -243,6 +243,14 @@ def _make_mock_mandates(mandates):
     return {"_embedded": {"mandates": mandates}}
 
 
+def _make_mock_mollie_data(status, is_paid, amount="10.00"):
+    data = {"status": status, "amount": {"currency": "EUR", "value": amount}}
+    mock = MagicMock()
+    mock.__getitem__ = lambda s, k: data.get(k)
+    mock.is_paid.return_value = is_paid
+    return mock
+
+
 class MollieStartPaymentFlowTest(TestCase):
     def setUp(self):
         Account.get_accounts_receivable_account()
@@ -1042,11 +1050,65 @@ class ChargeObligationsTest(TestCase):
                     mollie_customer_id="cst_inflight",
                     status=status,
                 )
+                mock_client.payments.get.return_value = _make_mock_mollie_data(status, False)
 
                 with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
                     charge_obligations()
 
                 mock_client.payments.create.assert_not_called()
+
+    def test_missed_paid_webhook_is_booked_instead_of_charging_again(self):
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_missed")
+        mp = MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_missed_paid",
+            mollie_customer_id="cst_missed",
+            status="pending",
+        )
+
+        mock_client = MagicMock()
+        mock_client.payments.get.return_value = _make_mock_mollie_data("paid", True)
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            charge_obligations()
+
+        mock_client.payments.get.assert_called_once_with("tr_missed_paid")
+        mock_client.payments.create.assert_not_called()
+        mp.refresh_from_db()
+        self.assertEqual(mp.status, "paid")
+        self.assertIsNotNone(mp.processed_at)
+        self.assertTrue(self.obligation.is_fully_paid)
+
+    def test_missed_failed_webhook_charges_again(self):
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_missed")
+        mp = MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_missed_failed",
+            mollie_customer_id="cst_missed",
+            status="pending",
+        )
+
+        mock_payment = MagicMock()
+        mock_payment.__getitem__ = lambda s, k: "tr_after_failed" if k == "id" else None
+
+        mock_client = MagicMock()
+        mock_client.payments.get.return_value = _make_mock_mollie_data("failed", False)
+        mock_client.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"status": "valid"}]
+        )
+        mock_client.payments.create.return_value = mock_payment
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=mock_client):
+            charge_obligations()
+
+        mp.refresh_from_db()
+        self.assertEqual(mp.status, "failed")
+        mock_client.payments.create.assert_called_once()
+        self.assertTrue(MolliePayment.objects.filter(mollie_payment_id="tr_after_failed").exists())
 
     def test_charges_again_after_failed_payment(self):
         from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
@@ -1100,7 +1162,7 @@ class MollieClientTest(TestCase):
         del client._client
 
 
-class ReconcileMolliePaymentsTest(TestCase):
+class RefreshMolliePaymentsTest(TestCase):
     def setUp(self):
         Account.get_accounts_receivable_account()
         Account.get_bank_account()
@@ -1116,7 +1178,7 @@ class ReconcileMolliePaymentsTest(TestCase):
             test_api_key="test_xxx",
         )
 
-        self.user = Member.objects.create_user(email="reconcile@example.com")
+        self.user = Member.objects.create_user(email="refresh@example.com")
         self.billing_address = BillingAddress.objects.create(
             user=self.user,
             name="Test User",
@@ -1126,8 +1188,8 @@ class ReconcileMolliePaymentsTest(TestCase):
         )
         product = Product.objects.create(
             enabled=True,
-            sku="test-reconcile",
-            name="Reconcile Product",
+            sku="test-refresh",
+            name="Refresh Product",
             price_euros=Decimal("10.00"),
             type=ProductType.SUBSCRIPTION,
         )
@@ -1138,63 +1200,77 @@ class ReconcileMolliePaymentsTest(TestCase):
         self.order.save()
         self.obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
 
-    def _make_mollie_payment(self, mollie_id, status, age_minutes):
-        from datetime import timedelta  # noqa: PLC0415
-
-        mp = MolliePayment.objects.create(
-            obligation=self.obligation,
+    def _make_mollie_payment(self, mollie_id, status, obligation=None):
+        return MolliePayment.objects.create(
+            obligation=obligation or self.obligation,
             mollie_payment_id=mollie_id,
             status=status,
         )
-        # Force created_at backwards so the reconciler picks up "old" rows.
-        MolliePayment.objects.filter(pk=mp.pk).update(
-            created_at=timezone.now() - timedelta(minutes=age_minutes),
+
+    def test_missed_webhook_for_signup_payment_is_booked(self):
+        """A signup order has no user, so it is never charged, but its payment
+        is still refreshed."""
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        signup_billing = BillingAddress.objects.create(
+            user=None,
+            name="New Member",
+            email="new@example.com",
+            address="Teststraat 2",
+            city="Amsterdam",
+            postal_code="1000AA",
         )
-        mp.refresh_from_db()
-        return mp
-
-    def _mock_mollie_data(self, status, is_paid, amount="10.00"):
-        mock = MagicMock()
-        payload = {"status": status, "amount": {"currency": "EUR", "value": amount}}
-        mock.__getitem__ = lambda s, k: payload.get(k)
-        mock.is_paid.return_value = is_paid
-        return mock
-
-    def test_reconciler_promotes_stale_open_to_paid(self):
-        from symfexit.payments.mollie.tasks import reconcile_mollie_payments  # noqa: PLC0415
-
-        mp = self._make_mollie_payment("tr_stale", status="open", age_minutes=10)
+        _, signup_obligation = Order.objects.create_with_obligation(
+            product=self.order.product,
+            billing_address=signup_billing,
+            paid_using=self.provider,
+            timezone="UTC",
+        )
+        mp = self._make_mollie_payment("tr_signup", "open", obligation=signup_obligation)
 
         client = MagicMock()
-        client.payments.get.return_value = self._mock_mollie_data("paid", True)
+        client.payments.get.return_value = _make_mock_mollie_data("paid", True)
 
         with patch.object(MollieSettings, "get_mollie_client", return_value=client):
-            reconcile_mollie_payments()
+            charge_obligations()
 
         mp.refresh_from_db()
         self.assertEqual(mp.status, "paid")
         self.assertIsNotNone(mp.processed_at)
-        self.assertTrue(Payment.objects.filter(obligation=self.obligation).exists())
+        self.assertTrue(signup_obligation.is_fully_paid)
 
-    def test_reconciler_skips_recent_open(self):
-        from symfexit.payments.mollie.tasks import reconcile_mollie_payments  # noqa: PLC0415
+    def test_skips_terminal_status(self):
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
 
-        self._make_mollie_payment("tr_recent", status="open", age_minutes=1)
+        self._make_mollie_payment("tr_done", status="paid")
 
-        with patch.object(MollieSettings, "get_mollie_client") as mocked:
-            reconcile_mollie_payments()
+        client = MagicMock()
+        with patch.object(MollieSettings, "get_mollie_client", return_value=client):
+            charge_obligations()
 
-        mocked.assert_not_called()
+        client.payments.get.assert_not_called()
 
-    def test_reconciler_skips_terminal_status(self):
-        from symfexit.payments.mollie.tasks import reconcile_mollie_payments  # noqa: PLC0415
+    def test_refresh_error_does_not_stop_other_payments(self):
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
 
-        self._make_mollie_payment("tr_done", status="paid", age_minutes=30)
+        self._make_mollie_payment("tr_broken", "pending")
+        good = self._make_mollie_payment("tr_good", "pending")
 
-        with patch.object(MollieSettings, "get_mollie_client") as mocked:
-            reconcile_mollie_payments()
+        def get(payment_id):
+            if payment_id == "tr_broken":
+                raise RuntimeError("Mollie unavailable")
+            return _make_mock_mollie_data("failed", False)
 
-        mocked.assert_not_called()
+        client = MagicMock()
+        client.payments.get.side_effect = get
+
+        with patch.object(MollieSettings, "get_mollie_client", return_value=client):
+            charge_obligations()
+
+        good.refresh_from_db()
+        self.assertEqual(good.status, "failed")
+        # tr_broken still looks in flight, so no new charge was made.
+        client.payments.create.assert_not_called()
 
 
 class BackfillProcessedAtMigrationTest(TestCase):

@@ -140,6 +140,8 @@ Two worker tasks in [tasks.py](tasks.py) keep subscriptions running:
   supports it, calls `charge_obligation()` to attempt an automatic recurring
   charge. It intentionally does not skip obligations that already have a
   credit-funded payment, since those can still have an outstanding remainder.
+  Before charging, it calls each provider's `refresh_payments()` so payments
+  still in progress (including signups) catch up on any missed webhooks.
 
 ## Where things happen (developer map)
 

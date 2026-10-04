@@ -7,8 +7,9 @@ from mollie.api.objects.customer import Customer as MollieApiCustomer
 
 from symfexit.payments.mollie.admin import MollieSettingsInline
 from symfexit.payments.mollie.models import MollieCustomer, MolliePayment, MollieSettings
-from symfexit.payments.mollie.views import build_pending_url
+from symfexit.payments.mollie.views import _refresh_from_mollie, build_pending_url
 from symfexit.payments.registry import PaymentProcessor, PaymentProcessorInstance, payments_registry
+from symfexit.worker import logger as worker_logger
 
 logger = logging.getLogger(__name__)
 
@@ -252,6 +253,30 @@ class MollieProcessorInstance(PaymentProcessorInstance):
         )
 
         return HttpResponseRedirect(payment.checkout_url)
+
+    def refresh_payments(self):
+        # Our status goes stale when a webhook never arrives, e.g. after an
+        # outage longer than Mollie's retry window. Asking Mollie directly
+        # books payments that were paid (including signups whose member never
+        # returned to the pending page), and unblocks obligations whose debit
+        # failed so they can be charged again.
+        in_flight = MolliePayment.objects.filter(
+            status__in=MolliePayment.IN_FLIGHT_STATUSES,
+            obligation__order__paid_using=self.mollie_settings.payment_provider,
+        ).select_related("obligation__order__paid_using__mollie_settings")
+
+        refreshed = 0
+        errors = 0
+
+        for mollie_payment in in_flight.iterator():
+            try:
+                _refresh_from_mollie(mollie_payment)
+                refreshed += 1
+            except Exception:
+                errors += 1
+                worker_logger.log(f"MolliePayment {mollie_payment.mollie_payment_id}: ERROR")
+
+        worker_logger.log(f"Refreshed {refreshed} Mollie payments, {errors} errors")
 
     def charge_obligation(self, obligation):
         if obligation.is_fully_paid:
