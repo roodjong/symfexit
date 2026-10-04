@@ -12,6 +12,7 @@ from symfexit.members.views import _start_payment
 from symfexit.membership.models import MembershipTier, MembershipType
 from symfexit.payments.models import (
     Account,
+    BillingAddress,
     Order,
     PaymentProvider,
     PeriodUnit,
@@ -64,6 +65,92 @@ class MembersPageTest(FastTenantTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(member.is_active)
         self.assertIsNotNone(member.date_left)
+
+
+class AmountChangeTest(FastTenantTestCase):
+    def setUp(self):
+        super().setUp()
+        self.client = TenantClient(self.tenant)
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+        provider = PaymentProvider.objects.create(name="Test", type="mollie", default=True)
+
+        self.membership_type = MembershipType.objects.create(name="Standard", slug="standard")
+        self.products = []
+        for sku, price in (("basic", "10.00"), ("plus", "20.00")):
+            product = Product.objects.create(
+                enabled=True,
+                sku=sku,
+                name=sku,
+                price_euros=Decimal(price),
+                type=ProductType.SUBSCRIPTION,
+            )
+            Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+            self.products.append(product)
+        self.tiers = [
+            MembershipTier.objects.create(
+                membership_type=self.membership_type, name=p.name, product=p
+            )
+            for p in self.products
+        ]
+
+        self.user = User.objects.create_user(
+            email="member@example.com", password="password", member_identifier=2001
+        )
+        self.user.membership_type = self.membership_type
+        self.user.membership_tier = self.tiers[0]
+        self.user.save()
+        self.client.force_login(self.user)
+        billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Member",
+            address="Street 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        self.order, _ = Order.objects.create_with_obligation(
+            product=self.products[0],
+            paid_using=provider,
+            billing_address=billing_address,
+            for_user=self.user,
+        )
+
+    def test_page_loads(self):
+        response = self.client.get(reverse("members:amount-change"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_changes_price_of_active_order(self):
+        response = self.client.post(
+            reverse("members:amount-change"),
+            {
+                "membership_type": self.membership_type.pk,
+                "payment_tier": str(self.tiers[1].pk),
+            },
+        )
+        self.assertRedirects(response, reverse("members:memberdata"), fetch_redirect_response=False)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.product_price_euros, Decimal("20.00"))
+        self.assertEqual(self.order.product_id, self.products[1].pk)
+
+    def test_redirects_without_active_order(self):
+        self.order.cancel()
+        response = self.client.get(reverse("members:amount-change"))
+        self.assertRedirects(response, reverse("members:memberdata"), fetch_redirect_response=False)
+
+    def test_current_tier_preselected(self):
+        response = self.client.get(reverse("members:amount-change"))
+        self.assertEqual(response.context["form"].initial["payment_tier"], str(self.tiers[0].pk))
+
+    def test_unmatched_price_falls_back_to_custom(self):
+        self.membership_type.allow_custom_amount = True
+        self.membership_type.save()
+        self.order.product_price_euros = Decimal("15.00")
+        self.order.save()
+        response = self.client.get(reverse("members:amount-change"))
+        initial = response.context["form"].initial
+        self.assertEqual(initial["payment_tier"], "custom")
+        self.assertEqual(initial["pay_more"], Decimal("15.00"))
 
 
 class StartPaymentDeduplicationTest(TestCase):

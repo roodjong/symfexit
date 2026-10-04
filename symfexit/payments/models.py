@@ -379,18 +379,13 @@ class OrderManager(models.Manager):
         price_euros=None,
         timezone=None,
     ):
-        order = self.create(
-            product=product,
-            product_sku=product.sku,
-            product_name=product.name,
-            product_price_euros=price_euros if price_euros is not None else product.price_euros,
-            subscription=product.subscription,
-            subscription_period_unit=product.subscription.period_unit,
-            subscription_period=product.subscription.period,
+        order = self.model(
             ordered_for=for_user,
             ordered_for_billing_address=billing_address,
             paid_using=paid_using,
         )
+        order.set_product(product, price_euros)
+        order.save()
         obligation = order.get_or_create_next_payment_obligation(timezone=timezone)
         return order, obligation
 
@@ -426,6 +421,16 @@ class Order(models.Model):
                 f"Order for product {self.product_name} for user {self.ordered_for.get_full_name()}"
             )
         return f"Order for product {self.product_name}"
+
+    def set_product(self, product, price_euros=None):
+        """Copy the product's details onto the order (without saving)."""
+        self.product = product
+        self.product_sku = product.sku
+        self.product_name = product.name
+        self.product_price_euros = price_euros if price_euros is not None else product.price_euros
+        self.subscription = product.subscription
+        self.subscription_period_unit = product.subscription.period_unit
+        self.subscription_period = product.subscription.period
 
     def product_price_cents(self):
         return int(self.product_price_euros * 100)

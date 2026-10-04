@@ -41,7 +41,11 @@
             </a>
           </li>
         {% endif %}
-        <li>{% translate 'Adjust amount' %}</li>
+        <li>
+          <a class="underline" href="{% url 'members:amount-change' %}">
+            {% translate 'Adjust amount' %}
+          </a>
+        </li>
       </ul>
       {% if payments %}
         <h2 class="font-header text-3xl mb-4">{% translate 'Payment history' %}</h2>
