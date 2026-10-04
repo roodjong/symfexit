@@ -33,7 +33,6 @@
         {% endblocktranslate %}
       </p>
       <ul class="list-disc pl-5 mb-6 space-y-1">
-        <li>{% translate 'Cancel subscription' %}</li>
         {% if can_change_bank_account %}
           <li>
             <a class="underline" href="{% url 'members:bank-account-change' %}">

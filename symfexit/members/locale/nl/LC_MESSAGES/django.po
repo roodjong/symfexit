@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 15:26+0200\n"
+"POT-Creation-Date: 2026-10-04 15:55+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -450,7 +450,7 @@ msgstr ""
 "lidmaatschap verliezen."
 
 #: symfexit/members/templates/members/membership_cancellation.html:26
-#: symfexit/members/templates/members/user_form.html:78
+#: symfexit/members/templates/members/user_form.html:77
 msgid "Cancel membership"
 msgstr "Lidmaatschap opzeggen"
 
@@ -494,40 +494,36 @@ msgstr ""
 "%(amount)s.\n"
 "        "
 
-#: symfexit/members/templates/members/user_form.html:36
-msgid "Cancel subscription"
-msgstr "Abonnement opzeggen"
-
-#: symfexit/members/templates/members/user_form.html:40
+#: symfexit/members/templates/members/user_form.html:39
 msgid "Different bank account"
 msgstr "Andere bankrekening"
 
-#: symfexit/members/templates/members/user_form.html:48
+#: symfexit/members/templates/members/user_form.html:47
 #: symfexit/members/views.py:241
 msgid "Adjust amount"
 msgstr "Bedrag aanpassen"
 
-#: symfexit/members/templates/members/user_form.html:53
+#: symfexit/members/templates/members/user_form.html:52
 msgid "Payment history"
 msgstr "Betalingsgeschiedenis"
 
-#: symfexit/members/templates/members/user_form.html:57
+#: symfexit/members/templates/members/user_form.html:56
 msgid "Date"
 msgstr "Datum"
 
-#: symfexit/members/templates/members/user_form.html:58
+#: symfexit/members/templates/members/user_form.html:57
 msgid "Amount"
 msgstr "Bedrag"
 
-#: symfexit/members/templates/members/user_form.html:72
+#: symfexit/members/templates/members/user_form.html:71
 msgid "Setup your membership payments now"
 msgstr "Stel nu je lidmaatschapsbetalingen in"
 
-#: symfexit/members/templates/members/user_form.html:76
+#: symfexit/members/templates/members/user_form.html:75
 msgid "Start subscription"
 msgstr "Start automatische betaling"
 
-#: symfexit/members/templates/members/user_form.html:82
+#: symfexit/members/templates/members/user_form.html:81
 msgid "Cancel membership..."
 msgstr "Lidmaatschap opzeggen..."
 
@@ -608,6 +604,9 @@ msgid "Changing your bank account is not supported for your payment method."
 msgstr ""
 "Het wijzigen van je bankrekening wordt niet ondersteund voor jouw "
 "betaalmethode."
+
+#~ msgid "Cancel subscription"
+#~ msgstr "Abonnement opzeggen"
 
 #, python-format
 #~ msgid "Please enter an amount of at least \\u20ac%(amount).2f."
