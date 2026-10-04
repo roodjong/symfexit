@@ -116,14 +116,23 @@ class AmountChangeTest(FastTenantTestCase):
             for_user=self.user,
         )
 
-    def test_page_loads(self):
-        response = self.client.get(reverse("members:amount-change"))
-        self.assertEqual(response.status_code, 200)
+    def open_page(self):
+        return self.client.post(reverse("members:amount-change"), {"order_id": self.order.pk})
 
-    def test_changes_price_of_active_order(self):
+    def test_page_loads(self):
+        response = self.open_page()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'name="order_id" value="{self.order.pk}"')
+
+    def test_get_without_order_is_denied(self):
+        response = self.client.get(reverse("members:amount-change"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_changes_price_of_posted_order(self):
         response = self.client.post(
             reverse("members:amount-change"),
             {
+                "order_id": self.order.pk,
                 "membership_type": self.membership_type.pk,
                 "payment_tier": str(self.tiers[1].pk),
             },
@@ -133,13 +142,17 @@ class AmountChangeTest(FastTenantTestCase):
         self.assertEqual(self.order.product_price_euros, Decimal("20.00"))
         self.assertEqual(self.order.product_id, self.products[1].pk)
 
-    def test_redirects_without_active_order(self):
+    def test_cancelled_order_is_denied(self):
         self.order.cancel()
-        response = self.client.get(reverse("members:amount-change"))
-        self.assertRedirects(response, reverse("members:memberdata"), fetch_redirect_response=False)
+        response = self.open_page()
+        self.assertEqual(response.status_code, 403)
+
+    def test_invalid_order_id_is_denied(self):
+        response = self.client.post(reverse("members:amount-change"), {"order_id": "abc"})
+        self.assertEqual(response.status_code, 403)
 
     def test_current_tier_preselected(self):
-        response = self.client.get(reverse("members:amount-change"))
+        response = self.open_page()
         self.assertEqual(response.context["form"].initial["payment_tier"], str(self.tiers[0].pk))
 
     def test_unmatched_price_falls_back_to_custom(self):
@@ -147,10 +160,18 @@ class AmountChangeTest(FastTenantTestCase):
         self.membership_type.save()
         self.order.product_price_euros = Decimal("15.00")
         self.order.save()
-        response = self.client.get(reverse("members:amount-change"))
+        response = self.open_page()
         initial = response.context["form"].initial
         self.assertEqual(initial["payment_tier"], "custom")
         self.assertEqual(initial["pay_more"], Decimal("15.00"))
+
+    def test_cannot_change_another_members_order(self):
+        other = User.objects.create_user(
+            email="other@example.com", password="password", member_identifier=2002
+        )
+        self.client.force_login(other)
+        response = self.open_page()
+        self.assertEqual(response.status_code, 403)
 
 
 class StartPaymentDeduplicationTest(TestCase):

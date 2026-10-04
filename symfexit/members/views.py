@@ -2,11 +2,12 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth import logout
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Prefetch
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 from django.views.generic import FormView, TemplateView
 
@@ -137,41 +138,44 @@ class Logout(TemplateView):
         return redirect("home:home")
 
 
+def _build_tiers_json():
+    """Tier data per membership type, used by the selection form's JavaScript."""
+    membership_types = MembershipType.objects.filter(enabled=True).prefetch_related(
+        Prefetch(
+            "tiers",
+            queryset=MembershipTier.objects.filter(enabled=True).select_related("product"),
+        )
+    )
+
+    tiers_data = {}
+    for mt in membership_types:
+        tiers_list = []
+        for tier in mt.tiers.all():
+            tiers_list.append(
+                {
+                    "pk": tier.pk,
+                    "name": tier.name,
+                    "price_cents": tier.price_cents(),
+                    "price_euros": str(tier.price_euros()),
+                }
+            )
+        tiers_data[mt.pk] = {
+            "tiers": tiers_list,
+            "allow_custom_amount": mt.allow_custom_amount,
+            "minimum_custom_amount_euros": str(mt.custom_amount_product.price_euros)
+            if mt.custom_amount_product
+            else None,
+        }
+    return json.dumps(tiers_data)
+
+
 class MembershipSelection(LoginRequiredMixin, FormView):
     template_name = "members/membership_selection.html"
     form_class = MembershipSelectionForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        membership_types = MembershipType.objects.filter(enabled=True).prefetch_related(
-            Prefetch(
-                "tiers",
-                queryset=MembershipTier.objects.filter(enabled=True).select_related("product"),
-            )
-        )
-
-        tiers_data = {}
-        for mt in membership_types:
-            tiers_list = []
-            for tier in mt.tiers.all():
-                tiers_list.append(
-                    {
-                        "pk": tier.pk,
-                        "name": tier.name,
-                        "price_cents": tier.price_cents(),
-                        "price_euros": str(tier.price_euros()),
-                    }
-                )
-            tiers_data[mt.pk] = {
-                "tiers": tiers_list,
-                "allow_custom_amount": mt.allow_custom_amount,
-                "minimum_custom_amount_euros": str(mt.custom_amount_product.price_euros)
-                if mt.custom_amount_product
-                else None,
-            }
-
-        context["tiers_json"] = json.dumps(tiers_data)
+        context["tiers_json"] = _build_tiers_json()
         return context
 
     def form_valid(self, form):
@@ -179,22 +183,37 @@ class MembershipSelection(LoginRequiredMixin, FormView):
         return _start_payment(self.request)
 
 
-class AmountChange(MembershipSelection):
+class AmountChange(UserPassesTestMixin, FormView):
     """Lets a member with an active subscription pick a new tier or amount.
 
     The new price applies to payment obligations generated from now on; no new
     payment is started.
     """
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            self.active_order = Order.objects.filter(
-                ordered_for=request.user, cancelled_at__isnull=True
-            ).first()
-            if self.active_order is None:
-                messages.error(request, _("You have no active subscription to adjust."))
-                return redirect("members:memberdata")
-        return super().dispatch(request, *args, **kwargs)
+    template_name = "members/membership_selection.html"
+    form_class = MembershipSelectionForm
+
+    @cached_property
+    def order(self):
+        """The order to change, posted as `order_id`."""
+        order_id = self.request.POST.get("order_id", "")
+        if not order_id.isdecimal():
+            return None
+        return Order.objects.filter(
+            pk=int(order_id),
+            ordered_for=self.request.user,
+            cancelled_at__isnull=True,
+        ).first()
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.order is not None
+
+    def post(self, request, *args, **kwargs):
+        if "payment_tier" not in request.POST:
+            # Navigating here from the member page: show the options unbound.
+            form = self.form_class(initial=self.get_initial())
+            return self.render_to_response(self.get_context_data(form=form))
+        return super().post(request, *args, **kwargs)
 
     def get_initial(self):
         """Preselect the option matching what the member currently pays, or
@@ -204,7 +223,7 @@ class AmountChange(MembershipSelection):
         if membership_type is None:
             return initial
         initial["membership_type"] = membership_type.pk
-        current_price = self.active_order.product_price_euros
+        current_price = self.order.product_price_euros
         # Try to preselect the tier that matches the current price.
         for tier in membership_type.tiers.filter(enabled=True).select_related("product"):
             if tier.product.price_euros == current_price:
@@ -217,6 +236,8 @@ class AmountChange(MembershipSelection):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["tiers_json"] = _build_tiers_json()
+        context["order"] = self.order
         context["title"] = _("Adjust amount")
         context["submit_label"] = _("Save")
         return context
@@ -231,7 +252,7 @@ class AmountChange(MembershipSelection):
             product = user.membership_type.custom_amount_product
             price_euros = form.cleaned_data["pay_more"]
 
-        order = self.active_order
+        order = self.order
         order.set_product(product, price_euros)
         order.save()
         messages.success(
