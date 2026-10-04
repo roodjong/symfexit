@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% theme_css_file %}
     {% preload_css_file %}
+    <link rel="icon" type="image/png" href="{% if config.FAVICON %}{% get_media_prefix %}{{ config.FAVICON }}{% else %}{static 'img/favicon.ico'}{% endif %}">
+    <link rel="apple-touch-icon" href="{% if config.FAVICON %}{% get_media_prefix %}{{ config.FAVICON }}{% else %}{static 'img/favicon.ico'}{% endif %}">
     <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
