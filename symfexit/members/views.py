@@ -11,6 +11,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import FormView, TemplateView
 
 from symfexit.members.forms import (
+    CUSTOM_TIER_VALUE,
     MembershipCancellationForm,
     MembershipSelectionForm,
     PasswordChangeForm,
@@ -176,6 +177,65 @@ class MembershipSelection(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         form.save(self.request.user)
         return _start_payment(self.request)
+
+
+class AmountChange(MembershipSelection):
+    """Lets a member with an active subscription pick a new tier or amount.
+
+    The new price applies to payment obligations generated from now on; no new
+    payment is started.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            self.active_order = Order.objects.filter(
+                ordered_for=request.user, cancelled_at__isnull=True
+            ).first()
+            if self.active_order is None:
+                messages.error(request, _("You have no active subscription to adjust."))
+                return redirect("members:memberdata")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        """Preselect the option matching what the member currently pays, or
+        fall back to the custom amount option."""
+        initial = super().get_initial()
+        membership_type = self.request.user.membership_type
+        if membership_type is None:
+            return initial
+        initial["membership_type"] = membership_type.pk
+        current_price = self.active_order.product_price_euros
+        # Try to preselect the tier that matches the current price.
+        for tier in membership_type.tiers.filter(enabled=True).select_related("product"):
+            if tier.product.price_euros == current_price:
+                initial["payment_tier"] = str(tier.pk)
+                return initial
+        if membership_type.allow_custom_amount:
+            initial["payment_tier"] = CUSTOM_TIER_VALUE
+            initial["pay_more"] = current_price
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = _("Adjust amount")
+        context["submit_label"] = _("Save")
+        return context
+
+    def form_valid(self, form):
+        user = self.request.user
+        form.save(user)
+        if user.membership_tier is not None:
+            product = user.membership_tier.product
+            price_euros = product.price_euros
+        else:
+            product = user.membership_type.custom_amount_product
+            price_euros = form.cleaned_data["pay_more"]
+
+        order = self.active_order
+        order.set_product(product, price_euros)
+        order.save()
+        messages.success(self.request, _("Your contribution amount has been updated."))
+        return redirect("members:memberdata")
 
 
 def _start_payment(request):

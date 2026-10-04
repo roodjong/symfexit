@@ -1,6 +1,7 @@
 from django.urls import path
 
 from symfexit.members.views import (
+    AmountChange,
     BankAccountChange,
     Logout,
     MemberData,
@@ -14,6 +15,7 @@ app_name = "members"
 urlpatterns = [
     path("gegevens/", MemberData.as_view(), name="memberdata"),
     path("membership/", MembershipSelection.as_view(), name="membership-selection"),
+    path("gegevens/change-amount/", AmountChange.as_view(), name="amount-change"),
     path("payment/start", payment_start, name="payment-start"),
     path("gegevens/change-bank-account/", BankAccountChange.as_view(), name="bank-account-change"),
     path("logout/", Logout.as_view(), name="logout"),

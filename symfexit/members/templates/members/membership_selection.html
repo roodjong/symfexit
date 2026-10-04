@@ -1,6 +1,6 @@
 {% extends "menupage.html" %}{% load i18n %} {% block main %}
 <div class="container mx-auto max-w-lg pt-8 p-2">
-  <h1 class="font-header text-5xl mb-6">{% translate 'Select your membership' %}</h1>
+  <h1 class="font-header text-5xl mb-6">{% if title %}{{ title }}{% else %}{% translate 'Select your membership' %}{% endif %}</h1>
   <form method="post" class="space-y-4">
     {% csrf_token %}
     {% if form.membership_type.is_hidden %}
@@ -29,7 +29,7 @@
     <input
       class="bg-primary text-white p-3 cursor-pointer"
       type="submit"
-      value="{% translate 'Continue' %}"
+      value="{% if submit_label %}{{ submit_label }}{% else %}{% translate 'Continue' %}{% endif %}"
     />
   </form>
 </div>
