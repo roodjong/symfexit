@@ -18,8 +18,14 @@ from symfexit.payments.models import (
     Product,
     ProductType,
     Subscription,
+    Transaction,
 )
-from symfexit.payments.mollie.models import MollieCustomer, MolliePayment, MollieSettings
+from symfexit.payments.mollie.models import (
+    MollieCustomer,
+    MolliePayment,
+    MollieReversal,
+    MollieSettings,
+)
 from symfexit.payments.mollie.views import mollie_webhook
 
 
@@ -1529,3 +1535,415 @@ class MolliePendingViewTest(FastTenantTestCase):
             response = self.client.get(self._status_url())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"done": False})
+
+
+def _make_paid_mollie_data(amount="10.00", chargebacks=(), refunds=()):
+    mock = _make_mock_mollie_data("paid", True, amount)
+    mock.has_chargebacks.return_value = bool(chargebacks)
+    mock.chargebacks.list.return_value = list(chargebacks)
+    mock.has_refunds.return_value = bool(refunds)
+    mock.refunds.list.return_value = list(refunds)
+    return mock
+
+
+def _mollie_page(items):
+    page = MagicMock()
+    page.__iter__.side_effect = lambda: iter(items)
+    page.has_next.return_value = False
+    return page
+
+
+def _chargeback(reversed_at=None, amount="10.00"):
+    return {
+        "id": "chb_1",
+        "paymentId": "tr_paid",
+        "amount": {"currency": "EUR", "value": amount},
+        "createdAt": timezone.now().isoformat(),
+        "reversedAt": reversed_at,
+    }
+
+
+def _refund(status, amount="10.00"):
+    return {
+        "id": "re_1",
+        "paymentId": "tr_paid",
+        "amount": {"currency": "EUR", "value": amount},
+        "status": status,
+        "createdAt": timezone.now().isoformat(),
+    }
+
+
+class _MollieReversalTestCase(TestCase):
+    def setUp(self):
+        Account.get_accounts_receivable_account()
+        self.bank_account, _ = Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.provider = PaymentProvider.objects.create(
+            name="Mollie Test",
+            type="mollie",
+            default=True,
+        )
+        self.mollie_settings = MollieSettings.objects.create(
+            payment_provider=self.provider,
+            test_api_key="test_xxx",
+        )
+
+        self.user = Member.objects.create_user(email="reversal@example.com")
+        billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="test-mollie-reversal",
+            name="Reversal Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+        self.order = product.order(for_user=self.user, billing_address=billing_address)
+        self.order.paid_using = self.provider
+        self.order.save()
+        self.obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+        MollieCustomer.objects.create(user=self.user, mollie_customer_id="cst_1")
+        self.mollie_payment = MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_paid",
+            mollie_customer_id="cst_1",
+        )
+
+        self.api = MagicMock()
+        self.api.customers.get.return_value.mandates.list.return_value = _make_mock_mandates(
+            [{"id": "mdt_1", "status": "valid"}]
+        )
+        self.api.chargebacks.list.return_value = _mollie_page([])
+        self.api.refunds.list.return_value = _mollie_page([])
+
+    def _webhook(self, mollie_data):
+        self.api.payments.get.return_value = mollie_data
+        request = RequestFactory().post("/mollie/webhook/", {"id": "tr_paid"})
+        with patch.object(MollieSettings, "get_mollie_client", return_value=self.api):
+            response = mollie_webhook(request)
+        self.assertEqual(response.status_code, 200)
+
+
+class MollieReversalTest(_MollieReversalTestCase):
+    def test_receipt_is_linked_to_its_payment(self):
+        self._webhook(_make_paid_mollie_data())
+
+        self.assertEqual(list(self.mollie_payment.payments.all()), [Payment.objects.get()])
+
+    def test_chargeback_cancels_order_and_revokes_mandate(self):
+        from symfexit.payments.models import CancellationReason, PaymentReversal  # noqa: PLC0415
+
+        self._webhook(_make_paid_mollie_data())
+        self._webhook(_make_paid_mollie_data(chargebacks=[_chargeback()]))
+
+        reversal = PaymentReversal.objects.get()
+        self.assertEqual(reversal.reason, PaymentReversal.Reason.CHARGEBACK)
+        self.assertEqual(reversal.mollie_reversals.get().mollie_id, "chb_1")
+        self.assertEqual(self.obligation.outstanding_cents, 1000)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.cancellation_reason, CancellationReason.CHARGEBACK)
+        self.api.customers.get.return_value.mandates.delete.assert_called_once_with("mdt_1")
+
+        # Mollie calling again books nothing new.
+        self._webhook(_make_paid_mollie_data(chargebacks=[_chargeback()]))
+        self.assertEqual(PaymentReversal.objects.count(), 1)
+        self.api.customers.get.return_value.mandates.delete.assert_called_once()
+
+    def test_reversed_chargeback_books_the_money_again(self):
+        self._webhook(_make_paid_mollie_data())
+        self._webhook(_make_paid_mollie_data(chargebacks=[_chargeback()]))
+        self._webhook(
+            _make_paid_mollie_data(
+                chargebacks=[_chargeback(reversed_at=timezone.now().isoformat())]
+            )
+        )
+
+        self.assertTrue(self.obligation.is_fully_paid)
+        self.assertEqual(self.bank_account.balance_cents(), 1000)
+        self.order.refresh_from_db()
+        self.assertIsNotNone(self.order.cancelled_at)
+
+    def test_refund_is_booked_once_refunded(self):
+        from symfexit.payments.models import PaymentReversal  # noqa: PLC0415
+
+        self._webhook(_make_paid_mollie_data())
+        self._webhook(_make_paid_mollie_data(refunds=[_refund("pending")]))
+
+        self.assertFalse(PaymentReversal.objects.exists())
+        self.assertEqual(MollieReversal.objects.get().status, "pending")
+
+        self._webhook(_make_paid_mollie_data(refunds=[_refund("refunded")]))
+
+        reversal = PaymentReversal.objects.get()
+        self.assertEqual(reversal.reason, PaymentReversal.Reason.REFUND)
+        self.assertEqual(reversal.mollie_reversals.get().mollie_id, "re_1")
+        self.assertTrue(self.obligation.is_fully_paid)
+        self.assertEqual(self.bank_account.balance_cents(), 0)
+        self.order.refresh_from_db()
+        self.assertIsNone(self.order.cancelled_at)
+
+    def test_processor_refund_starts_mollie_refund(self):
+        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
+
+        self._webhook(_make_paid_mollie_data())
+        payment = Payment.objects.get()
+        instance = MollieProcessorInstance(self.mollie_settings)
+        self.assertEqual(instance.refundable_cents(payment), 1000)
+
+        api_payment = MagicMock()
+        api_payment.refunds.create.return_value = _refund("pending")
+        self.api.payments.get.return_value = api_payment
+        with patch.object(MollieSettings, "get_mollie_client", return_value=self.api):
+            instance.refund(payment)
+
+        api_payment.refunds.create.assert_called_once_with(
+            {"amount": {"currency": "EUR", "value": "10.00"}}
+        )
+        self.assertEqual(MollieReversal.objects.get().status, "pending")
+        # The pending refund already claims the money; it can't be refunded twice.
+        self.assertEqual(instance.refundable_cents(payment), 0)
+
+    def test_payment_from_member_credit_is_not_refundable_online(self):
+        from symfexit.payments.mollie.payments import MollieProcessorInstance  # noqa: PLC0415
+
+        credit_payment = Payment.objects.create(
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=Transaction.objects.create(
+                credit_account=Account.get_accounts_receivable_account()[0],
+                debit_account=self.bank_account,
+                amount_cents=1000,
+            ),
+        )
+        instance = MollieProcessorInstance(self.mollie_settings)
+        self.assertEqual(instance.refundable_cents(credit_payment), 0)
+
+    def test_sweep_catches_missed_chargeback(self):
+        from symfexit.payments.models import CancellationReason  # noqa: PLC0415
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        self._webhook(_make_paid_mollie_data())
+
+        self.api.chargebacks.list.return_value = _mollie_page([_chargeback()])
+        self.api.payments.get.return_value = _make_paid_mollie_data(chargebacks=[_chargeback()])
+        with patch.object(MollieSettings, "get_mollie_client", return_value=self.api):
+            charge_obligations()
+
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.cancellation_reason, CancellationReason.CHARGEBACK)
+
+    def test_sweep_skips_reversals_already_booked(self):
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        self._webhook(_make_paid_mollie_data())
+        self._webhook(_make_paid_mollie_data(chargebacks=[_chargeback()]))
+        self.api.payments.get.reset_mock()
+
+        self.api.chargebacks.list.return_value = _mollie_page([_chargeback()])
+        with patch.object(MollieSettings, "get_mollie_client", return_value=self.api):
+            charge_obligations()
+
+        self.api.payments.get.assert_not_called()
+
+    def test_sweep_stops_at_lookback(self):
+        from datetime import timedelta  # noqa: PLC0415
+
+        from symfexit.payments.tasks import charge_obligations  # noqa: PLC0415
+
+        self._webhook(_make_paid_mollie_data())
+        self.api.payments.get.reset_mock()
+
+        old = {**_chargeback(), "createdAt": (timezone.now() - timedelta(days=500)).isoformat()}
+        self.api.chargebacks.list.return_value = _mollie_page([old])
+        with patch.object(MollieSettings, "get_mollie_client", return_value=self.api):
+            charge_obligations()
+
+        self.api.payments.get.assert_not_called()
+
+    def test_migration_links_existing_payments(self):
+        """Rows booked before MolliePayment.payments existed get linked to
+        their receipt, not to a credit-funded Payment on the same obligation."""
+        import importlib  # noqa: PLC0415
+
+        from django.apps import apps  # noqa: PLC0415
+
+        migration = importlib.import_module(
+            "symfexit.payments.mollie.migrations.0002_molliepayment_payments_molliereversal"
+        )
+
+        credit_account = self.user.get_or_create_credit_account()
+        Payment.objects.create(
+            obligation=self.obligation,
+            paid_using=self.provider,
+            paid_at=timezone.now(),
+            transaction=Transaction.objects.create(
+                credit_account=Account.get_accounts_receivable_account()[0],
+                debit_account=credit_account,
+                amount_cents=300,
+            ),
+        )
+        # €9 against the €7 still outstanding: €7 applied, €2 surplus.
+        self._webhook(_make_paid_mollie_data(amount="9.00"))
+        receipt = set(self.mollie_payment.payments.all())
+        self.assertEqual(len(receipt), 2)
+        self.mollie_payment.payments.clear()
+
+        migration.link_payments(apps, None)
+
+        self.assertEqual(set(self.mollie_payment.payments.all()), receipt)
+
+
+class PaymentRefundAdminActionTest(_MollieReversalTestCase):
+    """Runs the refund action against the same fixtures."""
+
+    def _admin_request(self, data):
+        from django.contrib.messages.storage.fallback import FallbackStorage  # noqa: PLC0415
+
+        request = RequestFactory().post("/admin/payments/payment/", data)
+        request.user = Member.objects.create_superuser(email="admin@example.com", password="x")
+        request.session = {}
+        request._messages = FallbackStorage(request)
+        return request
+
+    def _run_action(self, data):
+        from django.contrib import admin as django_admin  # noqa: PLC0415
+
+        model_admin = django_admin.site._registry[Payment]
+        request = self._admin_request(data)
+        with patch.object(MollieSettings, "get_mollie_client", return_value=self.api):
+            return model_admin.refund_selected(request, Payment.objects.all())
+
+    def _setup_payments(self):
+        self._webhook(_make_paid_mollie_data())
+        mollie_paid = Payment.objects.get()
+        waived = Payment.objects.create(
+            obligation=self.obligation,
+            paid_using=None,
+            paid_at=timezone.now(),
+            transaction=Transaction.objects.create(
+                credit_account=Account.get_accounts_receivable_account()[0],
+                debit_account=Account.get_waived_account()[0],
+                amount_cents=500,
+            ),
+        )
+        return mollie_paid, waived
+
+    def test_confirmation_lists_refundable_and_skipped_payments(self):
+        mollie_paid, waived = self._setup_payments()
+
+        response = self._run_action({})
+
+        self.assertEqual(
+            [row["payment"] for row in response.context_data["refundable"]], [mollie_paid]
+        )
+        self.assertEqual(
+            [row["payment"] for row in response.context_data["not_refundable"]], [waived]
+        )
+        self.assertEqual(response.context_data["refundable_total"], "10.00")
+        self.api.payments.get.return_value.refunds.create.assert_not_called()
+
+    def test_confirming_starts_refunds(self):
+        self._setup_payments()
+        api_payment = MagicMock()
+        api_payment.refunds.create.return_value = _refund("pending")
+        self.api.payments.get.return_value = api_payment
+
+        response = self._run_action({"post": "yes"})
+
+        self.assertIsNone(response)
+        api_payment.refunds.create.assert_called_once()
+        self.assertEqual(MollieReversal.objects.get().status, "pending")
+
+
+@override_settings(LANGUAGE_CODE="en-US", LANGUAGES=(("en", "English"),))
+class PaymentRefundAdminPageTest(FastTenantTestCase):
+    """The refund flow through the real admin pages."""
+
+    def setUp(self):
+        super().setUp()
+        self.client = TenantClient(self.tenant)
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        provider = PaymentProvider.objects.create(name="Mollie Test", type="mollie", default=True)
+        MollieSettings.objects.create(payment_provider=provider, test_api_key="test_xxx")
+        user = Member.objects.create_user(email="page@example.com")
+        billing_address = BillingAddress.objects.create(
+            user=user,
+            name="Page User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="test-refund-page",
+            name="Refund Page Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+        self.order = product.order(for_user=user, billing_address=billing_address)
+        self.order.paid_using = provider
+        self.order.save()
+        self.obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+
+        from symfexit.payments.services import record_receipt  # noqa: PLC0415
+
+        self.payment = record_receipt(self.obligation, 1000)
+        self.mollie_payment = MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_page",
+            status="paid",
+            processed_at=timezone.now(),
+        )
+        self.mollie_payment.payments.add(self.payment)
+
+        admin_user = Member.objects.create_superuser(email="page-admin@example.com", password="x")
+        self.client.force_login(admin_user)
+
+    def test_admin_pages_render(self):
+        for url in (
+            "/admin/payments/payment/",
+            f"/admin/payments/payment/{self.payment.pk}/change/",
+            "/admin/payments/order/",
+            f"/admin/payments/order/{self.order.pk}/change/",
+            f"/admin/payments/paymentobligation/{self.obligation.pk}/change/",
+        ):
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_obligation_page_shows_pending_refund(self):
+        MollieReversal.objects.create(
+            mollie_payment=self.mollie_payment,
+            mollie_id="re_page",
+            kind=MollieReversal.Kind.REFUND,
+            amount_cents=1000,
+            status="pending",
+        )
+
+        response = self.client.get(
+            f"/admin/payments/paymentobligation/{self.obligation.pk}/change/"
+        )
+
+        self.assertContains(response, "re_page: refund of €10.00, pending")
+
+    def test_refund_action_shows_confirmation(self):
+        response = self.client.post(
+            "/admin/payments/payment/",
+            {"action": "refund_selected", "_selected_action": [self.payment.pk]},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["refundable_total"], "10.00")
+        self.assertContains(response, "10.00")
+        self.assertContains(response, 'name="post" value="yes"')

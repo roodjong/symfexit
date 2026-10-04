@@ -59,7 +59,9 @@ def _get_order_inline():
         def last_payment(self, obj):
             from django.utils.formats import date_format  # noqa: PLC0415
 
-            payment = obj.payment_set.order_by("-paid_at").first()
+            from symfexit.payments.models import Payment  # noqa: PLC0415
+
+            payment = Payment.objects.filter(obligation__order=obj).order_by("-paid_at").first()
             if payment:
                 return date_format(payment.paid_at, "DATETIME_FORMAT")
             return "-"

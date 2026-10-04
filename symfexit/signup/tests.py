@@ -221,7 +221,7 @@ class MembershipApplicationAdminTest(FastTenantTestCase):
             )
         }
 
-        self.assertEqual(totals["unpaid@example.com"], (None, None))
+        self.assertEqual(totals["unpaid@example.com"], (0, None))
         self.assertEqual(totals["paid@example.com"], (1000, Decimal("10.00")))
 
 
@@ -312,3 +312,115 @@ class CreateUserSignupOverpaymentTest(FastTenantTestCase):
 
         self.assertEqual(user.credit_balance_cents, 0)
         self.assertIsNone(user.credit_account)
+
+
+class RejectApplicationRefundTest(FastTenantTestCase):
+    def setUp(self):
+        from symfexit.payments.mollie.models import MolliePayment, MollieSettings  # noqa: PLC0415
+        from symfexit.payments.services import record_receipt  # noqa: PLC0415
+
+        super().setUp()
+        Account.get_accounts_receivable_account()
+        Account.get_bank_account()
+        Account.get_revenue_account()
+
+        self.provider = PaymentProvider.objects.create(name="Mollie", type="mollie", default=True)
+        MollieSettings.objects.create(payment_provider=self.provider, test_api_key="test_xxx")
+        product = Product.objects.create(
+            enabled=True,
+            sku="reject-product",
+            name="Reject Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+
+        self.application = MembershipApplication.objects.create(
+            first_name="Rejected",
+            last_name="Applicant",
+            email="rejected@example.com",
+            phone_number="+31600000000",
+            birth_date=date(2000, 1, 1),
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+            payment_amount_euros=Decimal("10.00"),
+        )
+        billing = BillingAddress.objects.create(
+            user=None,
+            name="Rejected Applicant",
+            email="rejected@example.com",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        self.order, self.obligation = Order.objects.create_with_obligation(
+            product=product, billing_address=billing, paid_using=self.provider
+        )
+        self.application._order = self.order
+        self.application.save(update_fields=["_order"])
+
+        self.payment = record_receipt(self.obligation, 1000)
+        MolliePayment.objects.create(
+            obligation=self.obligation,
+            mollie_payment_id="tr_signup",
+            status="paid",
+            processed_at=self.payment.created_at,
+        ).payments.add(self.payment)
+
+    def _reject(self):
+        from unittest.mock import MagicMock, patch  # noqa: PLC0415
+
+        from django.contrib.messages.storage.fallback import FallbackStorage  # noqa: PLC0415
+
+        from symfexit.payments.mollie.models import MollieSettings  # noqa: PLC0415
+
+        self.api_payment = MagicMock()
+        self.api_payment.refunds.create.return_value = {
+            "id": "re_signup",
+            "amount": {"currency": "EUR", "value": "10.00"},
+            "status": "pending",
+        }
+        client = MagicMock()
+        client.payments.get.return_value = self.api_payment
+
+        request = RequestFactory().post("/")
+        request.session = {}
+        request._messages = FallbackStorage(request)
+        model_admin = MembershipApplicationAdmin(model=MembershipApplication, admin_site=admin.site)
+        self.application.status = MembershipApplication.Status.REJECTED
+        with patch.object(MollieSettings, "get_mollie_client", return_value=client):
+            model_admin.save_model(request, self.application, form=None, change=True)
+        return [str(m) for m in request._messages]
+
+    def test_rejecting_refunds_payment_and_cancels_order(self):
+        from symfexit.payments.models import CancellationReason  # noqa: PLC0415
+        from symfexit.payments.mollie.models import MollieReversal  # noqa: PLC0415
+
+        messages = self._reject()
+
+        self.api_payment.refunds.create.assert_called_once_with(
+            {"amount": {"currency": "EUR", "value": "10.00"}}
+        )
+        self.assertEqual(MollieReversal.objects.get().status, "pending")
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.cancellation_reason, CancellationReason.SIGNUP_REJECTED)
+        self.application.refresh_from_db()
+        self.assertEqual(self.application.status, MembershipApplication.Status.REJECTED)
+        self.assertEqual(len(messages), 1)
+
+    def test_payment_that_cannot_be_refunded_online_is_reported(self):
+        Payment.objects.filter(pk=self.payment.pk).update(paid_using=None)
+
+        messages = self._reject()
+
+        self.api_payment.refunds.create.assert_not_called()
+        self.assertEqual(len(messages), 1)
+        self.order.refresh_from_db()
+        self.assertIsNotNone(self.order.cancelled_at)
+
+    def test_rejecting_without_order_does_nothing(self):
+        self.application._order = None
+        self.application.save(update_fields=["_order"])
+
+        self.assertEqual(self._reject(), [])

@@ -1,13 +1,22 @@
 import logging
+from datetime import timedelta
 
+from django.db.models import Q, Sum
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from mollie.api.client import Client
 from mollie.api.objects.customer import Customer as MollieApiCustomer
 
 from symfexit.payments.mollie.admin import MollieSettingsInline
-from symfexit.payments.mollie.models import MollieCustomer, MolliePayment, MollieSettings
-from symfexit.payments.mollie.views import _refresh_from_mollie, build_pending_url
+from symfexit.payments.mollie.models import (
+    MollieCustomer,
+    MolliePayment,
+    MollieReversal,
+    MollieSettings,
+)
+from symfexit.payments.mollie.views import _refresh_from_mollie, build_pending_url, sync_refund
 from symfexit.payments.registry import PaymentProcessor, PaymentProcessorInstance, payments_registry
 from symfexit.worker import logger as worker_logger
 
@@ -20,6 +29,10 @@ MOLLIE_NAME = "mollie"
 # charging (charge_obligations) simply continues against the new mandate;
 # record_receipt applies the cent toward the user's obligation.
 BANK_ACCOUNT_VERIFICATION_CENTS = 1
+
+# How far back to look for refunds and chargebacks. A SEPA direct debit can be
+# charged back up to 13 months later when the member says it was unauthorised.
+REVERSAL_LOOKBACK = timedelta(days=400)
 
 
 def _get_or_create_mollie_customer(client, user):
@@ -59,9 +72,10 @@ def _has_valid_mandate(mollie_customer: MollieApiCustomer):
 BANK_ACCOUNT_CHANGE_METADATA_KEY = "bank_account_change"
 
 
-def revoke_other_mandates(mollie_customer: MollieApiCustomer, keep_mandate_id: str):
+def revoke_other_mandates(mollie_customer: MollieApiCustomer, keep_mandate_id: str | None):
     """Revoke all valid or pending mandates except `keep_mandate_id`, so the
-    new mandate becomes the only one used for recurring charges."""
+    new mandate becomes the only one used for recurring charges. With None,
+    revokes them all."""
     mandates = mollie_customer.mandates.list()
     for mandate in mandates["_embedded"]["mandates"]:
         if mandate["status"] == "invalid" or mandate["id"] == keep_mandate_id:
@@ -75,6 +89,30 @@ def revoke_other_mandates(mollie_customer: MollieApiCustomer, keep_mandate_id: s
                 mollie_customer.id,
                 exc_info=True,
             )
+
+
+def _iter_since(resource, since):
+    """Walk a Mollie list endpoint (newest first) back to `since`."""
+    page = resource.list(limit=250)
+    while True:
+        items = list(page)
+        for item in items:
+            if parse_datetime(item["createdAt"]) < since:
+                return
+            yield item
+        if not items or not page.has_next():
+            return
+        page = page.get_next()
+
+
+def _needs_sync(item, reversal: MollieReversal | None) -> bool:
+    if reversal is None:
+        return True
+    if reversal.kind == MollieReversal.Kind.CHARGEBACK:
+        return reversal.processed_at is None or bool(
+            item.get("reversedAt") and reversal.chargeback_reversed_at is None
+        )
+    return reversal.processed_at is None and reversal.status != item["status"]
 
 
 def link_mollie_customer_to_user(order, user):
@@ -277,6 +315,82 @@ class MollieProcessorInstance(PaymentProcessorInstance):
                 worker_logger.log(f"MolliePayment {mollie_payment.mollie_payment_id}: ERROR")
 
         worker_logger.log(f"Refreshed {refreshed} Mollie payments, {errors} errors")
+
+        self._refresh_reversed_payments()
+
+    def _refresh_reversed_payments(self):
+        """Refunds and chargebacks land on payments that are already paid, so
+        the in-flight refresh never sees them. Mollie lists both account-wide;
+        refresh each of our payments that has one we haven't caught up on."""
+        ours = MolliePayment.objects.filter(
+            obligation__order__paid_using=self.mollie_settings.payment_provider
+        )
+        if not ours.exists():
+            # Nothing of ours to reverse (e.g. a provider that was never set up).
+            return
+
+        client = self.mollie_settings.get_mollie_client()
+        since = timezone.now() - REVERSAL_LOOKBACK
+        items = [*_iter_since(client.chargebacks, since), *_iter_since(client.refunds, since)]
+        known = MollieReversal.objects.in_bulk(
+            [item["id"] for item in items], field_name="mollie_id"
+        )
+        payment_ids = {
+            item["paymentId"] for item in items if _needs_sync(item, known.get(item["id"]))
+        }
+
+        payments = ours.filter(mollie_payment_id__in=payment_ids).select_related(
+            "obligation__order__paid_using__mollie_settings"
+        )
+
+        refreshed = 0
+        errors = 0
+
+        for mollie_payment in payments:
+            try:
+                _refresh_from_mollie(mollie_payment)
+                refreshed += 1
+            except Exception:
+                errors += 1
+                worker_logger.log(f"MolliePayment {mollie_payment.mollie_payment_id}: ERROR")
+
+        worker_logger.log(
+            f"Refreshed {refreshed} refunded or charged back Mollie payments, {errors} errors"
+        )
+
+    def refundable_cents(self, payment):
+        mollie_payment = payment.mollie_payments.first()
+        if mollie_payment is None:
+            # Not paid through Mollie, e.g. funded from member credit.
+            return 0
+        # Refunds Mollie hasn't completed yet that may still take this money:
+        # ones for this payment, and ones for the whole Mollie payment.
+        pending_cents = (
+            mollie_payment.reversals.filter(
+                Q(payment=payment) | Q(payment__isnull=True),
+                kind=MollieReversal.Kind.REFUND,
+                processed_at__isnull=True,
+            )
+            .exclude(status__in=MollieReversal.REFUND_UNSUCCESSFUL_STATUSES)
+            .aggregate(total=Sum("amount_cents"))["total"]
+            or 0
+        )
+        return max(0, payment.unreversed_cents - pending_cents)
+
+    def refund(self, payment):
+        amount_cents = self.refundable_cents(payment)
+        if amount_cents <= 0:
+            raise ValueError(f"Payment {payment.pk} has nothing left to refund through Mollie")
+
+        mollie_payment = payment.mollie_payments.get()
+        client = self.mollie_settings.get_mollie_client()
+        api_payment = client.payments.get(mollie_payment.mollie_payment_id)
+        refund = api_payment.refunds.create(
+            {"amount": {"currency": "EUR", "value": f"{amount_cents / 100:.2f}"}}
+        )
+        # Books it right away if Mollie already finished it, otherwise records
+        # it as pending until the webhook or refresh_payments sees it complete.
+        sync_refund(mollie_payment, refund, payment=payment)
 
     def charge_obligation(self, obligation):
         if obligation.is_fully_paid:
