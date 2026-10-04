@@ -234,7 +234,19 @@ class AmountChange(MembershipSelection):
         order = self.active_order
         order.set_product(product, price_euros)
         order.save()
-        messages.success(self.request, _("Your contribution amount has been updated."))
+        messages.success(
+            self.request,
+            _(
+                "Your contribution amount has been updated. "
+                "From your next payment on, you will pay €%(amount).2f every %(period)s."
+            )
+            % {
+                "amount": price_euros,
+                "period": friendly_period(
+                    order.subscription_period, order.subscription_period_unit
+                ),
+            },
+        )
         return redirect("members:memberdata")
 
 

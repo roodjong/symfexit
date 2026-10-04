@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 15:11+0200\n"
+"POT-Creation-Date: 2026-10-04 15:12+0200\n"
 "PO-Revision-Date: 2026-06-07 16:18+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -579,11 +579,16 @@ msgstr "een onbekende provider"
 msgid "You have no active subscription to adjust."
 msgstr "Je hebt geen actief abonnement om aan te passen."
 
-#: symfexit/members/views.py:237
-msgid "Your contribution amount has been updated."
-msgstr "Je bijdragebedrag is aangepast."
+#: symfexit/members/views.py:240
+#, python-format
+msgid ""
+"Your contribution amount has been updated. From your next payment on, you "
+"will pay €%(amount).2f every %(period)s."
+msgstr ""
+"Je bijdragebedrag is aangepast. Vanaf je volgende betaling betaal je €"
+"%(amount).2f per %(period)s."
 
-#: symfexit/members/views.py:254
+#: symfexit/members/views.py:266
 msgid ""
 "No membership type is configured for your account. Please contact the "
 "administrator."
@@ -591,18 +596,18 @@ msgstr ""
 "Er is geen lidmaatschapstype geconfigureerd voor je account. Neem contact op "
 "met de beheerder."
 
-#: symfexit/members/views.py:263
+#: symfexit/members/views.py:275
 msgid ""
 "Please fill in your address, city, and postal code before starting a "
 "subscription."
 msgstr ""
 "Vul je adres, woonplaats en postcode in voordat je een abonnement start."
 
-#: symfexit/members/views.py:316
+#: symfexit/members/views.py:328
 msgid "You have no active subscription to change the bank account for."
 msgstr "Je hebt geen actief abonnement om de bankrekening voor te wijzigen."
 
-#: symfexit/members/views.py:324
+#: symfexit/members/views.py:336
 msgid "Changing your bank account is not supported for your payment method."
 msgstr ""
 "Het wijzigen van je bankrekening wordt niet ondersteund voor jouw "
