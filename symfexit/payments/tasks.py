@@ -1,7 +1,12 @@
 import zoneinfo
 from datetime import date, datetime, time
 
-from symfexit.payments.models import Order, PaymentObligation, _tenant_payments_timezone
+from symfexit.payments.models import (
+    Order,
+    PaymentObligation,
+    PaymentProvider,
+    _tenant_payments_timezone,
+)
 from symfexit.payments.registry import payments_registry
 from symfexit.worker import logger
 from symfexit.worker.registry import task_registry
@@ -55,6 +60,18 @@ def gen_obligations(now=None):
     logger.log(f"Processed {created} orders, {errors} errors")
 
 
+def _refresh_payments():
+    # Even disabled providers: debits started before disabling can still complete.
+    for provider in PaymentProvider.objects.all():
+        processor = payments_registry.get(provider.type)
+        if processor is None:
+            continue
+        try:
+            processor.get_instance(provider).refresh_payments()
+        except Exception:
+            logger.log(f"Provider {provider.id}: ERROR refreshing payments")
+
+
 @task_registry.register("charge_obligations")
 def charge_obligations(now=None):
     """Charge every outstanding payment obligation whose period has started.
@@ -66,6 +83,11 @@ def charge_obligations(now=None):
     """
     timezone_name = _tenant_payments_timezone()
     now = _normalize_now(now, timezone_name)
+
+    # Payments still in progress may be out of date if webhooks were missed;
+    # refresh them first so we neither charge for something already paid nor
+    # stay blocked on a debit that has since failed.
+    _refresh_payments()
 
     # Note: no payment__isnull=True filter — an obligation can have a credit-funded
     # Payment that still leaves an outstanding amount, which we want to charge here.

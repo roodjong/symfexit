@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 13:43+0200\n"
+"POT-Creation-Date: 2026-10-04 19:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +17,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/signup/admin.py:47
+#: symfexit/signup/admin.py:56
 msgid "Paid"
 msgstr "Heeft betaald"
+
+#: symfexit/signup/admin.py:165
+#, python-format
+msgid "Started a refund of %(count)d payment for this application."
+msgid_plural "Started refunds of %(count)d payments for this application."
+msgstr[0] "Terugbetaling van %(count)d betaling voor deze aanmelding gestart."
+msgstr[1] ""
+"Terugbetalingen van %(count)d betalingen voor deze aanmelding gestart."
+
+#: symfexit/signup/admin.py:174
+#, python-format
+msgid "%(payment)s was not refunded: %(reason)s. Settle it by hand."
+msgstr "%(payment)s is niet terugbetaald: %(reason)s. Handel dit handmatig af."
 
 #: symfexit/signup/apps.py:8
 msgid "Signup"
@@ -107,97 +120,101 @@ msgstr "Ongeldige keuze."
 msgid "This choice does not belong to the selected type."
 msgstr "Deze keuze hoort niet bij het geselecteerde type."
 
-#: symfexit/signup/models.py:26
+#: symfexit/signup/models.py:30
 msgid "Created"
 msgstr "Aangemaakt"
 
-#: symfexit/signup/models.py:27
+#: symfexit/signup/models.py:31
 msgid "Accepted"
 msgstr "Geaccepteerd"
 
-#: symfexit/signup/models.py:28
+#: symfexit/signup/models.py:32
 msgid "Rejected"
 msgstr "Afgewezen"
 
-#: symfexit/signup/models.py:31
+#: symfexit/signup/models.py:35
 msgid "first name"
 msgstr "voornaam"
 
-#: symfexit/signup/models.py:32
+#: symfexit/signup/models.py:36
 msgid "last name"
 msgstr "achternaam"
 
-#: symfexit/signup/models.py:33
+#: symfexit/signup/models.py:37
 msgid "email address"
 msgstr "emailadres"
 
-#: symfexit/signup/models.py:34
+#: symfexit/signup/models.py:38
 msgid "phone number"
 msgstr "telefoonnummer"
 
-#: symfexit/signup/models.py:35
+#: symfexit/signup/models.py:39
 msgid "date of birth"
 msgstr "geboortedatum"
 
-#: symfexit/signup/models.py:36
+#: symfexit/signup/models.py:40
 msgid "address"
 msgstr "adres"
 
-#: symfexit/signup/models.py:37
+#: symfexit/signup/models.py:41
 msgid "city"
 msgstr "plaats"
 
-#: symfexit/signup/models.py:38
+#: symfexit/signup/models.py:42
 msgid "postal code"
 msgstr "postcode"
 
-#: symfexit/signup/models.py:43
+#: symfexit/signup/models.py:47
 msgid "preferred group"
 msgstr "voorkeursgroep"
 
-#: symfexit/signup/models.py:47
+#: symfexit/signup/models.py:51
 msgid "payment amount"
 msgstr "betalingsbedrag"
 
-#: symfexit/signup/models.py:54
+#: symfexit/signup/models.py:58
 msgid "membership type"
 msgstr "lidmaatschapstype"
 
-#: symfexit/signup/models.py:61
+#: symfexit/signup/models.py:65
 msgid "membership tier"
 msgstr "lidmaatschapsschijf"
 
-#: symfexit/signup/models.py:65
+#: symfexit/signup/models.py:69
 msgid "status"
 msgstr "status"
 
-#: symfexit/signup/models.py:67
+#: symfexit/signup/models.py:71
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/signup/models.py:74
+#: symfexit/signup/models.py:78
 msgid "subscription order"
 msgstr "abbonnementsbestelling"
 
-#: symfexit/signup/models.py:77
+#: symfexit/signup/models.py:81
 msgid "created at"
 msgstr "gemaakt op"
 
-#: symfexit/signup/models.py:78
+#: symfexit/signup/models.py:82
 msgid "updated at"
 msgstr "geüpdatet op"
 
-#: symfexit/signup/models.py:81
+#: symfexit/signup/models.py:85
 msgid "membership application"
 msgstr "lidmaatschap aanmelding"
 
-#: symfexit/signup/models.py:82
+#: symfexit/signup/models.py:86
 msgid "membership applications"
 msgstr "lidmaatschap aanmeldingen"
 
-#: symfexit/signup/models.py:94
+#: symfexit/signup/models.py:98
 msgid "external identifier"
 msgstr "externe identifier"
+
+#: symfexit/signup/models.py:212
+msgid "the refund failed"
+msgstr "de terugbetaling is mislukt"
 
 #: symfexit/signup/templates/signup/admin/change_form.html:8
 msgid "Resend accepted email"

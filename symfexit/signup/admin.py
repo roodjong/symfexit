@@ -2,15 +2,17 @@ from django.contrib import admin, messages
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import F, IntegerField, OuterRef, Subquery, Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 from symfexit.emails._templates.emails.signup_accepted import SignupAcceptedEmail
 from symfexit.emails._templates.render import send_email
-from symfexit.payments.models import Payment
+from symfexit.payments.models import Payment, PaymentReversal
 from symfexit.signup.models import DuplicateEmailError, MembershipApplication
 
 
@@ -29,24 +31,31 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
     change_form_template = "signup/admin/change_form.html"
 
     def get_queryset(self, request):
-        payment_total = Payment.objects.filter(obligation__order=OuterRef("_order"))
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(
-                payment_total=Subquery(
-                    payment_total.values("obligation__order")
+        def total_for_order(model):
+            return Coalesce(
+                Subquery(
+                    model.objects.filter(obligation__order=OuterRef("_order"))
+                    .values("obligation__order")
                     .annotate(total=Sum("transaction__amount_cents"))
                     .values("total"),
                     output_field=IntegerField(),
                 ),
+                0,
+            )
+
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                # Refunds and chargebacks give money back, so they don't count.
+                payment_total=total_for_order(Payment) - total_for_order(PaymentReversal),
                 order_price=F("_order__product_price_euros"),
             )
         )
 
     @admin.display(description=_("Paid"), boolean=True)
     def payment_status(self, obj):
-        return obj.payment_total is not None and obj.payment_total >= obj.order_price * 100
+        return obj.order_price is not None and obj.payment_total >= obj.order_price * 100
 
     def changelist_view(self, request, extra_context=None):
         # Set default filter to status=created only on true initial page load
@@ -130,6 +139,10 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             return super().save_model(request, obj, form, change)
+        if obj.status == MembershipApplication.Status.REJECTED:
+            super().save_model(request, obj, form, change)
+            self.refund_rejected(request, obj)
+            return
         if obj.status == MembershipApplication.Status.ACCEPTED:
             try:
                 obj.user = obj.create_user()
@@ -142,6 +155,25 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
                 return
             self.send_signup_accepted_email(request, obj)
         return super().save_model(request, obj, form, change)
+
+    def refund_rejected(self, request, obj):
+        refunded, not_refunded = obj.cancel_order_and_refund()
+        if refunded:
+            messages.success(
+                request,
+                ngettext(
+                    "Started a refund of %(count)d payment for this application.",
+                    "Started refunds of %(count)d payments for this application.",
+                    len(refunded),
+                )
+                % {"count": len(refunded)},
+            )
+        for payment, reason in not_refunded:
+            messages.warning(
+                request,
+                _("%(payment)s was not refunded: %(reason)s. Settle it by hand.")
+                % {"payment": payment, "reason": reason},
+            )
 
     def send_signup_accepted_email(self, request, obj):
         current_site = get_current_site(request)
