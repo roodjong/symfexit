@@ -229,14 +229,14 @@ wheels = [
 
 [[package]]
 name = "django-tenants"
-version = "4.0.0"
+version = "4.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/01/1c/a4c3f3eeec5e803f8b4ee9994e42b7ffddb2cea0db4d9b3db304336f095f/django_tenants-4.0.0.tar.gz", hash = "sha256:7fab6fb4dbed32cde1d6232075152b899b9574fa575ebc3da5e994a62071a034", size = 180299, upload-time = "2026-10-09T13:19:45.963Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/d5/7f1b0bb15d0a5858f4a758be63ec4f6f7a2901b84ba580b2f67f8337228e/django_tenants-4.0.1.tar.gz", hash = "sha256:769a0934507305c55b7b6e49b788df6627dcc546d7f4e187812285bad1c6270b", size = 180774, upload-time = "2026-10-23T22:17:21.524Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0f/e6/7901f88dfb26cb777fb523e6230c3be7778956029c8e89ce329ef148569f/django_tenants-4.0.0-py3-none-any.whl", hash = "sha256:f5422675dd814a7df362c1aab087dadb6f7481275743889295c8eccc2b24bbe3", size = 136327, upload-time = "2026-10-09T13:19:44.408Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/69/9b0935d7555abf67b9984a9bdf3dd132edba407638daf6f2a0cb4d737991/django_tenants-4.0.1-py3-none-any.whl", hash = "sha256:b9bd2ce240e71e58e47981288807d5e449c6a3624685dfe20afa819341f7ad5c", size = 137013, upload-time = "2026-10-23T22:17:19.984Z" },
 ]
 
 [[package]]
