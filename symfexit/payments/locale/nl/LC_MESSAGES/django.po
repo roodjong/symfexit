@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 15:38+0200\n"
+"POT-Creation-Date: 2026-10-04 19:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,41 +17,79 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: symfexit/payments/admin.py:186
+#: symfexit/payments/admin.py:176
 msgid "Paid payment obligation"
 msgstr "Betaalde betalingsverplichting"
 
-#: symfexit/payments/admin.py:187
+#: symfexit/payments/admin.py:177
 msgid "Paid payment obligations"
 msgstr "Betaalde betalingsverplichtingen"
 
-#: symfexit/payments/admin.py:241
+#: symfexit/payments/admin.py:229
 msgid "status"
 msgstr "status"
 
-#: symfexit/payments/admin.py:245
+#: symfexit/payments/admin.py:233
 msgid "Active"
 msgstr "Actief"
 
-#: symfexit/payments/admin.py:245
+#: symfexit/payments/admin.py:233
 msgid "Cancelled"
 msgstr "Geannuleerd"
 
-#: symfexit/payments/admin.py:245
+#: symfexit/payments/admin.py:233
 msgid "All"
 msgstr "Alle"
 
-#: symfexit/payments/admin.py:402
+#: symfexit/payments/admin.py:397
 msgid "User has not setup full address yet"
 msgstr "Gebruiker heeft nog geen volledig adres ingesteld"
 
-#: symfexit/payments/admin.py:455
+#: symfexit/payments/admin.py:445
+msgid "Refunds and chargebacks"
+msgstr "Terugbetalingen en stornering"
+
+#: symfexit/payments/admin.py:461 symfexit/payments/admin.py:593
 msgid "amount"
 msgstr "bedrag"
 
-#: symfexit/payments/admin.py:461
+#: symfexit/payments/admin.py:467
 msgid "remaining amount"
 msgstr "resterend bedrag"
+
+#: symfexit/payments/admin.py:586
+msgid "member"
+msgstr "lid"
+
+#: symfexit/payments/admin.py:597
+msgid "refunded"
+msgstr "terugbetaald"
+
+#: symfexit/payments/admin.py:602
+msgid "Refund selected payments"
+msgstr "Geselecteerde betalingen terugbetalen"
+
+#: symfexit/payments/admin.py:627
+#, python-format
+msgid "Refunding %(payment)s failed."
+msgstr "Terugbetalen van %(payment)s is mislukt."
+
+#: symfexit/payments/admin.py:634
+#, python-format
+msgid "Started %(count)d refund. It is booked once the provider completes it."
+msgid_plural ""
+"Started %(count)d refunds. They are booked once the provider completes them."
+msgstr[0] ""
+"%(count)d terugbetaling gestart. Deze wordt geboekt zodra de provider hem "
+"heeft afgerond."
+msgstr[1] ""
+"%(count)d terugbetalingen gestart. Deze worden geboekt zodra de provider ze "
+"heeft afgerond."
+
+#: symfexit/payments/admin.py:649
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:17
+msgid "Refund payments"
+msgstr "Betalingen terugbetalen"
 
 #: symfexit/payments/apps.py:28
 msgid "Payments"
@@ -74,55 +112,55 @@ msgstr " Nepbetaling doen voor EUR %(price)s. "
 msgid "Fake pay"
 msgstr "Nepbetaling doen"
 
-#: symfexit/payments/models.py:72
+#: symfexit/payments/models.py:73
 msgid "Day"
 msgstr "Dag"
 
-#: symfexit/payments/models.py:73
+#: symfexit/payments/models.py:74
 msgid "Week"
 msgstr "Week"
 
-#: symfexit/payments/models.py:74
+#: symfexit/payments/models.py:75
 msgid "Month"
 msgstr "Maand"
 
-#: symfexit/payments/models.py:75
+#: symfexit/payments/models.py:76
 msgid "Year"
 msgstr "Jaar"
 
-#: symfexit/payments/models.py:80
+#: symfexit/payments/models.py:81
 msgid "user"
 msgstr "gebruiker"
 
-#: symfexit/payments/models.py:81
+#: symfexit/payments/models.py:82
 msgid "name"
 msgstr "naam"
 
-#: symfexit/payments/models.py:82
+#: symfexit/payments/models.py:83
 msgid "email address"
 msgstr "e-mailadres"
 
-#: symfexit/payments/models.py:83
+#: symfexit/payments/models.py:84
 msgid "address"
 msgstr "adres"
 
-#: symfexit/payments/models.py:84
+#: symfexit/payments/models.py:85
 msgid "city"
 msgstr "stad"
 
-#: symfexit/payments/models.py:85
+#: symfexit/payments/models.py:86
 msgid "postal code"
 msgstr "postcode"
 
-#: symfexit/payments/models.py:89
+#: symfexit/payments/models.py:90
 msgid "billing address"
 msgstr "Factuuradres"
 
-#: symfexit/payments/models.py:90
+#: symfexit/payments/models.py:91
 msgid "billing addresses"
 msgstr "factuuradressen"
 
-#: symfexit/payments/models.py:160 symfexit/payments/models.py:194
+#: symfexit/payments/models.py:161 symfexit/payments/models.py:195
 msgid ""
 "Assets and expenses are increased with debits, decreased with credits. "
 "Liabilities, equity, and income are increased with credits, decreased with "
@@ -134,15 +172,15 @@ msgstr ""
 "rekening toeneemt met credit. Dit zorgt ervoor dat het saldo correct wordt "
 "weergegeven."
 
-#: symfexit/payments/models.py:165
+#: symfexit/payments/models.py:166
 msgid "general ledger"
 msgstr "grootboek"
 
-#: symfexit/payments/models.py:220
+#: symfexit/payments/models.py:221
 msgid "Accounts Receivable"
 msgstr "Debiteuren"
 
-#: symfexit/payments/models.py:222
+#: symfexit/payments/models.py:223
 #, python-brace-format
 msgid ""
 "Accounts receivable represents money owed by entities to the firm on the "
@@ -153,11 +191,11 @@ msgstr ""
 "organisatie voor de verkoop van producten of diensten op krediet. In RGS is "
 "dit gekoppeld aan BVorDebHad (13011). Zie: {rgs_url}"
 
-#: symfexit/payments/models.py:240
+#: symfexit/payments/models.py:241
 msgid "Revenue"
 msgstr "Omzet"
 
-#: symfexit/payments/models.py:242
+#: symfexit/payments/models.py:243
 #, python-brace-format
 msgid ""
 "Membership revenue balance account. In RGS this is mapped to WLbeLbvLbv "
@@ -166,11 +204,11 @@ msgstr ""
 "Balansrekening voor lidmaatschapsomzet. In RGS is dit gekoppeld aan "
 "WLbeLbvLbv (82811). Zie: {rgs_url}"
 
-#: symfexit/payments/models.py:260
+#: symfexit/payments/models.py:261
 msgid "Waived Payments"
 msgstr "Kwijtgescholden betalingen"
 
-#: symfexit/payments/models.py:262
+#: symfexit/payments/models.py:263
 #, python-brace-format
 msgid ""
 "Expense account for waived (forgiven) payment obligations. When a payment is "
@@ -181,11 +219,11 @@ msgstr ""
 "Wanneer een betaling wordt kwijtgescholden, wordt de schuld afgeboekt tegen "
 "deze rekening. In RGS is dit gekoppeld aan WBedVkkAdd (45661). Zie: {rgs_url}"
 
-#: symfexit/payments/models.py:281
+#: symfexit/payments/models.py:282
 msgid "Bank"
 msgstr "Bank"
 
-#: symfexit/payments/models.py:283
+#: symfexit/payments/models.py:284
 #, python-brace-format
 msgid ""
 "Bank account (rekening-courant). In RGS this is mapped to BLimBanRba "
@@ -194,41 +232,61 @@ msgstr ""
 "Bankrekening (rekening-courant). In RGS is dit gekoppeld aan BLimBanRba "
 "(10201). Zie: {rgs_url}"
 
-#: symfexit/payments/models.py:315
+#: symfexit/payments/models.py:316
 msgid "Subscription"
 msgstr "Abonnement"
 
-#: symfexit/payments/models.py:319
+#: symfexit/payments/models.py:320
 msgid "enabled"
 msgstr "ingeschakeld"
 
-#: symfexit/payments/models.py:320 symfexit/payments/models.py:398
+#: symfexit/payments/models.py:321 symfexit/payments/models.py:404
 msgid "product sku"
 msgstr "product-SKU"
 
-#: symfexit/payments/models.py:321 symfexit/payments/models.py:399
+#: symfexit/payments/models.py:322 symfexit/payments/models.py:405
 msgid "product name"
 msgstr "productnaam"
 
-#: symfexit/payments/models.py:325
+#: symfexit/payments/models.py:326
 msgid "created at"
 msgstr "gemaakt op"
 
-#: symfexit/payments/models.py:326
+#: symfexit/payments/models.py:327
 msgid "updated at"
 msgstr "bijgewerkt op"
 
-#: symfexit/payments/models.py:354 symfexit/payments/models.py:405
+#: symfexit/payments/models.py:355 symfexit/payments/models.py:411
 msgid "How many of the period unit before the subscription repeats."
 msgstr "Hoeveel periode-eenheden voordat het abonnement herhaalt."
 
-#: symfexit/payments/models.py:412
+#: symfexit/payments/models.py:395 symfexit/payments/models.py:695
+msgid "Chargeback"
+msgstr "Stornering"
+
+#: symfexit/payments/models.py:396
+msgid "Membership application rejected"
+msgstr "Aanmelding afgewezen"
+
+#: symfexit/payments/models.py:418
 msgid "cancelled at"
 msgstr "geannuleerd op"
 
-#: symfexit/payments/models.py:592
+#: symfexit/payments/models.py:421
+msgid "cancellation reason"
+msgstr "reden van annulering"
+
+#: symfexit/payments/models.py:635
 msgid "external identifier"
 msgstr "externe identifier"
+
+#: symfexit/payments/models.py:694
+msgid "Refund"
+msgstr "Terugbetaling"
+
+#: symfexit/payments/models.py:700
+msgid "reason"
+msgstr "reden"
 
 #: symfexit/payments/mollie/templates/payments_mollie/pending.html:4
 msgid "Processing payment"
@@ -252,6 +310,19 @@ msgstr "Het duurt wat langer dan verwacht. Toch door aan het gaan..."
 #: symfexit/payments/mollie/templates/payments_mollie/pending.html:24
 msgid "Continue"
 msgstr "Doorgaan"
+
+#: symfexit/payments/services.py:292
+msgid "not paid through a payment provider"
+msgstr "niet betaald via een betaalprovider"
+
+#: symfexit/payments/services.py:294
+msgid "already refunded or charged back"
+msgstr "al terugbetaald of gestorneerd"
+
+#: symfexit/payments/services.py:301
+#, python-format
+msgid "can't be refunded online through %(provider)s"
+msgstr "kan niet online worden terugbetaald via %(provider)s"
 
 #: symfexit/payments/templates/admin/payments/order/submit_line.html:5
 msgid "Save"
@@ -282,6 +353,7 @@ msgid "Cancel Order"
 msgstr "Bestelling annuleren"
 
 #: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:14
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:14
 msgid "Home"
 msgstr "Home"
 
@@ -312,5 +384,40 @@ msgid "Yes, I'm sure"
 msgstr "Ja, ik weet het zeker"
 
 #: symfexit/payments/templates/admin/payments/order_cancel_confirm.html:37
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:54
 msgid "No, take me back"
 msgstr "Nee, breng me terug"
+
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:23
+#, python-format
+msgid "This payment will be refunded online, €%(total)s in total:"
+msgid_plural ""
+"These %(counter)s payments will be refunded online, €%(total)s in total:"
+msgstr[0] "Deze betaling wordt online terugbetaald, in totaal €%(total)s:"
+msgstr[1] ""
+"Deze %(counter)s betalingen worden online terugbetaald, in totaal €%(total)s:"
+
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:29
+msgid ""
+"The money goes back to the payer and the obligations they paid are waived. "
+"Subscriptions keep running. This cannot be undone."
+msgstr ""
+"Het geld gaat terug naar de betaler en de betalingsverplichtingen die ermee "
+"betaald zijn worden kwijtgescholden. Abonnementen lopen gewoon door. Dit kan "
+"niet ongedaan worden gemaakt."
+
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:31
+msgid "None of the selected payments can be refunded online."
+msgstr "Geen van de geselecteerde betalingen kan online worden terugbetaald."
+
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:35
+msgid "Cannot be refunded online"
+msgstr "Kan niet online worden terugbetaald"
+
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:36
+msgid "These payments will be skipped:"
+msgstr "Deze betalingen worden overgeslagen:"
+
+#: symfexit/payments/templates/admin/payments/payment/refund_confirmation.html:52
+msgid "Yes, refund them"
+msgstr "Ja, terugbetalen"

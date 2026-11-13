@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, models
@@ -11,6 +13,8 @@ from symfexit.payments.models import (
     Order,
     PaymentProvider,
 )
+
+logger = logging.getLogger(__name__)
 
 hashids = Hashids(salt=settings.SECRET_KEY, min_length=8)
 
@@ -173,3 +177,39 @@ class MembershipApplication(models.Model):
         from symfexit.payments.services import reconcile_signup_overpayment_to_user  # noqa: PLC0415
 
         reconcile_signup_overpayment_to_user(self._order, user)
+
+    def cancel_order_and_refund(self):
+        """For a rejected application: stop its order and refund what was paid.
+
+        Returns (refunded, not_refunded): the payments a refund was started for,
+        and (payment, reason) pairs for the ones that couldn't be refunded
+        online, which an admin has to settle by hand.
+        """
+        from symfexit.payments.models import CancellationReason, Payment  # noqa: PLC0415
+        from symfexit.payments.services import get_refund_option  # noqa: PLC0415
+
+        refunded = []
+        not_refunded = []
+        if self._order is None:
+            return refunded, not_refunded
+
+        if self._order.cancelled_at is None:
+            self._order.cancel(reason=CancellationReason.SIGNUP_REJECTED)
+
+        for payment in Payment.objects.filter(obligation__order=self._order):
+            if payment.unreversed_cents <= 0:
+                continue
+            instance, cents_or_reason = get_refund_option(payment)
+            if instance is None:
+                not_refunded.append((payment, cents_or_reason))
+                continue
+            try:
+                instance.refund(payment)
+            except Exception:
+                logger.exception(
+                    "Refund of payment %s for application %s failed", payment.pk, self.pk
+                )
+                not_refunded.append((payment, _("the refund failed")))
+                continue
+            refunded.append(payment)
+        return refunded, not_refunded

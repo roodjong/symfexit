@@ -16,8 +16,12 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 
 from symfexit.payments.models import PaymentObligation, hashids
-from symfexit.payments.mollie.models import MolliePayment
-from symfexit.payments.services import record_receipt
+from symfexit.payments.mollie.models import MollieCustomer, MolliePayment, MollieReversal
+from symfexit.payments.services import (
+    record_chargeback,
+    record_receipt_payments,
+    record_refund,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,14 +61,15 @@ def _refresh_from_mollie(mollie_payment: MolliePayment) -> None:
     mollie_payment.save(update_fields=["status"])
 
     if mollie_data.is_paid():
-        amount_cents = int(Decimal(mollie_data["amount"]["value"]) * 100)
-        newly_processed = _record_receipt(mollie_payment, amount_cents)
+        newly_processed = _record_receipt(mollie_payment, _cents(mollie_data["amount"]))
         if newly_processed:
             _finish_bank_account_change(client, mollie_payment, mollie_data)
+        _sync_reversals(mollie_payment, mollie_data)
     # A `canceled` Mollie status only means this checkout attempt was
     # abandoned — the obligation stays outstanding so the user can retry
     # (or `charge_obligations` can re-attempt once a mandate exists).
-    # Subscription-level cancellation goes through Order.cancel() in admin.
+    # Subscription-level cancellation goes through Order.cancel(), from the
+    # admin or from a chargeback (see sync_chargeback).
 
 
 @csrf_exempt
@@ -128,6 +133,10 @@ def payment_pending_status(request, obligation_eid):
     return JsonResponse({"done": latest.status != "open"})
 
 
+def _cents(amount) -> int:
+    return int(Decimal(amount["value"]) * 100)
+
+
 def _finish_bank_account_change(client, mollie_payment: MolliePayment, mollie_data) -> None:
     """Once the "first" payment of a bank account change is paid, revoke the
     old mandates so recurring charges use the newly created one. Done here
@@ -163,7 +172,119 @@ def _record_receipt(mollie_payment: MolliePayment, amount_cents: int) -> bool:
         mp = MolliePayment.objects.select_for_update().get(pk=mollie_payment.pk)
         if mp.processed_at is not None:
             return False
-        record_receipt(mp.obligation, amount_cents)
+        payments = record_receipt_payments(mp.obligation, amount_cents)
         mp.processed_at = timezone.now()
         mp.save(update_fields=["processed_at"])
+        mp.payments.add(*payments)
     return True
+
+
+def _sync_reversals(mollie_payment: MolliePayment, mollie_data) -> None:
+    """Book refunds and chargebacks Mollie has on a paid payment. Its status
+    stays `paid` through both, so they only show up in these sub-lists."""
+    if mollie_data.has_chargebacks():
+        for chargeback in mollie_data.chargebacks.list():
+            sync_chargeback(mollie_payment, chargeback)
+
+    if mollie_data.has_refunds():
+        for refund in mollie_data.refunds.list():
+            sync_refund(mollie_payment, refund)
+
+
+def _payments_to_reverse(mollie_payment: MolliePayment, reversal: MollieReversal):
+    """A refund started from the admin targets one Payment. Anything else
+    undoes the receipt in the order it was booked: the part applied to the
+    obligation first, then any surplus that went to member credit."""
+    if reversal.payment_id is not None:
+        return [reversal.payment]
+    return list(mollie_payment.payments.select_related("transaction").order_by("pk"))
+
+
+def sync_chargeback(mollie_payment: MolliePayment, chargeback) -> None:
+    reversal, _ = MollieReversal.objects.get_or_create(
+        mollie_id=chargeback["id"],
+        defaults={
+            "mollie_payment": mollie_payment,
+            "kind": MollieReversal.Kind.CHARGEBACK,
+            "amount_cents": _cents(chargeback["amount"]),
+        },
+    )
+
+    newly_booked = False
+    with transaction.atomic():
+        reversal = MollieReversal.objects.select_for_update().get(pk=reversal.pk)
+        if reversal.processed_at is None:
+            payment_reversals = record_chargeback(
+                mollie_payment.obligation,
+                _payments_to_reverse(mollie_payment, reversal),
+                reversal.amount_cents,
+            )
+            reversal.payment_reversals.set(payment_reversals)
+            reversal.processed_at = timezone.now()
+            newly_booked = True
+        if chargeback.get("reversedAt") and reversal.chargeback_reversed_at is None:
+            # The bank undid the chargeback, so we have the money again. The
+            # subscription stays cancelled; restarting it is up to an admin.
+            mollie_payment.payments.add(
+                *record_receipt_payments(mollie_payment.obligation, reversal.amount_cents)
+            )
+            reversal.chargeback_reversed_at = timezone.now()
+        reversal.save(update_fields=["processed_at", "chargeback_reversed_at"])
+
+    if newly_booked:
+        _revoke_mandates(mollie_payment)
+
+
+def sync_refund(mollie_payment: MolliePayment, refund, payment=None) -> None:
+    """`payment` is the Payment an admin chose to refund, if any."""
+    reversal, _ = MollieReversal.objects.get_or_create(
+        mollie_id=refund["id"],
+        defaults={
+            "mollie_payment": mollie_payment,
+            "kind": MollieReversal.Kind.REFUND,
+            "amount_cents": _cents(refund["amount"]),
+            "status": refund["status"],
+            "payment": payment,
+        },
+    )
+
+    with transaction.atomic():
+        reversal = MollieReversal.objects.select_for_update().get(pk=reversal.pk)
+        reversal.status = refund["status"]
+        # Only book once the money has actually gone back: a refund that is
+        # still queued can fail or be canceled.
+        if reversal.status == "refunded" and reversal.processed_at is None:
+            payment_reversals = record_refund(
+                mollie_payment.obligation,
+                _payments_to_reverse(mollie_payment, reversal),
+                reversal.amount_cents,
+            )
+            reversal.payment_reversals.set(payment_reversals)
+            reversal.processed_at = timezone.now()
+        reversal.save(update_fields=["status", "processed_at"])
+
+
+def _revoke_mandates(mollie_payment: MolliePayment) -> None:
+    """After a chargeback the member has to go through a new first payment to
+    start again, so no mandate may be left that would let us charge them
+    without one."""
+    from symfexit.payments.mollie.payments import revoke_other_mandates  # noqa: PLC0415
+
+    customer_id = mollie_payment.mollie_customer_id
+    if not customer_id:
+        user = mollie_payment.obligation.order.ordered_for
+        mollie_customer = MollieCustomer.objects.filter(user=user).first() if user else None
+        if mollie_customer is None:
+            return
+        customer_id = mollie_customer.mollie_customer_id
+
+    mollie_settings = mollie_payment.obligation.order.paid_using.mollie_settings
+    client = mollie_settings.get_mollie_client()
+    try:
+        customer = client.customers.get(customer_id)
+    except Exception:
+        # The chargeback is booked and the order cancelled either way; a
+        # leftover mandate only matters if this member signs up again.
+        logger.exception("Failed to look up Mollie customer %s to revoke mandates", customer_id)
+        return
+    revoke_other_mandates(customer, keep_mandate_id=None)

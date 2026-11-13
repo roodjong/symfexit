@@ -113,7 +113,33 @@ journal entry:
 | Receipt recorded (`record_receipt`) | Bank (or provider's `credit_to_account`) | Accounts Receivable | Money in, debt down |
 | Overpayment surplus | Bank | Member credit | Bank the extra as member credit |
 | Signup overpayment reconciled | Accounts Receivable | Member credit | Move a signup surplus onto the new user once created |
-| Obligation waived | Waived Payments | Accounts Receivable | Write off the debt as an expense |
+| Obligation waived (`waive_obligation`) | Waived Payments | Accounts Receivable | Write off the debt as an expense |
+| Receipt reversed (`record_reversal`) | Accounts Receivable | Bank (or provider's `credit_to_account`) | Money went back to the payer; the obligation is outstanding again |
+| Reversal beyond the payment | Member credit | Bank | The part of a reversal that `record_receipt` had banked as credit |
+
+### Refunds and chargebacks
+
+Both undo a receipt with a `PaymentReversal`, so `outstanding_cents` is the
+obligation amount minus its payments plus its reversals. What happens next
+differs:
+
+- **Refund** (`record_refund`) — our choice to give the money back, so the member
+  no longer owes it: the re-opened amount is waived straight away and the
+  subscription keeps running. Admins start refunds from the Payments list with
+  the "Refund selected payments" action; refunds made in the provider's own
+  dashboard are booked the same way.
+- **Chargeback** (`record_chargeback`) — the member pulled the money back. The
+  obligation stays outstanding and the order is cancelled with
+  `cancellation_reason = "chargeback"`, visible in the Orders admin. Restarting
+  takes a new order with a new first payment; Mollie also revokes the member's
+  mandates so it can't skip the checkout.
+- **Rejected signup** — rejecting a membership application in the admin cancels
+  its order (`cancellation_reason = "signup_rejected"`) and starts refunds for
+  its payments, which are then booked as refunds above. Payments that can't be
+  refunded online are reported to the admin to settle by hand.
+
+Use `PaymentObligation.objects.paid()` / `.unpaid()` to filter on paid status;
+they apply the same sum in SQL. "Has a `Payment`" does not mean paid.
 
 Concurrency is handled with `select_for_update()` row locks (on the obligation in
 `record_receipt`, on the user in `apply_member_credit`) so racing webhooks, cron
@@ -140,6 +166,9 @@ Two worker tasks in [tasks.py](tasks.py) keep subscriptions running:
   supports it, calls `charge_obligation()` to attempt an automatic recurring
   charge. It intentionally does not skip obligations that already have a
   credit-funded payment, since those can still have an outstanding remainder.
+  Before charging, it calls each provider's `refresh_payments()` so payments
+  still in progress (including signups), and refunds and chargebacks on paid
+  ones, catch up on any missed webhooks.
 
 ## Where things happen (developer map)
 
@@ -154,7 +183,8 @@ point at the exact call sites.
 | --- | --- | --- |
 | Member starts a subscription (HTTP) | `_start_payment` — [members/views.py](../members/views.py) | Creates the order + first obligation, then starts the payment flow |
 | Signup checkout (HTTP) | `member_signup_pay` — [signup/views.py](../signup/views.py); order made in `get_or_create_order` — [signup/models.py](../signup/models.py) | Same, but for a user that doesn't exist yet |
-| Mollie webhook (HTTP, provider callback) | `mollie_webhook` — [mollie/views.py](mollie/views.py) | Records the receipt on a successful payment |
+| Mollie webhook (HTTP, provider callback) | `mollie_webhook` — [mollie/views.py](mollie/views.py) | Records the receipt on a successful payment, and any refunds or chargebacks on it |
+| Admin refund action | `refund_selected` — [admin.py](admin.py) | Starts online refunds through the payment's provider |
 | Dummy pay page (dev only) | `initiate_dummy` — [dummy/views.py](dummy/views.py) | Books a fake receipt for local testing |
 | `gen_obligations` (worker/cron task) | [tasks.py](tasks.py) | Creates the next period's obligation for every active order |
 | `charge_obligations` (worker/cron task) | [tasks.py](tasks.py) | Auto-charges outstanding obligations via saved mandates |
@@ -165,7 +195,8 @@ point at the exact call sites.
 - **`Transaction` (a ledger entry)** — created in exactly three places, and each
   one always books a *balanced* debit + credit:
   - [services.py](services.py) — `record_receipt`, `apply_member_credit`,
-    `reconcile_signup_overpayment_to_user`. This is the canonical path.
+    `reconcile_signup_overpayment_to_user`, `record_reversal`,
+    `waive_obligation`. This is the canonical path.
   - `Order.get_or_create_next_payment_obligation` — [models.py](models.py) — the
     AR/Revenue entry booked when an obligation is first created.
   - [admin.py](admin.py) `save_formset` — manual obligation/payment entry.
@@ -179,8 +210,10 @@ point at the exact call sites.
   `Order.get_or_create_next_payment_obligation` ([models.py](models.py)).
   Everything else (`create_with_obligation`, `gen_obligations`) funnels through it.
 - **`Payment`** — only in [services.py](services.py) (`record_receipt`,
-  `apply_member_credit`). Providers never create `Payment`s directly — they call
-  `record_receipt`.
+  `apply_member_credit`, `waive_obligation`). Providers never create `Payment`s
+  directly — they call `record_receipt`.
+- **`PaymentReversal`** — only in `record_reversal` ([services.py](services.py)),
+  reached through `record_refund` and `record_chargeback`.
 - **`PaymentProvider`** — auto-seeded after every migrate by
   `create_default_providers` ([apps.py](apps.py)) for each installable
   processor, or added by hand in the admin.
@@ -201,8 +234,12 @@ Providers live in their own sub-app under `payments/` (see
 3. **Implement the flow.** Return a `PaymentProcessorInstance` from
    `get_instance` with `start_payment_flow(request, obligation, return_url)` — and
    `charge_obligation(obligation)` too if it supports recurring charges.
+   `refresh_payments()` catches up on missed status updates before each
+   `charge_obligations` run; `refundable_cents(payment)` and `refund(payment)`
+   enable the admin refund action.
 4. **Book money through services.** On a successful payment call
-   `record_receipt(obligation, amount_cents)` — never touch the ledger yourself.
+   `record_receipt(obligation, amount_cents)`, and `record_refund` /
+   `record_chargeback` when money goes back — never touch the ledger yourself.
    Add your own idempotency around it (see `_record_receipt` in
    [mollie/views.py](mollie/views.py)).
 5. **Install it.** Add the app to `INSTALLED_APPS`. On startup `autodiscover()`

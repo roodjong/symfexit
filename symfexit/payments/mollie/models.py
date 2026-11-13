@@ -106,6 +106,52 @@ class MolliePayment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default="open")
     processed_at = models.DateTimeField(null=True, blank=True)
+    # The Payments its receipt was booked as: the part applied to the
+    # obligation and/or the surplus that went to member credit.
+    payments = models.ManyToManyField(
+        "payments.Payment", blank=True, related_name="mollie_payments"
+    )
 
     def __str__(self):
         return f"Mollie payment {self.mollie_payment_id} ({self.status})"
+
+
+class MollieReversal(models.Model):
+    """A refund or chargeback Mollie reported on one of our payments.
+
+    One row per Mollie refund/chargeback id, so each is booked only once.
+    """
+
+    class Kind(models.TextChoices):
+        REFUND = "refund", "Refund"
+        CHARGEBACK = "chargeback", "Chargeback"
+
+    # Refund statuses after which no money goes back to the member.
+    REFUND_UNSUCCESSFUL_STATUSES = ("failed", "canceled")
+
+    mollie_payment = models.ForeignKey(
+        MolliePayment, on_delete=models.CASCADE, related_name="reversals"
+    )
+    mollie_id = models.CharField(max_length=255, unique=True)
+    kind = models.CharField(max_length=20, choices=Kind)
+    amount_cents = models.IntegerField()
+    # Refund status from Mollie; empty for chargebacks.
+    status = models.CharField(max_length=50, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # When it was booked in the ledger. A refund is booked once Mollie reports
+    # it `refunded`, a chargeback as soon as it appears.
+    processed_at = models.DateTimeField(null=True, blank=True)
+    # For a refund started from the admin: the Payment it refunds. Empty for
+    # chargebacks and dashboard refunds, which undo the whole receipt.
+    payment = models.ForeignKey(
+        "payments.Payment", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    # The ledger entries it was booked as.
+    payment_reversals = models.ManyToManyField(
+        "payments.PaymentReversal", blank=True, related_name="mollie_reversals"
+    )
+    # A chargeback the bank later reversed: the money came back to us.
+    chargeback_reversed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Mollie {self.kind} {self.mollie_id}"

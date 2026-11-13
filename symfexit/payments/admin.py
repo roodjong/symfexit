@@ -1,19 +1,20 @@
+import logging
 import zoneinfo
 from datetime import timedelta
 
 from django import forms
-from django.contrib import admin
-from django.contrib.admin import SimpleListFilter
+from django.contrib import admin, messages
+from django.contrib.admin import SimpleListFilter, helpers
 from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
-from django.db.models import F, Sum
-from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html_join
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 from symfexit.payments.models import (
     Account,
@@ -23,28 +24,17 @@ from symfexit.payments.models import (
     Payment,
     PaymentObligation,
     PaymentProvider,
+    PaymentReversal,
     Product,
     Subscription,
     Transaction,
 )
 from symfexit.payments.registry import payments_registry
+from symfexit.payments.services import get_refund_option
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
-
-
-def _annotate_paid_cents(qs):
-    """Annotate an obligation queryset with the total cents paid, so callers
-    can split on outstanding amount rather than mere existence of a Payment
-    (a partial payment, e.g. the one-cent bank account change, is not paid)."""
-    return qs.annotate(paid_cents=Coalesce(Sum("payment__transaction__amount_cents"), 0))
-
-
-def _unpaid_obligations(qs):
-    return _annotate_paid_cents(qs).filter(paid_cents__lt=F("amount_euros") * 100)
-
-
-def _paid_obligations(qs):
-    return _annotate_paid_cents(qs).filter(paid_cents__gte=F("amount_euros") * 100)
 
 
 @admin.register(BillingAddress)
@@ -177,7 +167,7 @@ class PaymentObligationInline(admin.TabularInline):
         return super().get_formset(request, obj, **kwargs)
 
     def get_queryset(self, request):
-        return _unpaid_obligations(super().get_queryset(request))
+        return super().get_queryset(request).unpaid()
 
 
 class PaidPaymentObligationInline(admin.TabularInline):
@@ -197,7 +187,7 @@ class PaidPaymentObligationInline(admin.TabularInline):
         return False
 
     def get_queryset(self, request):
-        return _paid_obligations(super().get_queryset(request))
+        return super().get_queryset(request).paid()
 
 
 class PaymentInlineForm(forms.ModelForm):
@@ -222,9 +212,7 @@ class PaymentInline(admin.TabularInline):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "obligation" and hasattr(self, "parent_obj"):
-            kwargs["queryset"] = _unpaid_obligations(
-                PaymentObligation.objects.filter(order=self.parent_obj)
-            )
+            kwargs["queryset"] = PaymentObligation.objects.filter(order=self.parent_obj).unpaid()
         if db_field.name == "paid_using":
             manual_types = [
                 name for name, processor in payments_registry if processor.allows_manual_payments()
@@ -269,8 +257,14 @@ class OrderAdmin(admin.ModelAdmin):
     delete_confirmation_template = "admin/payments/order_cancel_confirm.html"
     autocomplete_fields = ("ordered_for", "ordered_for_billing_address")
     inlines = (PaidPaymentObligationInline, PaymentObligationInline)
-    list_display = ("product_name", "ordered_for", "created_at", "cancelled_at")
-    list_filter = (OrderStatusFilter,)
+    list_display = (
+        "product_name",
+        "ordered_for",
+        "created_at",
+        "cancelled_at",
+        "cancellation_reason",
+    )
+    list_filter = (OrderStatusFilter, "cancellation_reason")
     show_change_link = True
 
     def payments_overview(self, obj):
@@ -307,6 +301,7 @@ class OrderAdmin(admin.ModelAdmin):
                 "subscription_period",
                 "ordered_for",
                 "cancelled_at",
+                "cancellation_reason",
                 "payments_overview",
             )
         return super().get_readonly_fields(request, obj)
@@ -415,20 +410,13 @@ class PaymentObligationPaymentInline(admin.TabularInline):
     form = PaymentObligationPaymentInlineForm
     extra = 0
     show_change_link = True
-
-    def get_fields(self, request, obj=None):
-        if obj and obj.payment_set.exists():
-            return ("transaction", "paid_using", "paid_at")
-        return ("paid_using", "paid_at")
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj and obj.payment_set.exists():
-            return ("transaction", "paid_using", "paid_at")
-        return ()
+    fields = ("transaction", "paid_using", "paid_at")
+    readonly_fields = ("transaction",)
 
     def has_add_permission(self, request, obj=None):
         # A partially paid obligation (e.g. after the one-cent bank account
-        # change payment) can still receive a manual payment for the remainder.
+        # change payment, or a refund) can still receive a manual payment for
+        # the remainder.
         if obj and obj.is_fully_paid:
             return False
         return True
@@ -446,6 +434,24 @@ class PaymentObligationPaymentInline(admin.TabularInline):
             ]
             kwargs["queryset"] = PaymentProvider.objects.filter(type__in=manual_types)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class PaymentReversalInline(admin.TabularInline):
+    model = PaymentReversal
+    fk_name = "obligation"
+    fields = ("reason", "transaction", "payment", "created_at")
+    readonly_fields = fields
+    extra = 0
+    verbose_name_plural = _("Refunds and chargebacks")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(PaymentObligation)
@@ -482,7 +488,7 @@ class PaymentObligationAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def get_inlines(self, request, obj):
-        inlines = [PaymentObligationPaymentInline]
+        inlines = [PaymentObligationPaymentInline, PaymentReversalInline]
         try:
             from symfexit.payments.mollie.admin import MolliePaymentInline  # noqa: PLC0415
 
@@ -538,9 +544,34 @@ class PaymentObligationAdmin(admin.ModelAdmin):
         return redirect("admin:index")
 
 
+class PaymentReversalOfPaymentInline(PaymentReversalInline):
+    fk_name = "payment"
+    fields = ("reason", "transaction", "created_at")
+    readonly_fields = fields
+
+
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    def has_module_permission(self, request):
+    list_display = ("__str__", "member", "amount", "paid_using", "paid_at", "refunded")
+    list_filter = ("paid_using",)
+    list_select_related = (
+        "obligation__order__ordered_for",
+        "obligation__order__ordered_for_billing_address",
+        "transaction",
+        "paid_using",
+    )
+    search_fields = (
+        "obligation__order__ordered_for__first_name",
+        "obligation__order__ordered_for__last_name",
+        "obligation__order__ordered_for__email",
+        "obligation__order__ordered_for_billing_address__name",
+        "obligation__order__ordered_for_billing_address__email",
+    )
+    date_hierarchy = "paid_at"
+    inlines = (PaymentReversalOfPaymentInline,)
+    actions = ("refund_selected",)
+
+    def has_add_permission(self, request):
         return False
 
     def has_change_permission(self, request, obj=None):
@@ -549,8 +580,82 @@ class PaymentAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def changelist_view(self, request, extra_context=None):
-        return redirect("admin:index")
+    def has_refund_permission(self, request):
+        return request.user.has_perm("payments.add_paymentreversal")
+
+    @admin.display(description=_("member"))
+    def member(self, obj):
+        order = obj.obligation.order if obj.obligation else None
+        if order is None:
+            return "-"
+        return order.ordered_for or order.ordered_for_billing_address.name
+
+    @admin.display(description=_("amount"))
+    def amount(self, obj):
+        return f"€{obj.transaction.amount_cents / 100:.2f}"
+
+    @admin.display(description=_("refunded"))
+    def refunded(self, obj):
+        reversed_cents = obj.transaction.amount_cents - obj.unreversed_cents
+        return f"€{reversed_cents / 100:.2f}" if reversed_cents else "-"
+
+    @admin.action(description=_("Refund selected payments"), permissions=["refund"])
+    def refund_selected(self, request, queryset):
+        refundable = []
+        not_refundable = []
+        for payment in queryset:
+            instance, cents_or_reason = get_refund_option(payment)
+            row = {"payment": payment, "member": self.member(payment)}
+            if instance is None:
+                not_refundable.append({**row, "reason": cents_or_reason})
+            else:
+                cents = cents_or_reason
+                refundable.append(
+                    {**row, "instance": instance, "cents": cents, "amount": f"{cents / 100:.2f}"}
+                )
+
+        if request.POST.get("post") == "yes" and refundable:
+            started = 0
+            for row in refundable:
+                try:
+                    row["instance"].refund(row["payment"])
+                    started += 1
+                except Exception:
+                    logger.exception("Refund of payment %s failed", row["payment"].pk)
+                    self.message_user(
+                        request,
+                        _("Refunding %(payment)s failed.") % {"payment": row["payment"]},
+                        messages.ERROR,
+                    )
+            if started:
+                self.message_user(
+                    request,
+                    ngettext(
+                        "Started %(count)d refund. It is booked once the provider completes it.",
+                        "Started %(count)d refunds. They are booked once the provider completes them.",
+                        started,
+                    )
+                    % {"count": started},
+                    messages.SUCCESS,
+                )
+            return None
+
+        refundable_total = sum(row["cents"] for row in refundable)
+        return TemplateResponse(
+            request,
+            "admin/payments/payment/refund_confirmation.html",
+            {
+                **self.admin_site.each_context(request),
+                "title": _("Refund payments"),
+                "opts": self.model._meta,
+                "queryset": queryset,
+                "refundable": refundable,
+                "refundable_total": f"{refundable_total / 100:.2f}",
+                "not_refundable": not_refundable,
+                "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+                "media": self.media,
+            },
+        )
 
 
 class PaymentProviderAdminForm(forms.ModelForm):

@@ -23,6 +23,33 @@ debit that bank account again. Without a mandate there is nothing to charge, so
 skipped. This is the single most common reason automatic charging appears to do
 nothing.
 
+## Refunds and chargebacks
+
+Mollie keeps a payment's status `paid` through both; they only show up in the
+payment's `refunds` and `chargebacks` sub-lists. Each one gets a `MollieReversal`
+row (unique on Mollie's id), which is what makes booking idempotent. Once
+booked it points at its `PaymentReversal`s in the ledger, and every row, pending
+or booked, is listed with its Mollie id on the obligation's admin page.
+
+A receipt can be booked as two Payments (the part applied to the obligation and
+a surplus that went to member credit), and `MolliePayment.payments` links both.
+A chargeback or dashboard refund undoes them in that order; a refund started
+from the admin undoes only the Payment that was selected:
+
+- A **refund** is booked once Mollie reports it `refunded`. Until then it's a
+  pending row, and that amount can't be refunded again.
+- A **chargeback** is booked as soon as it appears. It cancels the order and
+  revokes the customer's mandates. If the bank later reverses the chargeback,
+  the money is booked as received again; the order stays cancelled.
+
+The webhook books them as they happen. If webhooks were missed,
+`refresh_payments` pages through Mollie's account-wide refund and chargeback
+lists (back 400 days, the SEPA limit for an unauthorised debit) and refreshes
+every payment with one we haven't caught up on.
+
+To try a chargeback in test mode, open the `changePaymentState` link from the
+log line below on a paid payment and choose a chargeback.
+
 ## Debugging the automatic charge locally
 
 ### Setup: exposing your machine with ngrok

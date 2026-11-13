@@ -9,7 +9,8 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, connection, models, transaction
-from django.db.models import Q
+from django.db.models import F, IntegerField, OuterRef, Q, Subquery, Sum
+from django.db.models.functions import Cast, Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
@@ -390,6 +391,11 @@ class OrderManager(models.Manager):
         return order, obligation
 
 
+class CancellationReason(models.TextChoices):
+    CHARGEBACK = "chargeback", _("Chargeback")
+    SIGNUP_REJECTED = "signup_rejected", _("Membership application rejected")
+
+
 class Order(models.Model):
     # For now only one order item per order is possible
     # We store all values in the order, such that the information of the original order is not lost,
@@ -410,6 +416,10 @@ class Order(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     cancelled_at = models.DateTimeField(_("cancelled at"), null=True, blank=True)
+    # Blank for cancellations by the member or an admin.
+    cancellation_reason = models.CharField(
+        _("cancellation reason"), choices=CancellationReason, blank=True, default=""
+    )
 
     paid_using = models.ForeignKey("PaymentProvider", on_delete=models.SET_NULL, null=True)
 
@@ -493,9 +503,10 @@ class Order(models.Model):
             next_year = previous_year + int(year_rollover)
         return next_year, next_period
 
-    def cancel(self):
+    def cancel(self, reason: CancellationReason | str = ""):
         self.cancelled_at = datetime.now(tz=zoneinfo.ZoneInfo("UTC"))
-        self.save(update_fields=["cancelled_at"])
+        self.cancellation_reason = reason
+        self.save(update_fields=["cancelled_at", "cancellation_reason"])
 
     def get_or_create_next_payment_obligation(self, *, timezone=None, now: datetime = None):
         if self.cancelled_at is not None:
@@ -557,6 +568,36 @@ class Order(models.Model):
         return obligation
 
 
+def _sum_per_obligation(model):
+    return Coalesce(
+        Subquery(
+            model.objects.filter(obligation=OuterRef("pk"))
+            .values("obligation")
+            .annotate(total=Sum("transaction__amount_cents"))
+            .values("total"),
+            output_field=IntegerField(),
+        ),
+        0,
+    )
+
+
+class PaymentObligationQuerySet(models.QuerySet):
+    def with_outstanding_cents(self):
+        """Annotate `db_outstanding_cents`, the queryset version of
+        `PaymentObligation.outstanding_cents`, for filtering on paid status."""
+        return self.annotate(
+            db_outstanding_cents=Cast(F("amount_euros") * 100, IntegerField())
+            - _sum_per_obligation(Payment)
+            + _sum_per_obligation(PaymentReversal)
+        )
+
+    def unpaid(self):
+        return self.with_outstanding_cents().filter(db_outstanding_cents__gt=0)
+
+    def paid(self):
+        return self.with_outstanding_cents().filter(db_outstanding_cents__lte=0)
+
+
 class PaymentObligation(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
@@ -568,6 +609,8 @@ class PaymentObligation(models.Model):
     ordered_for_billing_address = models.ForeignKey(
         BillingAddress, on_delete=models.PROTECT, null=False, blank=False
     )
+
+    objects = PaymentObligationQuerySet.as_manager()
 
     class Meta:
         constraints = [
@@ -600,7 +643,13 @@ class PaymentObligation(models.Model):
             .get("total")
             or 0
         )
-        return obligation_cents - paid_cents
+        reversed_cents = (
+            PaymentReversal.objects.filter(obligation=self)
+            .aggregate(total=models.Sum("transaction__amount_cents"))
+            .get("total")
+            or 0
+        )
+        return obligation_cents - paid_cents + reversed_cents
 
     @property
     def is_fully_paid(self) -> bool:
@@ -622,7 +671,37 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment for order {self.obligation.order.id} made at {date_format(self.paid_at, 'DATETIME_FORMAT')}"
+        paid_at = date_format(self.paid_at, "DATETIME_FORMAT")
+        if self.obligation is None:
+            return f"Payment made at {paid_at}"
+        return f"Payment for order {self.obligation.order_id} made at {paid_at}"
+
+    @property
+    def unreversed_cents(self) -> int:
+        """What is left of this payment after refunds and chargebacks."""
+        reversed_cents = (
+            self.reversals.aggregate(total=Sum("transaction__amount_cents"))["total"] or 0
+        )
+        return self.transaction.amount_cents - reversed_cents
+
+
+class PaymentReversal(models.Model):
+    """Money from a Payment that went back to the payer, through a refund or a
+    chargeback. Its transaction undoes (part of) the payment's receipt, so the
+    obligation's outstanding amount goes up by the same amount."""
+
+    class Reason(models.TextChoices):
+        REFUND = "refund", _("Refund")
+        CHARGEBACK = "chargeback", _("Chargeback")
+
+    payment = models.ForeignKey(Payment, on_delete=models.PROTECT, related_name="reversals")
+    obligation = models.ForeignKey(PaymentObligation, on_delete=models.SET_NULL, null=True)
+    transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    reason = models.CharField(_("reason"), choices=Reason)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_reason_display()} of €{self.transaction.amount_cents / 100:.2f}"
 
 
 class PaymentProvider(models.Model):

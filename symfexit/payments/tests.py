@@ -564,17 +564,15 @@ class AdminObligationPaidSplitTest(TestCase):
         Payment.objects.create(obligation=self.obligation, paid_at=timezone.now(), transaction=tx)
 
     def test_partially_paid_obligation_is_listed_unpaid(self):
-        from symfexit.payments.admin import _paid_obligations, _unpaid_obligations  # noqa: PLC0415
-
         qs = PaymentObligation.objects.all()
 
         self._pay(1)
-        self.assertIn(self.obligation, _unpaid_obligations(qs))
-        self.assertNotIn(self.obligation, _paid_obligations(qs))
+        self.assertIn(self.obligation, qs.unpaid())
+        self.assertNotIn(self.obligation, qs.paid())
 
         self._pay(999)
-        self.assertNotIn(self.obligation, _unpaid_obligations(qs))
-        self.assertIn(self.obligation, _paid_obligations(qs))
+        self.assertNotIn(self.obligation, qs.unpaid())
+        self.assertIn(self.obligation, qs.paid())
 
 
 class PaymentObligationAdminPageTest(FastTenantTestCase):
@@ -627,3 +625,158 @@ class PaymentObligationAdminPageTest(FastTenantTestCase):
         self.assertContains(response, "€ 10.00", count=1)
         self.assertContains(response, "€ 9.99", count=1)
         self.assertNotContains(response, 'name="amount_euros"')
+
+
+class ReversalTest(TestCase):
+    def setUp(self):
+        from symfexit.payments.models import PaymentProvider  # noqa: PLC0415
+
+        self.ar_account, _ = Account.get_accounts_receivable_account()
+        self.bank_account, _ = Account.get_bank_account()
+        Account.get_revenue_account()
+        self.waived_account, _ = Account.get_waived_account()
+
+        self.provider = PaymentProvider.objects.create(name="Mollie", type="mollie")
+        self.user = Member.objects.create_user(email="reversal@example.com")
+        billing_address = BillingAddress.objects.create(
+            user=self.user,
+            name="Test User",
+            address="Teststraat 1",
+            city="Amsterdam",
+            postal_code="1000AA",
+        )
+        product = Product.objects.create(
+            enabled=True,
+            sku="test-reversal",
+            name="Reversal Product",
+            price_euros=Decimal("10.00"),
+            type=ProductType.SUBSCRIPTION,
+        )
+        Subscription.objects.create(product=product, period_unit=PeriodUnit.MONTH, period=1)
+        self.order = product.order(for_user=self.user, billing_address=billing_address)
+        self.order.paid_using = self.provider
+        self.order.save()
+        self.obligation = self.order.get_or_create_next_payment_obligation(timezone="UTC")
+
+    def _pay(self, cents=1000):
+        from symfexit.payments.services import record_receipt  # noqa: PLC0415
+
+        return record_receipt(self.obligation, cents)
+
+    def test_refund_reverses_receipt_and_waives_obligation(self):
+        from symfexit.payments.models import PaymentReversal  # noqa: PLC0415
+        from symfexit.payments.services import record_refund  # noqa: PLC0415
+
+        payment = self._pay()
+        record_refund(self.obligation, [payment], 1000)
+
+        reversal = PaymentReversal.objects.get()
+        self.assertEqual(reversal.reason, PaymentReversal.Reason.REFUND)
+        self.assertEqual(reversal.transaction.amount_cents, 1000)
+        self.assertEqual(payment.unreversed_cents, 0)
+        self.assertEqual(self.bank_account.balance_cents(), 0)
+        self.assertEqual(self.waived_account.balance_cents(), 1000)
+        self.assertTrue(self.obligation.is_fully_paid)
+        self.order.refresh_from_db()
+        self.assertIsNone(self.order.cancelled_at)
+
+    def test_partial_refund_waives_only_refunded_part(self):
+        from symfexit.payments.services import record_refund  # noqa: PLC0415
+
+        payment = self._pay()
+        record_refund(self.obligation, [payment], 400)
+
+        self.assertEqual(payment.unreversed_cents, 600)
+        self.assertEqual(self.bank_account.balance_cents(), 600)
+        self.assertEqual(self.waived_account.balance_cents(), 400)
+        self.assertTrue(self.obligation.is_fully_paid)
+
+    def test_chargeback_reopens_obligation_and_cancels_order(self):
+        from symfexit.payments.models import CancellationReason  # noqa: PLC0415
+        from symfexit.payments.services import record_chargeback  # noqa: PLC0415
+
+        payment = self._pay()
+        record_chargeback(self.obligation, [payment], 1000)
+
+        self.assertEqual(self.obligation.outstanding_cents, 1000)
+        self.assertEqual(self.bank_account.balance_cents(), 0)
+        self.assertEqual(self.waived_account.balance_cents(), 0)
+        self.order.refresh_from_db()
+        self.assertIsNotNone(self.order.cancelled_at)
+        self.assertEqual(self.order.cancellation_reason, CancellationReason.CHARGEBACK)
+
+    def test_chargeback_of_overpayment_takes_surplus_out_of_member_credit(self):
+        """€12 received for a €10 obligation: €2 went to member credit, so
+        charging back all €12 takes €2 back out of that credit."""
+        from symfexit.payments.services import (  # noqa: PLC0415
+            record_chargeback,
+            record_receipt_payments,
+        )
+
+        payments = record_receipt_payments(self.obligation, 1200)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.credit_balance_cents, 200)
+
+        record_chargeback(self.obligation, payments, 1200)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.credit_balance_cents, 0)
+        self.assertEqual(self.obligation.outstanding_cents, 1000)
+        self.assertEqual(self.bank_account.balance_cents(), 0)
+
+    def test_refunding_a_credit_only_payment_leaves_obligation_alone(self):
+        """A receipt on an already-paid obligation (like the one-cent bank
+        account change payment) went entirely to member credit, so refunding
+        it takes it back from there and doesn't re-open the obligation."""
+        from symfexit.payments.services import record_refund  # noqa: PLC0415
+
+        self._pay()
+        surplus = self._pay(1)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.credit_balance_cents, 1)
+
+        record_refund(self.obligation, [surplus], 1)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.credit_balance_cents, 0)
+        self.assertEqual(self.obligation.outstanding_cents, 0)
+        self.assertEqual(self.ar_account.balance_cents(), 0)
+        self.assertEqual(self.waived_account.balance_cents(), 0)
+
+    def test_reversal_beyond_payments_comes_out_of_member_credit(self):
+        """Receipts booked before surpluses got their own Payment have no
+        Payment for the extra; that part comes out of member credit."""
+        from symfexit.payments.services import record_chargeback  # noqa: PLC0415
+
+        payment = self._pay()
+        credit_account = self.user.get_or_create_credit_account()
+        Transaction.objects.create(
+            credit_account=credit_account, debit_account=self.bank_account, amount_cents=200
+        )
+
+        record_chargeback(self.obligation, [payment], 1200)
+
+        self.assertEqual(credit_account.balance_cents(), 0)
+        self.assertEqual(self.obligation.outstanding_cents, 1000)
+        self.assertEqual(self.bank_account.balance_cents(), 0)
+
+    def test_paid_and_unpaid_querysets_follow_outstanding(self):
+        from symfexit.payments.services import record_chargeback  # noqa: PLC0415
+
+        def paid_ids():
+            return set(PaymentObligation.objects.paid().values_list("pk", flat=True))
+
+        def unpaid_ids():
+            return set(PaymentObligation.objects.unpaid().values_list("pk", flat=True))
+
+        self.assertEqual(unpaid_ids(), {self.obligation.pk})
+
+        partial = self._pay(400)
+        self.assertEqual(unpaid_ids(), {self.obligation.pk})
+
+        rest = self._pay(600)
+        self.assertEqual(paid_ids(), {self.obligation.pk})
+
+        record_chargeback(self.obligation, [rest], 600)
+        self.assertEqual(unpaid_ids(), {self.obligation.pk})
+        self.assertIsNotNone(partial)
